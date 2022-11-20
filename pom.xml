@@ -31,6 +31,14 @@
 
     <name>jloda</name>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>HusonLab Apache Maven Packages</name>
+            <url>https://github.com/husonlab/jloda2</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
