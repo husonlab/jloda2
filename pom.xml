@@ -31,13 +31,15 @@
 
     <name>jloda2</name>
 
+    <!-- Maven hosting not yet setup>
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>HusonLab Apache Maven Packages</name>
-            <url>https://github.com/husonlab/jloda2</url>
+            <url>https://maven.pkg.github.com/husonlab/jloda2</url>
         </repository>
     </distributionManagement>
+    </!-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -91,6 +93,20 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>${javafx.plugin.version}</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
 </project>
