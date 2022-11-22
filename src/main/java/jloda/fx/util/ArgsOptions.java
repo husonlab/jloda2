@@ -58,7 +58,7 @@ public class ArgsOptions {
      * @param clazz       class that contains main method
      * @param description program description
      */
-    public ArgsOptions(String[] args, Class clazz, String description) throws CanceledException {
+    public ArgsOptions(String[] args, Class<?> clazz, String description) {
         this(args, clazz, (ProgramProperties.getProgramName() != null && ProgramProperties.getProgramName().length() > 0 ? ProgramProperties.getProgramName() : (clazz != null ? clazz.getSimpleName() : "Unknown")), description);
     }
 
@@ -69,7 +69,7 @@ public class ArgsOptions {
      * @param main        class that contains main method
      * @param description program description
      */
-    public ArgsOptions(String[] args, Object main, String description) throws CanceledException {
+    public ArgsOptions(String[] args, Object main, String description) {
         this(args, main, (ProgramProperties.getProgramName() != null && ProgramProperties.getProgramName().length() > 0 ? ProgramProperties.getProgramName() : (main != null ? main.getClass().getSimpleName() : "Unknown")), description);
     }
 
@@ -114,7 +114,7 @@ public class ArgsOptions {
      * @param clazz       class that contains main method
      * @param description program description
      */
-    public ArgsOptions(String[] args, Class clazz, String programName, String description) {
+    public ArgsOptions(String[] args, Class<?> clazz, String programName, String description) {
         Locale.setDefault(Locale.US);
 
         if (args.length > 0 && args[args.length - 1].equals("--argsGui")) {
@@ -172,7 +172,7 @@ public class ArgsOptions {
             result.append("VERSION\n\t").append(version.trim()).append(".\n");
 
         if (license != null)
-            result.append("LICENSE\n\t").append(license.trim().replaceAll("\\n", "\n\t")).append(".\n");
+            result.append("jloda2-LICENSE.txt\n\t").append(license.trim().replaceAll("\\n", "\n\t")).append(".\n");
 
         return result.toString();
     }
