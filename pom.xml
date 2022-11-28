@@ -127,6 +127,8 @@
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>.</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>
                     </execution>
                 </executions>
