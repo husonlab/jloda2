@@ -468,7 +468,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 		try {
 			parseBracketNotationRec(seen, 0, null, 0, str);
 		} catch (IOException ex) {
-			System.err.println(str);
+			//System.err.println(str);
 			throw ex;
 		}
 		if (getNumberOfNodes() > 0) {
