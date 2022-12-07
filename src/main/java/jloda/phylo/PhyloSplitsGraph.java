@@ -30,9 +30,9 @@ import java.util.*;
  * Daniel Huson, 1.2018
  */
 public class PhyloSplitsGraph extends PhyloGraph {
-	private EdgeIntArray edgeSplitMap;
-	private EdgeDoubleArray edgeAngleMap;
-	private Vector<Integer> taxonCycleMap;
+	private volatile EdgeIntArray edgeSplitMap;
+	private volatile EdgeDoubleArray edgeAngleMap;
+	private volatile Vector<Integer> taxonCycleMap;
 
 	/**
 	 * Construct a new empty phylogenetic tree.
@@ -68,7 +68,6 @@ public class PhyloSplitsGraph extends PhyloGraph {
      *
 	 */
     public NodeArray<Node> copy(PhyloSplitsGraph src, NodeArray<Node> oldNode2NewNode, EdgeArray<Edge> oldEdge2NewEdge) {
-        clear();
         if (oldNode2NewNode == null)
             oldNode2NewNode = new NodeArray<>(src);
         if (oldEdge2NewEdge == null)
@@ -76,11 +75,20 @@ public class PhyloSplitsGraph extends PhyloGraph {
 
         super.copy(src, oldNode2NewNode, oldEdge2NewEdge);
 
-        for (var e : src.edges()) {
-            var f = (oldEdge2NewEdge.get(e));
-            setAngle(f, src.getAngle(e));
-            setSplit(f, src.getSplit(e));
-        }
+		if(src.hasAngles()) {
+			for (var e : src.edges()) {
+				var f = (oldEdge2NewEdge.get(e));
+				setAngle(f, src.getAngle(e));
+			}
+		}
+
+		if(src.hasSplits()) {
+			for (var e : src.edges()) {
+				var f = (oldEdge2NewEdge.get(e));
+				setAngle(f, src.getAngle(e));
+				setSplit(f, src.getSplit(e));
+			}
+		}
 
         setName(src.getName());
 
@@ -132,6 +140,10 @@ public class PhyloSplitsGraph extends PhyloGraph {
 			}
 		}
 		return edgeSplitMap;
+	}
+
+	public boolean hasSplits() {
+		return edgeSplitMap!=null;
 	}
 
 	/**
@@ -257,7 +269,7 @@ public class PhyloSplitsGraph extends PhyloGraph {
      *
      * @return labeling of all nodes by 01 strings
      */
-    public NodeArray labelNodesBySequences(Map split2chars, char[] firstChars) {
+    public NodeArray<String> labelNodesBySequences(Map<Integer,BitSet> split2chars, char[] firstChars) {
         final NodeArray<String> labels = new NodeArray<>(this);
         System.err.println("base-line= " + (new String(firstChars)));
         Node v = getTaxon2Node(1);
@@ -271,12 +283,12 @@ public class PhyloSplitsGraph extends PhyloGraph {
      * recursively do the work
      *
 	 */
-    private void labelNodesBySequencesRec(Node v, BitSet used, Map split2chars, char[] firstChars, NodeArray<String> labels) {
+    private void labelNodesBySequencesRec(Node v, BitSet used, Map<Integer,BitSet> split2chars, char[] firstChars, NodeArray<String> labels) {
         if (labels.get(v) == null) {
             BitSet flips = new BitSet();
             for (int s = used.nextSetBit(1); s >= 0; s = used.nextSetBit(s + 1)) {
                 if (s > 0)
-                    flips.or((BitSet) split2chars.get(s));
+                    flips.or(split2chars.get(s));
                 // s=0 happens in rooted graph
             }
             StringBuilder label = new StringBuilder();
@@ -328,6 +340,10 @@ public class PhyloSplitsGraph extends PhyloGraph {
 		return edgeAngleMap;
 	}
 
+	public boolean hasAngles() {
+		return edgeAngleMap!=null;
+	}
+
 	/**
 	 * find the position of a taxon in the cyclic ordering.
 	 *
@@ -365,11 +381,9 @@ public class PhyloSplitsGraph extends PhyloGraph {
      */
 	public void setTaxon2Cycle(int taxId, int cycleIndex) {
 		var taxon2cycle = getTaxon2Cycle();
-		if (taxId <= taxon2cycle.size()) {
-			taxon2cycle.setElementAt(cycleIndex, taxId - 1);
-		} else {
+		taxon2cycle.setElementAt(cycleIndex, taxId - 1);
+		if (taxId > taxon2cycle.size()) {
 			taxon2cycle.setSize(taxId);
-			taxon2cycle.setElementAt(cycleIndex, taxId - 1);
 		}
 	}
 

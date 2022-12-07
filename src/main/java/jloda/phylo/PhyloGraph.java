@@ -93,7 +93,6 @@ public class PhyloGraph extends Graph {
      * @param oldEdge2NewEdge if non-null, will contain mapping of old edges to new edges
      */
     public void copy(PhyloGraph src, NodeArray<Node> oldNode2NewNode, EdgeArray<Edge> oldEdge2NewEdge) {
-        clear();
         if (oldNode2NewNode == null)
             oldNode2NewNode = new NodeArray<>(src);
         if (oldEdge2NewEdge == null)

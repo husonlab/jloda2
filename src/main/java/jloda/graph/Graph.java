@@ -1001,7 +1001,6 @@ public class Graph extends GraphBase implements INamed {
             setInfo(f, src.getInfo(e));
             setData(f, src.getData(e));
             setLabel(f, src.getLabel(e));
-
             oldEdge2newEdge.put(e, f);
         }
         maxEdgeId = src.maxEdgeId;
@@ -1021,11 +1020,11 @@ public class Graph extends GraphBase implements INamed {
      * Copies one graph onto another. Maintains the ids of nodes and edges
      *
      * @param src             the source graph
-     * @param srcNodes        the nodes of the source graph to be copied
+     * @param nodesToCopy        the nodes of the source graph to be copied
      * @param oldNode2newNode if not null, returns map: old node id onto new node id
      * @param oldEdge2newEdge if not null, returns map: old edge id onto new edge id
      */
-    public void copy(Graph src, Set<Node> srcNodes, Map<Node, Node> oldNode2newNode, HashMap<Edge, Edge> oldEdge2newEdge) {
+    public void copy(Graph src, Set<Node> nodesToCopy, Map<Node, Node> oldNode2newNode, HashMap<Edge, Edge> oldEdge2newEdge) {
         clear();
 
         if (oldNode2newNode == null)
@@ -1033,37 +1032,44 @@ public class Graph extends GraphBase implements INamed {
         if (oldEdge2newEdge == null)
             oldEdge2newEdge = new HashMap<>();
 
-        final var edges = new HashSet<Edge>();// don't used an edge set here in multi-thread use
-
-        for (var v : srcNodes) {
+        for (var v : nodesToCopy) {
             Node w = newNode();
             w.setId(v.getId());
             setInfo(w, src.getInfo(v));
-            oldNode2newNode.put(v, w);
-            for (Edge e : v.outEdges())
-                edges.add(e);
-        }
+            setData(w, src.getData(v));
+            setLabel(w, src.getLabel(v));
 
-        for (var e : edges) {
-            final var p = oldNode2newNode.get(e.getSource());
-            final var q = oldNode2newNode.get(e.getTarget());
-            Edge f = null;
-            try {
-                f = newEdge(p, q);
-                f.setId(e.getId());
-            } catch (IllegalSelfEdgeException e1) {
-                Basic.caught(e1);
+            oldNode2newNode.put(v, w);
+         }
+        maxNodeId = src.maxNodeId;
+
+        for (var e : src.edges()) {
+            if(nodesToCopy.contains(e.getSource()) && nodesToCopy.contains(e.getTarget())) {
+                final var p = oldNode2newNode.get(e.getSource());
+                final var q = oldNode2newNode.get(e.getTarget());
+                Edge f = null;
+                try {
+                    f = newEdge(p, q);
+                    f.setId(e.getId());
+                } catch (IllegalSelfEdgeException e1) {
+                    Basic.caught(e1);
+                }
+                setInfo(f, src.getInfo(e));
+                setData(f, src.getData(e));
+                setLabel(f, src.getLabel(e));
+                oldEdge2newEdge.put(e, f);
             }
-            setInfo(f, src.getInfo(e));
-            oldEdge2newEdge.put(e, f);
         }
+        maxEdgeId = src.maxEdgeId;
 
         // change all adjacencies to reflect order in old graph:
-        for (var v : srcNodes) {
+        for (var v : nodesToCopy) {
             final var w = oldNode2newNode.get(v);
-            final var newOrder = new ArrayList<Edge>(v.getDegree());
+            final var newOrder = new ArrayList<Edge>(w.getDegree());
             for (var e : v.adjacentEdges()) {
-                newOrder.add(oldEdge2newEdge.get(e));
+               if(oldEdge2newEdge.containsKey(e)) {
+                       newOrder.add(oldEdge2newEdge.get(e));
+               }
             }
             w.rearrangeAdjacentEdges(newOrder);
         }
