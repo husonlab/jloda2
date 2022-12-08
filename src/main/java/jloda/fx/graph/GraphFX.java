@@ -179,11 +179,10 @@ public class GraphFX<G extends Graph> {
         return empty;
     }
 
-    private void incrementLastUpdate() {
-        if(lastUpdate!=null) {
-            Platform.runLater(()-> lastUpdate.set(lastUpdate.get() + 1));
-        }
-        else
+    public void incrementLastUpdate() {
+        if (lastUpdate != null) {
+            Platform.runLater(() -> lastUpdate.set(lastUpdate.get() + 1));
+        } else
             _lastUpdate++;
     }
 

@@ -851,7 +851,7 @@ public class RichTextLabel extends TextFlow {
         if (prefixElement != null)
             text = removePrefixElement(text, prefixElement);
         if (textFill != null)
-            return insertPrefix(text, String.format("<c \"%s\">", textFill));
+            return insertPrefix(text, String.format("<c \"%s\">", ColorUtilsFX.getName((Color) textFill)));
         else
             return text;
     }
@@ -968,7 +968,7 @@ public class RichTextLabel extends TextFlow {
         if (prefixElement != null)
             text = removePrefixElement(text, prefixElement);
         if (background != null)
-            return insertPrefix(text, String.format("<bg \"%s\">", background));
+            return insertPrefix(text, String.format("<bg \"%s\">", ColorUtilsFX.getName((Color) background)));
         else
             return text;
     }
