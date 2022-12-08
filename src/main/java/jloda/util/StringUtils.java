@@ -2164,6 +2164,15 @@ public class StringUtils {
 			return s;
 	}
 
+	public static String surroundWithQuotesIfContainsWhiteSpace(String string) {
+		for (var i = 0; i < string.length(); i++) {
+			var ch = string.charAt(i);
+			if (Character.isWhitespace(ch))
+				return "\"%s\"".formatted(string);
+		}
+		return string;
+	}
+
 	public static boolean isHttpOrFileURL(String string) {
 		return string.startsWith("http:") || string.startsWith("https:") || string.startsWith("file:");
 	}
@@ -2221,4 +2230,5 @@ public class StringUtils {
 		}
 		return result.toArray(new String[0]);
 	}
+
 }

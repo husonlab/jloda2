@@ -850,9 +850,9 @@ public class RichTextLabel extends TextFlow {
         var prefixElement = getPrefixElement(text, Event.Change.colorStart.type());
         if (prefixElement != null)
             text = removePrefixElement(text, prefixElement);
-        if (textFill != null)
-            return insertPrefix(text, String.format("<c \"%s\">", ColorUtilsFX.getName((Color) textFill)));
-        else
+        if (textFill != null) {
+            return insertPrefix(text, String.format("<c %s>", ColorUtilsFX.getName((Color) textFill)));
+        } else
             return text;
     }
 
@@ -929,9 +929,9 @@ public class RichTextLabel extends TextFlow {
             text = removePrefixElement(text, prefixElement);
         if (fontFamily != null && !fontFamily.isBlank()) {
             fontFamily = fontFamily.trim();
-            if (Font.getFamilies().contains(fontFamily))
-                return insertPrefix(text, String.format("<font \"%s\">", fontFamily));
-            else if (!warned.contains(fontFamily)) {
+            if (Font.getFamilies().contains(fontFamily)) {
+                return insertPrefix(text, String.format("<font %s>", StringUtils.surroundWithQuotesIfContainsWhiteSpace(fontFamily)));
+            } else if (!warned.contains(fontFamily)) {
                 System.err.println("Unknown font family: " + fontFamily);
                 System.err.println("Known fonts: " + StringUtils.toString(Font.getFamilies(), "\n"));
                 warned.add(fontFamily);
@@ -968,7 +968,7 @@ public class RichTextLabel extends TextFlow {
         if (prefixElement != null)
             text = removePrefixElement(text, prefixElement);
         if (background != null)
-            return insertPrefix(text, String.format("<bg \"%s\">", ColorUtilsFX.getName((Color) background)));
+            return insertPrefix(text, String.format("<bg %s>", ColorUtilsFX.getName((Color) background)));
         else
             return text;
     }
