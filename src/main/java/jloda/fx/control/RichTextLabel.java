@@ -20,6 +20,8 @@
 package jloda.fx.control;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.*;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
@@ -70,13 +72,10 @@ public class RichTextLabel extends TextFlow {
                "<mark shape=\"value\" width=\"value\" height=\"value\" fill=\"color\" stroke=\"color\"> adds a mark, " +
                "<img src=\"url\" alt=\"text\" width=\"value\" height=\"value\"> adds an image. Supports HTML numeric codes.";
     }
+    
+    private static final ObjectProperty<Font> defaultFont =new SimpleObjectProperty<>( Font.font("Arial", 14));
 
-    public static Font DEFAULT_FONT = Font.font("Arial", 14);
     private static final Map<String, Image> file2image = new ConcurrentHashMap<>();
-
-    @Deprecated // want to remove this
-    private Font _font = DEFAULT_FONT;
-    private ObjectProperty<Font> font;
 
     private String _text;
     private StringProperty text;
@@ -101,6 +100,7 @@ public class RichTextLabel extends TextFlow {
     private boolean _showMarks = true;
     private BooleanProperty showMarks;
 
+    private final InvalidationListener invalidationListener = e -> update();
 
     /**
      * constructor
@@ -108,6 +108,7 @@ public class RichTextLabel extends TextFlow {
     public RichTextLabel() {
         setMaxWidth(Control.USE_PREF_SIZE);
         setMaxHeight(Control.USE_PREF_SIZE);
+        defaultFont.addListener(new WeakInvalidationListener(invalidationListener));
     }
 
     /**
@@ -127,7 +128,6 @@ public class RichTextLabel extends TextFlow {
      */
     public RichTextLabel(RichTextLabel that) {
         this();
-        setFont(that.getFont());
         if (that.getTextFill() != null)
             setTextFill(that.getTextFill());
         setRequireHTMLTag(that.isRequireHTMLTag());
@@ -161,31 +161,6 @@ public class RichTextLabel extends TextFlow {
             this.text.set(text);
         else if ((text == null && _text != null) || (text != null && !text.equals(_text))) {
             this._text = text;
-            Platform.runLater(this::update);
-        }
-    }
-
-
-    @Deprecated
-    public Font getFont() {
-        return font == null ? _font : font.get();
-    }
-
-    @Deprecated
-    public ObjectProperty<Font> fontProperty() {
-        if (font == null) {
-            font = new SimpleObjectProperty<>(_font);
-            fontProperty().addListener(c -> update());
-        }
-        return font;
-    }
-
-    @Deprecated
-    public void setFont(Font font) {
-        if (this.font != null)
-            this.font.set(font);
-        else if ((font == null && _font != null) || (font != null && !font.equals(_font))) {
-            this._font = font;
             Platform.runLater(this::update);
         }
     }
@@ -388,9 +363,9 @@ public class RichTextLabel extends TextFlow {
                         final var text = new Text(workingText);
                         text.getStyleClass().add("rich-text-label");
                         if (getScale() == 1.0)
-                            text.setFont(getFont());
+                            text.setFont(getDefaultFont());
                         else
-                            text.setFont(new Font(getFont().getName(), getScale() * getFont().getSize()));
+                            text.setFont(new Font(getDefaultFont().getName(), getScale() * getDefaultFont().getSize()));
                         getChildren().add(text);
                         return;
                     } else
@@ -409,7 +384,7 @@ public class RichTextLabel extends TextFlow {
                 events.add(new Event(Event.Change.htmlEnd, workingText.length(), workingText.length(), null));
 
             var offset = 0.0;
-            var currentFont = getFont();
+            var currentFont = getDefaultFont();
             var fontSize = currentFont.getSize();
             Paint textFill = null;
 
@@ -471,7 +446,7 @@ public class RichTextLabel extends TextFlow {
                     if (event.isStart()) {
                         var family = event.argument();
                         if (!Font.getFamilies().contains(family)) {
-                            family = DEFAULT_FONT.getFamily();
+                            family = getDefaultFont().getFamily();
                         }
                         if (family != null) {
                             fontStack.push(currentFont);
@@ -907,7 +882,7 @@ public class RichTextLabel extends TextFlow {
                 return NumberUtils.parseDouble(argument);
             }
         }
-        return DEFAULT_FONT.getSize();
+        return getDefaultFont().getSize();
     }
 
     public double getFontSize() {
@@ -949,7 +924,7 @@ public class RichTextLabel extends TextFlow {
         if (prefixElement != null && Font.getFamilies().contains(prefixElement.argument()))
             return prefixElement.argument();
         else
-            return DEFAULT_FONT.getFamily();
+            return getDefaultFont().getFamily();
     }
 
     public String getFontFamily() {
@@ -1097,12 +1072,25 @@ public class RichTextLabel extends TextFlow {
      * @return estimated width
      */
     public double getEstimatedWidth() {
-        return getRawText().length() * 0.7 * getFont().getSize();
+        return getRawText().length() * 0.7 * getDefaultFont().getSize();
     }
 
     public Node get_anchor() {
         return _anchor;
     }
+
+    public static void setDefaultFont(Font defaultFont) {
+        RichTextLabel.defaultFont.set(defaultFont);
+    }
+    
+    public static Font getDefaultFont() {
+        return defaultFont.get();
+    }
+    
+    public static ObjectProperty<Font> defaultFontProperty() {
+        return defaultFont;
+    }
+    
 
     public record Event(RichTextLabel.Event.Change change, int pos, int segmentStart, String argument) {
         enum Change {
