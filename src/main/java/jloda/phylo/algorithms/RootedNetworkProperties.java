@@ -402,13 +402,12 @@ public class RootedNetworkProperties {
                 buf.append(" tree-child");
             if (isTemporal(phyloTree))
                 buf.append(" temporal");
-            if (buf.length() == 0)
-                buf.append(" network");
+            buf.append(" network");
 
-            return String.format("n=%d e=%d r=%d l=%d %s", phyloTree.getNumberOfNodes(), phyloTree.getNumberOfEdges(),
+            return String.format("%d nodes, %d edges, %d ret., %d leaves, %s", phyloTree.getNumberOfNodes(), phyloTree.getNumberOfEdges(),
                     phyloTree.nodeStream().filter(v -> v.getInDegree() > 1).count(), phyloTree.nodeStream().filter(Node::isLeaf).count(), buf);
         } else {
-            return String.format("n=%d e=%d l=%d", phyloTree.getNumberOfNodes(), phyloTree.getNumberOfEdges(),
+            return String.format("%d nodes, %d edges, %d leaves", phyloTree.getNumberOfNodes(), phyloTree.getNumberOfEdges(),
                     phyloTree.nodeStream().filter(Node::isLeaf).count());
         }
     }

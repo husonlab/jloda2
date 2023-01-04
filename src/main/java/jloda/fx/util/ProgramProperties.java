@@ -74,7 +74,7 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 	}
 
 	public static void track(ObjectProperty<Color> property, javafx.scene.paint.Color defaultValue) {
-		track(property.getBean().getClass().getName() + property.getName(), property, defaultValue);
+		track((property.getBean()!=null?property.getBean().getClass().getName() :"")+ property.getName(), property, defaultValue);
 	}
 
 	public static void track(String label, ObjectProperty<javafx.scene.paint.Color> property, javafx.scene.paint.Color defaultValue) {
@@ -86,7 +86,7 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 
 
 	public static void track(IntegerProperty property, Integer defaultValue) {
-		var label = property.getBean().getClass().getName() + property.getName();
+		var label = (property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
@@ -94,7 +94,7 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 	}
 
 	public static void track(DoubleProperty property, Double defaultValue) {
-		var label = property.getBean().getClass().getName() + property.getName();
+		var label =(property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
@@ -102,7 +102,7 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 	}
 
 	public static void track(BooleanProperty property, Boolean defaultValue) {
-		var label = property.getBean().getClass().getName() + property.getName();
+		var label =(property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
@@ -110,7 +110,7 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 	}
 
 	public static void track(StringProperty property, String defaultValue) {
-		var label = property.getBean().getClass().getName() + property.getName();
+		var label = (property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
@@ -118,7 +118,7 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 	}
 
 	public static <T> void track(ObjectProperty<T> property, Function<String, T> valueOf, T defaultValue) {
-		track(property.getBean().getClass().getName() + property.getName(), property, valueOf, defaultValue);
+		track((property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName(), property, valueOf, defaultValue);
 	}
 
 	public static <T> void track(String label, ObjectProperty<T> property, Function<String, T> valueOf, T defaultValue) {

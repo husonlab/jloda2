@@ -72,8 +72,8 @@ public class RichTextLabel extends TextFlow {
                "<mark shape=\"value\" width=\"value\" height=\"value\" fill=\"color\" stroke=\"color\"> adds a mark, " +
                "<img src=\"url\" alt=\"text\" width=\"value\" height=\"value\"> adds an image. Supports HTML numeric codes.";
     }
-    
-    private static final ObjectProperty<Font> defaultFont =new SimpleObjectProperty<>( Font.font("Arial", 14));
+
+    private static final ObjectProperty<Font> defaultFont =new SimpleObjectProperty<>( null,"defaultFont",Font.font("Arial", 14));
 
     private static final Map<String, Image> file2image = new ConcurrentHashMap<>();
 
