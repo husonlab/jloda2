@@ -296,29 +296,31 @@ class GifPixelsEncoder {
                 ++yCur;
             else
                 switch (curPass) {
-                    case 0 -> {
-                        yCur += 8;
-                        if (yCur >= imgH) {
-                            ++curPass;
-                            yCur = 4;
-                        }
-                    }
-                    case 1 -> {
-                        yCur += 8;
-                        if (yCur >= imgH) {
-                            ++curPass;
-                            yCur = 2;
-                        }
-                    }
-                    case 2 -> {
-                        yCur += 4;
-                        if (yCur >= imgH) {
-                            ++curPass;
-                            yCur = 1;
-                        }
-                    }
-                    case 3 -> yCur += 2;
-                }
+					case 0:
+						yCur += 8;
+						if (yCur >= imgH) {
+							++curPass;
+							yCur = 4;
+						}
+						break;
+					case 1:
+						yCur += 8;
+						if (yCur >= imgH) {
+							++curPass;
+							yCur = 2;
+						}
+						break;
+					case 2:
+						yCur += 4;
+						if (yCur >= imgH) {
+							++curPass;
+							yCur = 1;
+						}
+						break;
+					case 3:
+						yCur += 2;
+						break;
+				}
         }
     }
 

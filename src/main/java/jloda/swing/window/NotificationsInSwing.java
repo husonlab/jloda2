@@ -179,32 +179,43 @@ public class NotificationsInSwing {
                     ProgramProperties.put("ShowNotifications", false);
                     first = false;
                     return;
-                }
-            }
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            frame.setAlwaysOnTop(true);
-            final JPanel mainPanel = new JPanel();
-            final JLabel label = new JLabel("  " + message + "  ");
-            label.setFont(new Font(label.getFont().getName(), Font.PLAIN, 12));
-            mainPanel.setLayout(new BorderLayout());
-            mainPanel.add(label, BorderLayout.CENTER);
+				}
+			}
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frame.setAlwaysOnTop(true);
+			final JPanel mainPanel = new JPanel();
+			final JLabel label = new JLabel("  " + message + "  ");
+			label.setFont(new Font(label.getFont().getName(), Font.PLAIN, 12));
+			mainPanel.setLayout(new BorderLayout());
+			mainPanel.add(label, BorderLayout.CENTER);
 
-            ImageIcon icon = switch (mode) {
-                case confirmation -> ResourceManager.getIcon("dialog/dialog-confirmation.png");
-                case warning -> ResourceManager.getIcon("dialog/dialog-warning.png");
-                case information -> ResourceManager.getIcon("dialog/dialog-information.png");
-                case error -> ResourceManager.getIcon("dialog/dialog-error.png");
-            };
-            if (icon != null)
-                icon = new ImageIcon(icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+			ImageIcon icon;
+			switch (mode) {
+				case confirmation:
+					icon = ResourceManager.getIcon("dialog/dialog-confirmation.png");
+					break;
+				case warning:
+					icon = ResourceManager.getIcon("dialog/dialog-warning.png");
+					break;
+				case information:
+					icon = ResourceManager.getIcon("dialog/dialog-information.png");
+					break;
+				case error:
+					icon = ResourceManager.getIcon("dialog/dialog-error.png");
+					break;
+				default:
+					throw new IllegalArgumentException();
+			}
+			if (icon != null)
+				icon = new ImageIcon(icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
 
-            final JPanel topPanel = new JPanel();
-            topPanel.setLayout(new BorderLayout());
-            final JLabel titleLabel = new JLabel(" " + title);
-            titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.PLAIN, 10));
-            topPanel.add(titleLabel, BorderLayout.CENTER);
-            final JButton close = new JButton(new AbstractAction("X") {
-                @Override
+			final JPanel topPanel = new JPanel();
+			topPanel.setLayout(new BorderLayout());
+			final JLabel titleLabel = new JLabel(" " + title);
+			titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.PLAIN, 10));
+			topPanel.add(titleLabel, BorderLayout.CENTER);
+			final JButton close = new JButton(new AbstractAction("X") {
+				@Override
                 public void actionPerformed(ActionEvent e) {
                     frame.setVisible(false);
                 }
@@ -253,19 +264,19 @@ public class NotificationsInSwing {
 
         if (!isShowNotifications() || isEchoToConsole()) {
             switch (mode) {
-                case information -> {
-                    System.err.print("Info: ");
-				}
-                case error -> {
-                    System.err.print("Error: ");
-				}
-                case warning -> {
-                    System.err.print("Warning: ");
-				}
-                case confirmation -> {
-                    System.err.print("Confirmed: ");
-				}
-            }
+				case information:
+					System.err.print("Info: ");
+					break;
+				case error:
+					System.err.print("Error: ");
+					break;
+				case warning:
+					System.err.print("Warning: ");
+					break;
+				case confirmation:
+					System.err.print("Confirmed: ");
+					break;
+			}
             System.err.println(message);
         }
     }

@@ -102,17 +102,26 @@ public enum NodeShape {
      * @return shape
      */
     public static Shape create(NodeShape nodeShape, double width, double height) {
-        return switch (nodeShape) {
-            case Square -> new SquareShape(width);
-            case Rectangle -> new RectangleShape(width, height);
-            default /* case Circle */ -> new CircleShape(width);
-            case Oval -> new OvalShape(width, height);
-            case TriangleUp -> new TriangleUpShape(width, height);
-            case TriangleDown -> new TriangleDownShape(width, height);
-            case Diamond -> new DiamondShape(width, height);
-            case Hexagon -> new HexagonShape(width, height);
-        };
-    }
+		switch (nodeShape) {
+			case Square:
+				return new SquareShape(width);
+			case Rectangle:
+				return new RectangleShape(width, height);
+			/* case Circle */
+			default:
+				return new CircleShape(width);
+			case Oval:
+				return new OvalShape(width, height);
+			case TriangleUp:
+				return new TriangleUpShape(width, height);
+			case TriangleDown:
+				return new TriangleDownShape(width, height);
+			case Diamond:
+				return new DiamondShape(width, height);
+			case Hexagon:
+				return new HexagonShape(width, height);
+		}
+	}
 
     // todo: implement different shapes here
     public static Shape3D create3D(Node shape, int width) {

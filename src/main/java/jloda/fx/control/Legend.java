@@ -46,12 +46,18 @@ public class Legend extends StackPane {
 		none, linear, sqrt, log;
 
 		public double apply(double value) {
-			return switch (this) {
-				case none -> 0.0;
-				case linear -> value;
-				case sqrt -> Math.sqrt(value);
-				case log -> Math.log(value);
-			};
+			switch (this) {
+				case none:
+					return 0.0;
+				case linear:
+					return value;
+				case sqrt:
+					return Math.sqrt(value);
+				case log:
+					return Math.log(value);
+				default:
+					throw new IllegalArgumentException();
+			}
 		}
 	}
 

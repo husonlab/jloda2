@@ -653,22 +653,22 @@ public class PhyloTree extends PhyloSplitsGraph {
 					pos = pos0 + numberStr.length();
 					var value = Math.max(0, Double.parseDouble(numberStr));
 					switch (which) {
-						case 0 -> {
+						case 0:
 							if (e != null) {
 								setWeight(e, value);
 								didReadWeight = true;
 							}
-						}
-						case 1 -> {
+							break;
+						case 1:
 							if (e != null) {
 								setConfidence(e, value);
 							}
-						}
-						case 2 -> {
+							break;
+						case 2:
 							if (e != null) {
 								setProbability(e, value);
 							}
-						}
+							break;
 					}
 
 				}
@@ -1469,9 +1469,70 @@ public class PhyloTree extends PhyloSplitsGraph {
 			return new Pair<>(null, here);
 	}
 
-	public record NewickOutputFormat(boolean weights, boolean confidenceAsNodeLabel, boolean confidenceUsingColon,
-									 boolean probabilityUsingColon, boolean edgeLabelsAsComments) {
+	public static final class NewickOutputFormat {
+		private final boolean weights;
+		private final boolean confidenceAsNodeLabel;
+		private final boolean confidenceUsingColon;
+		private final boolean probabilityUsingColon;
+		private final boolean edgeLabelsAsComments;
+
+		public NewickOutputFormat(boolean weights, boolean confidenceAsNodeLabel, boolean confidenceUsingColon,
+								  boolean probabilityUsingColon, boolean edgeLabelsAsComments) {
+			this.weights = weights;
+			this.confidenceAsNodeLabel = confidenceAsNodeLabel;
+			this.confidenceUsingColon = confidenceUsingColon;
+			this.probabilityUsingColon = probabilityUsingColon;
+			this.edgeLabelsAsComments = edgeLabelsAsComments;
 		}
+
+		public boolean weights() {
+			return weights;
+		}
+
+		public boolean confidenceAsNodeLabel() {
+			return confidenceAsNodeLabel;
+		}
+
+		public boolean confidenceUsingColon() {
+			return confidenceUsingColon;
+		}
+
+		public boolean probabilityUsingColon() {
+			return probabilityUsingColon;
+		}
+
+		public boolean edgeLabelsAsComments() {
+			return edgeLabelsAsComments;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (obj == null || obj.getClass() != this.getClass()) return false;
+			var that = (NewickOutputFormat) obj;
+			return this.weights == that.weights &&
+				   this.confidenceAsNodeLabel == that.confidenceAsNodeLabel &&
+				   this.confidenceUsingColon == that.confidenceUsingColon &&
+				   this.probabilityUsingColon == that.probabilityUsingColon &&
+				   this.edgeLabelsAsComments == that.edgeLabelsAsComments;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(weights, confidenceAsNodeLabel, confidenceUsingColon, probabilityUsingColon, edgeLabelsAsComments);
+		}
+
+		@Override
+		public String toString() {
+			return "NewickOutputFormat[" +
+				   "weights=" + weights + ", " +
+				   "confidenceAsNodeLabel=" + confidenceAsNodeLabel + ", " +
+				   "confidenceUsingColon=" + confidenceUsingColon + ", " +
+				   "probabilityUsingColon=" + probabilityUsingColon + ", " +
+				   "edgeLabelsAsComments=" + edgeLabelsAsComments + ']';
+		}
+
+	}
 }
 
 // EOF

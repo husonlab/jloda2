@@ -613,47 +613,49 @@ final public class NodeView extends ViewBase {
         Point apt = trans.w2d(location);
         Dimension size = getLabelSize();
         switch (labelLayout) {
-            case RADIAL, USER, LAYOUT -> {
-                apt.x += dxLabel;
-                apt.y += dyLabel;
-            }
-            case CENTRAL -> {
-                apt.x -= size.width / 2;
-                apt.y += size.height / 2;
-            }
-            case NORTH -> {
-                apt.x -= size.width / 2;
-                apt.y -= (scaledHeight / 2 + 3);
-            }
-            case NORTHEAST -> {
-                apt.x += (scaledWidth / 2 + 3);
-                apt.y -= (scaledHeight / 2 + 3);
-            }
-            case EAST -> {
-                apt.x += (scaledWidth / 2 + 3);
-                apt.y += size.height / 2;
-            }
-            case SOUTHEAST -> {
-                apt.x -= (scaledWidth / 2 + 3);
-                apt.y += (scaledHeight / 2 + 3) + size.height;
-            }
-            case SOUTH -> {
-                apt.x -= size.width / 2;
-                apt.y += (scaledHeight / 2 + 3) + size.height;
-            }
-            case SOUTHWEST -> {
-                apt.x -= (scaledWidth / 2 + size.width + 3);
-                apt.y += (scaledHeight / 2 + 3) + size.height;
-            }
-            case WEST -> {
-                apt.x -= (scaledWidth / 2 + size.width + 3);
-                apt.y += size.height / 2;
-            }
-            case NORTHWEST -> {
-                apt.x -= (scaledWidth / 2 + size.width + 3);
-                apt.y -= (scaledHeight / 2 + 3);
-            }
-        }
+			case RADIAL:
+			case USER:
+			case LAYOUT:
+				apt.x += dxLabel;
+				apt.y += dyLabel;
+				break;
+			case CENTRAL:
+				apt.x -= size.width / 2;
+				apt.y += size.height / 2;
+				break;
+			case NORTH:
+				apt.x -= size.width / 2;
+				apt.y -= (scaledHeight / 2 + 3);
+				break;
+			case NORTHEAST:
+				apt.x += (scaledWidth / 2 + 3);
+				apt.y -= (scaledHeight / 2 + 3);
+				break;
+			case EAST:
+				apt.x += (scaledWidth / 2 + 3);
+				apt.y += size.height / 2;
+				break;
+			case SOUTHEAST:
+				apt.x -= (scaledWidth / 2 + 3);
+				apt.y += (scaledHeight / 2 + 3) + size.height;
+				break;
+			case SOUTH:
+				apt.x -= size.width / 2;
+				apt.y += (scaledHeight / 2 + 3) + size.height;
+				break;
+			case SOUTHWEST:
+				apt.x -= (scaledWidth / 2 + size.width + 3);
+				apt.y += (scaledHeight / 2 + 3) + size.height;
+				break;
+			case WEST:
+				apt.x -= (scaledWidth / 2 + size.width + 3);
+				apt.y += size.height / 2;
+				break;
+			case NORTHWEST:
+				apt.x -= (scaledWidth / 2 + size.width + 3);
+				apt.y -= (scaledHeight / 2 + 3);
+				break;
+		}
         return apt;
     }
 

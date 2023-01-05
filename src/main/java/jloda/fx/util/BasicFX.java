@@ -103,8 +103,10 @@ public class BasicFX {
             node = queue.pop();
             if (clazz.isAssignableFrom(node.getClass()))
                 all.add((T) node);
-            if (node instanceof Parent parent)
+            if (node instanceof Parent) {
+                var parent = (Parent) node;
                 queue.addAll(parent.getChildrenUnmodifiable());
+            }
         }
         return all;
     }
@@ -119,8 +121,10 @@ public class BasicFX {
             node = queue.pop();
             if (clazz.isAssignableFrom(node.getClass()))
                 return (T) node;
-            if (node instanceof Parent parent)
+            if (node instanceof Parent) {
+                var parent = (Parent) node;
                 queue.addAll(parent.getChildrenUnmodifiable());
+            }
         }
         return null;
     }
@@ -136,8 +140,10 @@ public class BasicFX {
             node = queue.pop();
             if (nodePredicate.test(node))
                 all.add(node);
-            if (node instanceof Parent parent)
+            if (node instanceof Parent) {
+                var parent = (Parent) node;
                 queue.addAll(parent.getChildrenUnmodifiable());
+            }
         }
         return all;
     }
@@ -154,8 +160,10 @@ public class BasicFX {
         while (list.size() > 0) {
             final var node = list.remove();
             all.add(node);
-            if (node instanceof Parent parent)
+            if (node instanceof Parent) {
+                var parent = (Parent) node;
                 list.addAll(parent.getChildrenUnmodifiable());
+            }
         }
         return all;
     }
@@ -168,7 +176,8 @@ public class BasicFX {
             var node = queue.pop();
             if (condition.apply(node))
                 all.add(node);
-            if (node instanceof Parent parent) {
+            if (node instanceof Parent) {
+                var parent = (Parent) node;
                 queue.addAll(parent.getChildrenUnmodifiable());
             }
         }
@@ -425,8 +434,10 @@ public class BasicFX {
         while (queue.size() > 0) {
             node = queue.pop();
             apply.accept(node);
-            if (node instanceof Parent parent)
+            if (node instanceof Parent) {
+                var parent = (Parent) node;
                 queue.addAll(parent.getChildrenUnmodifiable());
+            }
         }
     }
 
@@ -480,8 +491,10 @@ public class BasicFX {
             if (accept.apply(menu))
                 callback.accept(menu);
             for (var item : menu.getItems()) {
-                if (item instanceof Menu other)
+                if (item instanceof Menu) {
+                    var other = (Menu) item;
                     queue.add(other);
+                }
             }
         }
     }
@@ -492,9 +505,9 @@ public class BasicFX {
         var node = nodes.stream()
                 .filter(v -> ((ScrollBar) v).getOrientation().equals(orientation))
                 .findAny();
-        if (node.isPresent() && node.get() instanceof ScrollBar scrollBar)
-            return scrollBar;
-        else
+        if (node.isPresent() && node.get() instanceof ScrollBar) {
+            return (ScrollBar) node.get();
+        } else
             return null;
     }
 

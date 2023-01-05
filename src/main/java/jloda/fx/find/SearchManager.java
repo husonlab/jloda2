@@ -141,18 +141,20 @@ public class SearchManager {
      */
     public void findAndReplace() {
         if (!isDisabled()) {
-            service.setCallable(() -> doFindAndReplace(service.getProgressListener()) ? 1 : 0);
-            if (searcher.get() instanceof Searcher aSearcher) {
-                service.setOnScheduled(e -> aSearcher.startReplace());
-            }
-            service.setOnSucceeded(e -> {
-                message.set(service.getValue() > 0 ? "Replaced" : "No matches");
-                if (service.getValue() > 0)
-                    getSearcher().updateView();
-                if (searcher.get() instanceof Searcher aSearcher) {
-                    aSearcher.endReplace();
-                }
-            });
+			service.setCallable(() -> doFindAndReplace(service.getProgressListener()) ? 1 : 0);
+			if (searcher.get() instanceof Searcher<?>) {
+				var aSearcher = (Searcher<?>) searcher.get();
+				service.setOnScheduled(e -> aSearcher.startReplace());
+			}
+			service.setOnSucceeded(e -> {
+				message.set(service.getValue() > 0 ? "Replaced" : "No matches");
+				if (service.getValue() > 0)
+					getSearcher().updateView();
+				if (searcher.get() instanceof Searcher<?>) {
+					var aSearcher = (Searcher<?>) searcher.get();
+					aSearcher.endReplace();
+				}
+			});
             service.restart();
         }
     }
@@ -162,18 +164,20 @@ public class SearchManager {
      */
     public void replaceAll() {
         if (!isDisabled()) {
-            service.setCallable(() -> doReplaceAll(service.getProgressListener()));
-            if (searcher.get() instanceof Searcher aSearcher) {
-                service.setOnScheduled(e -> aSearcher.startReplace());
-            }
-            service.setOnSucceeded(e -> {
-                message.set(service.getValue() > 0 ? "Replaced " + service.getValue() : "No matches");
-                if (service.getValue() > 0)
-                    getSearcher().updateView();
-                if (searcher.get() instanceof Searcher aSearcher) {
-                    aSearcher.endReplace();
-                }
-            });
+			service.setCallable(() -> doReplaceAll(service.getProgressListener()));
+			if (searcher.get() instanceof Searcher<?>) {
+				var aSearcher = (Searcher<?>) searcher.get();
+				service.setOnScheduled(e -> aSearcher.startReplace());
+			}
+			service.setOnSucceeded(e -> {
+				message.set(service.getValue() > 0 ? "Replaced " + service.getValue() : "No matches");
+				if (service.getValue() > 0)
+					getSearcher().updateView();
+				if (searcher.get() instanceof Searcher<?>) {
+					var aSearcher = (Searcher<?>) searcher.get();
+					aSearcher.endReplace();
+				}
+			});
             service.restart();
         }
     }
@@ -188,9 +192,9 @@ public class SearchManager {
         boolean changed = false;
 		try {
 			getSearcher().selectAll(false);
-			if (getSearcher() instanceof IObjectSearcher searcher) {
+			if (getSearcher() instanceof IObjectSearcher<?>) {
+				var searcher = (IObjectSearcher<?>) getSearcher();
 				var ok = isForwardDirection() ? searcher.gotoFirst() : searcher.gotoLast();
-
 				final var regexp = prepareRegularExpression(getSearchText());
 				final var pattern = Pattern.compile(regexp);
 
@@ -211,7 +215,8 @@ public class SearchManager {
 					ok = isForwardDirection() ? searcher.gotoNext() : searcher.gotoPrevious();
 					progress.incrementProgress();
 				}
-			} else if (getSearcher() instanceof ITextSearcher searcher) {
+			} else if (getSearcher() instanceof ITextSearcher) {
+				var searcher = (ITextSearcher) getSearcher();
 				searcher.setGlobalScope(isGlobalScope());
 				final var regexp = prepareRegularExpression(getSearchText());
 				changed = searcher.findFirst(regexp);
@@ -231,9 +236,9 @@ public class SearchManager {
 
 		boolean changed = false;
 		try {
-			if (getSearcher() instanceof IObjectSearcher searcher) {
+			if (getSearcher() instanceof IObjectSearcher) {
+				var searcher = (IObjectSearcher<?>) getSearcher();
 				boolean ok = isForwardDirection() ? searcher.gotoNext() : searcher.gotoPrevious();
-
 				progressListener.setMaximum(-1);
 
 				final var regexp = prepareRegularExpression(getSearchText());
@@ -252,7 +257,8 @@ public class SearchManager {
 					ok = isForwardDirection() ? searcher.gotoNext() : searcher.gotoPrevious();
 					progressListener.checkForCancel();
 				}
-			} else if (getSearcher() instanceof ITextSearcher searcher) {
+			} else if (getSearcher() instanceof ITextSearcher) {
+				var searcher = (ITextSearcher) getSearcher();
 				searcher.setGlobalScope(isGlobalScope());
 
 				final var regexp = prepareRegularExpression(getSearchText());
@@ -276,7 +282,8 @@ public class SearchManager {
 
 		int count = 0;
 		try {
-			if (getSearcher() instanceof IObjectSearcher searcher) {
+			if (getSearcher() instanceof IObjectSearcher) {
+				var searcher = (IObjectSearcher<?>) getSearcher();
 				boolean ok = searcher.gotoFirst();
 
 				progressListener.setMaximum(searcher.numberOfObjects());
@@ -297,7 +304,8 @@ public class SearchManager {
 					ok = searcher.gotoNext();
 					progressListener.incrementProgress();
 				}
-			} else if (getSearcher() instanceof ITextSearcher searcher) {
+			} else if (getSearcher() instanceof ITextSearcher) {
+				var searcher = (ITextSearcher) getSearcher();
 				searcher.setGlobalScope(isGlobalScope());
 				final var regexp = prepareRegularExpression(getSearchText());
 
@@ -318,7 +326,8 @@ public class SearchManager {
 
 		var changed = false;
 		try {
-			if (getSearcher() instanceof IObjectSearcher<?> searcher) {
+			if (getSearcher() instanceof IObjectSearcher<?>) {
+				var searcher = (IObjectSearcher<?>) getSearcher();
 				progressListener.setMaximum(-1);
 
 				var ok = searcher.isCurrentSet();
@@ -347,7 +356,8 @@ public class SearchManager {
 					ok = isForwardDirection() ? searcher.gotoNext() : searcher.gotoPrevious();
 					progressListener.checkForCancel();
 				}
-			} else if (getSearcher() instanceof ITextSearcher searcher) {
+			} else if (getSearcher() instanceof ITextSearcher) {
+				var searcher = (ITextSearcher) getSearcher();
 				searcher.setGlobalScope(isGlobalScope());
 
 				final var regexp = prepareRegularExpression(getSearchText());
@@ -369,7 +379,8 @@ public class SearchManager {
         int count = 0;
 
 		try {
-			if (getSearcher() instanceof IObjectSearcher<?> searcher) {
+			if (getSearcher() instanceof IObjectSearcher<?>) {
+				var searcher = (IObjectSearcher<?>) getSearcher();
 				var ok = isForwardDirection() ? searcher.gotoFirst() : searcher.gotoLast();
 				progressListener.setMaximum(searcher.numberOfObjects());
 
@@ -393,7 +404,8 @@ public class SearchManager {
 					ok = isForwardDirection() ? searcher.gotoNext() : searcher.gotoPrevious();
 					progressListener.incrementProgress();
 				}
-			} else if (getSearcher() instanceof ITextSearcher searcher) {
+			} else if (getSearcher() instanceof ITextSearcher) {
+				var searcher = (ITextSearcher) getSearcher();
 				searcher.setGlobalScope(isGlobalScope());
 
 				final var regexp = prepareRegularExpression(getSearchText());

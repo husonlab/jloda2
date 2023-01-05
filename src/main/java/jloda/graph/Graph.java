@@ -1730,7 +1730,9 @@ public class Graph extends GraphBase implements INamed {
                 tarEdge.setInfo(srcEdge.getInfo());
                 tarEdge.setLabel(srcEdge.getLabel());
                 tarEdge.setData(srcEdge.getData());
-                if (this instanceof PhyloGraph srcPhyloGraph && tarGraph instanceof PhyloGraph tarPhyloGraph) {
+                if (this instanceof PhyloGraph && tarGraph instanceof PhyloGraph) {
+                    var srcPhyloGraph = (PhyloGraph) this;
+                    var tarPhyloGraph = (PhyloGraph) tarGraph;
                     tarPhyloGraph.setWeight(tarEdge, srcPhyloGraph.getWeight(srcEdge));
                     tarPhyloGraph.setConfidence(tarEdge, srcPhyloGraph.getConfidence(srcEdge));
                 }

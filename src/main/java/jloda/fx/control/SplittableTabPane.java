@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * a splittable tab pane
@@ -733,16 +734,53 @@ public class SplittableTabPane extends Pane {
             scene.getStylesheets().add("jloda/resources/css/dark.css");
 
         stage.setScene(scene);
-        stage.setX(screenX);
-        stage.setY(screenY);
-        stage.setWidth(width);
-        stage.setHeight(height);
+		stage.setX(screenX);
+		stage.setY(screenY);
+		stage.setWidth(width);
+		stage.setHeight(height);
 
-        tab.getContent().getStyleClass().add("viewer-background");
+		tab.getContent().getStyleClass().add("viewer-background");
 
-        return new AuxiliaryWindow(stage, tab);
-    }
+		return new AuxiliaryWindow(stage, tab);
+	}
 
-    private record AuxiliaryWindow(Stage stage, Tab tab) {
-    }
+	private static final class AuxiliaryWindow {
+		private final Stage stage;
+		private final Tab tab;
+
+		private AuxiliaryWindow(Stage stage, Tab tab) {
+			this.stage = stage;
+			this.tab = tab;
+		}
+
+		public Stage stage() {
+			return stage;
+		}
+
+		public Tab tab() {
+			return tab;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (obj == null || obj.getClass() != this.getClass()) return false;
+			var that = (AuxiliaryWindow) obj;
+			return Objects.equals(this.stage, that.stage) &&
+				   Objects.equals(this.tab, that.tab);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(stage, tab);
+		}
+
+		@Override
+		public String toString() {
+			return "AuxiliaryWindow[" +
+				   "stage=" + stage + ", " +
+				   "tab=" + tab + ']';
+		}
+
+	}
 }

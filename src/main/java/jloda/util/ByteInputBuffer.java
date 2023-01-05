@@ -147,16 +147,19 @@ public class ByteInputBuffer {
      * @return value
      */
     public int readPacked(int kind) {
-        return switch (kind) {
-            case 0 -> // byte
-                    read();
-            case 1 -> // char:
-                    readCharLittleEndian();
-            case 2 -> // int
-                    readIntLittleEndian();
-            default -> throw new RuntimeException("unknown kind");
-        };
-    }
+		switch (kind) {// byte
+			case 0:
+				return read();
+// char:
+			case 1:
+				return readCharLittleEndian();
+// int
+			case 2:
+				return readIntLittleEndian();
+			default:
+				throw new RuntimeException("unknown kind");
+		}
+	}
 
     private void ensureSize(int n) {
         if (bytes.length <= n) {

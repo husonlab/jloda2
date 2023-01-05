@@ -2137,7 +2137,7 @@ public class StringUtils {
 	}
 
 	public static String toLowerCaseWithUnderScores(String label) {
-		return label.toLowerCase().replaceAll("\s+", "_");
+		return label.toLowerCase().replaceAll("\\s+", "_");
 	}
 
 	public static BitSet indicesOf(String[] array, Collection<String> queries) {
@@ -2168,7 +2168,7 @@ public class StringUtils {
 		for (var i = 0; i < string.length(); i++) {
 			var ch = string.charAt(i);
 			if (Character.isWhitespace(ch))
-				return "\"%s\"".formatted(string);
+				return String.format("\"%s\"", string);
 		}
 		return string;
 	}

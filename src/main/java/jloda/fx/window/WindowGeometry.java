@@ -136,7 +136,7 @@ public class WindowGeometry {
     }
 
     public static void saveToProperties(WindowGeometry wg) {
-        ProgramProperties.put("WindowGeometry", "%d %d %d %d".formatted((int) wg.getX(), (int) wg.getY(), (int) wg.getWidth(), (int) wg.getHeight()));
+        ProgramProperties.put("WindowGeometry", String.format("%d %d %d %d", (int) wg.getX(), (int) wg.getY(), (int) wg.getWidth(), (int) wg.getHeight()));
     }
 
     public static void listenToStage(Stage stage) {

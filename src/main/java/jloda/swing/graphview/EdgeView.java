@@ -695,46 +695,47 @@ final public class EdgeView extends ViewBase { //, IEdgeView {
         Point apt = new Point(labelReferencePoint);
         Dimension size = getLabelSize();
         switch (labelLayout) {
-            case RADIAL, USER -> {
+            case RADIAL:
+            case USER:
                 apt.x += dxLabel;
                 apt.y += dyLabel;
-            }
-            case CENTRAL -> {
+                break;
+            case CENTRAL:
                 apt.x -= size.width / 2;
                 apt.y += size.height / 2;
-            }
-            case NORTH -> {
+                break;
+            case NORTH:
                 apt.x -= size.width / 2;
                 apt.y -= 3;
-            }
-            case NORTHEAST -> {
+                break;
+            case NORTHEAST:
                 apt.x += 3;
                 apt.y -= 3;
-            }
-            case EAST -> {
+                break;
+            case EAST:
                 apt.x += 3;
                 apt.y += size.height / 2;
-            }
-            case SOUTHEAST -> {
+                break;
+            case SOUTHEAST:
                 apt.x -= 3;
                 apt.y += 3 + size.height;
-            }
-            case SOUTH -> {
+                break;
+            case SOUTH:
                 apt.x -= size.width / 2;
                 apt.y += 3 + size.height;
-            }
-            case SOUTHWEST -> {
+                break;
+            case SOUTHWEST:
                 apt.x -= 3 + size.width;
                 apt.y += 3 + size.height;
-            }
-            case WEST -> {
+                break;
+            case WEST:
                 apt.x -= 3 + size.width;
                 apt.y += size.height / 2;
-            }
-            case NORTHWEST -> {
+                break;
+            case NORTHWEST:
                 apt.x -= 3 + size.width;
                 apt.y -= 3;
-            }
+                break;
         }
         return apt;
     }

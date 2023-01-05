@@ -88,11 +88,20 @@ public class DNAComplexityMeasure {
      * @return index
      */
     private static int getIndex(char c) {
-        return switch (c) {
-            default -> 0;
-            case 'c', 'C' -> 1;
-            case 'g', 'G' -> 2;
-            case 't', 'T', 'u', 'U' -> 3;
-        };
-    }
+		switch (c) {
+			default:
+				return 0;
+			case 'c':
+			case 'C':
+				return 1;
+			case 'g':
+			case 'G':
+				return 2;
+			case 't':
+			case 'T':
+			case 'u':
+			case 'U':
+				return 3;
+		}
+	}
 }

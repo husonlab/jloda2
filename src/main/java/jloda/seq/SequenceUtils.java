@@ -64,132 +64,233 @@ public class SequenceUtils {
 
         switch (c1) {
 			case 'U':
-				return (byte) switch (c2) {
-					case 'U' -> switch (c3) {
-						case 'U', 'C' -> 'F';
-						case 'A' -> 'L';
-						case 'G' -> 'L';
-						default -> 'X';
-					};
-					case 'C' -> switch (c3) {
-						case 'U' -> 'S';
-						case 'C' -> 'S';
-						case 'A' -> 'S';
-						case 'G' -> 'S';
-						default -> 'S';
-					};
-					case 'A' -> switch (c3) {
-						case 'U' -> 'Y';
-						case 'C' -> 'Y';
-						case 'A' -> '*';
-						case 'G' -> '*';
-						default -> 'X';
-					};
-					case 'G' -> switch (c3) {
-						case 'U' -> 'C';
-						case 'C' -> 'C';
-						case 'A' -> '*';
-						case 'G' -> 'W';
-						default -> 'X';
-					};
-					default -> 'X';
-				};
+				switch (c2) {
+					case 'U':
+						switch (c3) {
+							case 'U':
+								return (byte) 'F';
+							case 'C':
+								return (byte) 'F';
+							case 'A':
+								return (byte) 'L';
+							case 'G':
+								return (byte) 'L';
+							default:
+								return (byte) 'X';
+						}
+					case 'C':
+						switch (c3) {
+							case 'U':
+								return (byte) 'S';
+							case 'C':
+								return (byte) 'S';
+							case 'A':
+								return (byte) 'S';
+							case 'G':
+								return (byte) 'S';
+							default:
+								return (byte) 'S';
+						}
+					case 'A':
+						switch (c3) {
+							case 'U':
+								return (byte) 'Y';
+							case 'C':
+								return (byte) 'Y';
+							case 'A':
+								return (byte) '*';
+							case 'G':
+								return (byte) '*';
+							default:
+								return (byte) 'X';
+						}
+					case 'G':
+						switch (c3) {
+							case 'U':
+								return (byte) 'C';
+							case 'C':
+								return (byte) 'C';
+							case 'A':
+								return (byte) '*';
+							case 'G':
+								return (byte) 'W';
+							default:
+								return (byte) 'X';
+						}
+					default:
+						return (byte) 'X';
+				}
 			case 'C':
-				return (byte) switch (c2) {
-					case 'U' -> switch (c3) {
-						case 'U' -> 'L';
-						case 'C' -> 'L';
-						case 'A' -> 'L';
-						case 'G' -> 'L';
-						default -> 'L';
-					};
-					case 'C' -> switch (c3) {
-						case 'U' -> 'P';
-						case 'C' -> 'P';
-						case 'A' -> 'P';
-						case 'G' -> 'P';
-						default -> 'P';
-					};
-					case 'A' -> switch (c3) {
-						case 'U' -> 'H';
-						case 'C' -> 'H';
-						case 'A' -> 'Q';
-						case 'G' -> 'Q';
-						default -> 'X';
-					};
-					case 'G' -> switch (c3) {
-						case 'U' -> 'R';
-						case 'C' -> 'R';
-						case 'A' -> 'R';
-						case 'G' -> 'R';
-						default -> 'R';
-					};
-					default -> 'X';
-				};
+				switch (c2) {
+					case 'U':
+						switch (c3) {
+							case 'U':
+								return (byte) 'L';
+							case 'C':
+								return (byte) 'L';
+							case 'A':
+								return (byte) 'L';
+							case 'G':
+								return (byte) 'L';
+							default:
+								return (byte) 'L';
+						}
+					case 'C':
+						switch (c3) {
+							case 'U':
+								return (byte) 'P';
+							case 'C':
+								return (byte) 'P';
+							case 'A':
+								return (byte) 'P';
+							case 'G':
+								return (byte) 'P';
+							default:
+								return (byte) 'P';
+						}
+					case 'A':
+						switch (c3) {
+							case 'U':
+								return (byte) 'H';
+							case 'C':
+								return (byte) 'H';
+							case 'A':
+								return (byte) 'Q';
+							case 'G':
+								return (byte) 'Q';
+							default:
+								return (byte) 'X';
+						}
+					case 'G':
+						switch (c3) {
+							case 'U':
+								return (byte) 'R';
+							case 'C':
+								return (byte) 'R';
+							case 'A':
+								return (byte) 'R';
+							case 'G':
+								return (byte) 'R';
+							default:
+								return (byte) 'R';
+						}
+					default:
+						return (byte) 'X';
+				}
 			case 'A':
-				return (byte) switch (c2) {
-					case 'U' -> switch (c3) {
-						case 'U' -> 'I';
-						case 'C' -> 'I';
-						case 'A' -> 'I';
-						case 'G' -> 'M';
-						default -> 'X';
-					};
-					case 'C' -> switch (c3) {
-						case 'U' -> 'T';
-						case 'C' -> 'T';
-						case 'A' -> 'T';
-						case 'G' -> 'T';
-						default -> 'T';
-					};
-					case 'A' -> switch (c3) {
-						case 'U' -> 'N';
-						case 'C' -> 'N';
-						case 'A' -> 'K';
-						case 'G' -> 'K';
-						default -> 'X';
-					};
-					case 'G' -> switch (c3) {
-						case 'U' -> 'S';
-						case 'C' -> 'S';
-						case 'A' -> 'R';
-						case 'G' -> 'R';
-						default -> 'X';
-					};
-					default -> 'X';
-				};
+				switch (c2) {
+					case 'U':
+						switch (c3) {
+							case 'U':
+								return (byte) 'I';
+							case 'C':
+								return (byte) 'I';
+							case 'A':
+								return (byte) 'I';
+							case 'G':
+								return (byte) 'M';
+							default:
+								return (byte) 'X';
+						}
+					case 'C':
+						switch (c3) {
+							case 'U':
+								return (byte) 'T';
+							case 'C':
+								return (byte) 'T';
+							case 'A':
+								return (byte) 'T';
+							case 'G':
+								return (byte) 'T';
+							default:
+								return (byte) 'T';
+						}
+					case 'A':
+						switch (c3) {
+							case 'U':
+								return (byte) 'N';
+							case 'C':
+								return (byte) 'N';
+							case 'A':
+								return (byte) 'K';
+							case 'G':
+								return (byte) 'K';
+							default:
+								return (byte) 'X';
+						}
+					case 'G':
+						switch (c3) {
+							case 'U':
+								return (byte) 'S';
+							case 'C':
+								return (byte) 'S';
+							case 'A':
+								return (byte) 'R';
+							case 'G':
+								return (byte) 'R';
+							default:
+								return (byte) 'X';
+						}
+					default:
+						return (byte) 'X';
+				}
 			case 'G':
-				return (byte) switch (c2) {
-					case 'U' -> switch (c3) {
-						case 'U' -> 'V';
-						case 'C' -> 'V';
-						case 'A' -> 'V';
-						case 'G' -> 'V';
-						default -> 'V';
-					};
-					case 'C' -> switch (c3) {
-						case 'U' -> 'A';
-						case 'C' -> 'A';
-						case 'A' -> 'A';
-						case 'G' -> 'A';
-						default -> 'A';
-					};
-					case 'A' -> switch (c3) {
-						case 'U' -> 'D';
-						case 'C' -> 'D';
-						case 'A' -> 'E';
-						case 'G' -> 'E';
-						default -> 'X';
-					};
-					case 'G' -> switch (c3) {
-						case 'U' -> 'G';
-						case 'C' -> 'G';
-						case 'A' -> 'G';
-						case 'G' -> 'G';
-						default -> 'G';
-					};
-					default -> 'X';
-				};
+				switch (c2) {
+					case 'U':
+						switch (c3) {
+							case 'U':
+								return (byte) 'V';
+							case 'C':
+								return (byte) 'V';
+							case 'A':
+								return (byte) 'V';
+							case 'G':
+								return (byte) 'V';
+							default:
+								return (byte) 'V';
+						}
+					case 'C':
+						switch (c3) {
+							case 'U':
+								return (byte) 'A';
+							case 'C':
+								return (byte) 'A';
+							case 'A':
+								return (byte) 'A';
+							case 'G':
+								return (byte) 'A';
+							default:
+								return (byte) 'A';
+						}
+					case 'A':
+						switch (c3) {
+							case 'U':
+								return (byte) 'D';
+							case 'C':
+								return (byte) 'D';
+							case 'A':
+								return (byte) 'E';
+							case 'G':
+								return (byte) 'E';
+							default:
+								return (byte) 'X';
+						}
+					case 'G':
+						switch (c3) {
+							case 'U':
+								return (byte) 'G';
+							case 'C':
+								return (byte) 'G';
+							case 'A':
+								return (byte) 'G';
+							case 'G':
+								return (byte) 'G';
+							default:
+								return (byte) 'G';
+						}
+					default:
+						return (byte) 'X';
+				}
 			default:
 				return 'X';
 		}
@@ -296,18 +397,27 @@ public class SequenceUtils {
      * @return reverse complement
      */
     public static byte getComplement(byte nucleotide) {
-		return (byte) switch (nucleotide) {
-			case 'a' -> 't';
-			case 'A' -> 'T';
-			case 'c' -> 'g';
-			case 'C' -> 'G';
-			case 'g' -> 'c';
-			case 'G' -> 'C';
-			case 't' -> 'a';
-			case 'T' -> 'A';
-			default -> nucleotide;
-		};
-    }
+		switch (nucleotide) {
+			case 'a':
+				return (byte) 't';
+			case 'A':
+				return (byte) 'T';
+			case 'c':
+				return (byte) 'g';
+			case 'C':
+				return (byte) 'G';
+			case 'g':
+				return (byte) 'c';
+			case 'G':
+				return (byte) 'C';
+			case 't':
+				return (byte) 'a';
+			case 'T':
+				return (byte) 'A';
+			default:
+				return nucleotide;
+		}
+	}
 
     /**
      * reverses (but does NOT complement) a sequence

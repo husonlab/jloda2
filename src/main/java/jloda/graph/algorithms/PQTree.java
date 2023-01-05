@@ -571,25 +571,25 @@ public class PQTree {
 		var doingEmpty = emptyFirst;
 		for (var child : children) {
 			switch (stateMap.getOrDefault(child, State.Empty)) {
-				case Partial, DoublyPartial -> {
+				case Partial:
+				case DoublyPartial:
 					return false;
-				}
-				case Full -> {
+				case Full:
 					if (doingEmpty) {
 						if (emptyFirst)
 							doingEmpty = false;
 						else
 							return false;
 					}
-				}
-				case Empty -> {
+					break;
+				case Empty:
 					if (!doingEmpty) {
 						if (emptyFirst)
 							return false;
 						else
 							doingEmpty = true;
 					}
-				}
+					break;
 			}
 		}
 		return emptyFirst != doingEmpty;
@@ -616,17 +616,16 @@ public class PQTree {
 		var foundPartial = false;
 		for (var child : getChildren(v)) {
 			switch (stateMap.getOrDefault(child, State.Empty)) {
-				case DoublyPartial -> {
+				case DoublyPartial:
 					return false;
-				}
-				case Partial -> {
+				case Partial:
 					if (foundPartial)
 						return false; // found another partial
 					else {
 						foundPartial = true;
 					}
-				}
-				case Full -> {
+					break;
+				case Full:
 					if (foundPartial) {
 						if (fullBefore || emptyAfter)
 							return false;
@@ -638,8 +637,8 @@ public class PQTree {
 						else
 							fullBefore = true;
 					}
-				}
-				case Empty -> {
+					break;
+				case Empty:
 					if (foundPartial) {
 						if (emptyBefore || fullAfter)
 							return false;
@@ -651,7 +650,7 @@ public class PQTree {
 						else
 							emptyBefore = true;
 					}
-				}
+					break;
 			}
 		}
 		return foundPartial && v.getOutDegree() > 1;
@@ -668,17 +667,17 @@ public class PQTree {
 
 		for (var child : getChildren(v)) {
 			switch (stateMap.getOrDefault(child, State.Empty)) {
-				case Partial -> {
+				case Partial:
 					partialChild = child;
-				}
-				case Full -> {
+					break;
+				case Full:
 					if (partialChild != null)
 						fullAfter = true;
-				}
-				case Empty -> {
+					break;
+				case Empty:
 					if (partialChild == null)
 						emptyBefore = true;
-				}
+					break;
 			}
 		}
 		assert (partialChild != null);
@@ -1031,11 +1030,18 @@ public class PQTree {
 
 	private void toBracketStringRec(Node v, StringBuilder buf) {
 		var type = getType(v);
-		buf.append(switch (type) {
-			case P -> '(';
-			case Q -> '[';
-			default -> '\'';
-		});
+		switch (type) {
+			case P:
+				buf.append('(');
+				break;
+			case Q:
+				buf.append('[');
+				break;
+			default:
+				buf.append('\'');
+				break;
+		}
+		;
 		if (type == Type.P || type == Type.Q) {
 			var first = true;
 			for (var w : v.children()) {
@@ -1047,11 +1053,18 @@ public class PQTree {
 			}
 		} else
 			buf.append(tree.getTaxon(v));
-		buf.append(switch (type) {
-			case P -> ')';
-			case Q -> ']';
-			default -> '\'';
-		});
+		switch (type) {
+			case P:
+				buf.append(')');
+				break;
+			case Q:
+				buf.append(']');
+				break;
+			default:
+				buf.append('\'');
+				break;
+		}
+		;
 	}
 
 }

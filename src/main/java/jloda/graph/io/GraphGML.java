@@ -29,6 +29,8 @@ import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * i/o in GraphGML
@@ -66,7 +68,7 @@ public class GraphGML {
 			w.write("\t\tid " + v.getId() + "\n");
 			if ((nodeLabels != null && nodeLabels.containsKey(v)))
 				w.write("\t\tlabel \"" + nodeLabels.get(v) + "\"\n");
-			for (String aLabel : labelNodeValueMap.keySet().stream().filter(a -> !a.equals("label")).toList()) {
+			for (String aLabel : labelNodeValueMap.keySet().stream().filter(a -> !a.equals("label")).collect(Collectors.toList())) {
 				var value = labelNodeValueMap.get(aLabel).get(v);
 				w.write("\t\t" + aLabel + " \"" + value + "\"\n");
 			}
@@ -82,7 +84,7 @@ public class GraphGML {
 
 			if ((edgeLabels != null && edgeLabels.containsKey(e)))
 				w.write("\t\tlabel \"" + edgeLabels.get(e) + "\"\n");
-			for (String aLabel : labelEdgeValueMap.keySet().stream().filter(a -> !a.equals("label")).toList()) {
+			for (String aLabel : labelEdgeValueMap.keySet().stream().filter(a -> !a.equals("label")).collect(Collectors.toList())) {
 				var value = labelEdgeValueMap.get(aLabel).get(e);
 				w.write("\t\t" + aLabel + " \"" + value + "\"\n");
 			}
@@ -176,48 +178,99 @@ public class GraphGML {
 		return new GMLInfo(graphComment, graphDirected, graphId, graphLabel);
 	}
 
-	public record GMLInfo(String comment, boolean directed, int id, String label) {
+	public static final class GMLInfo {
+		private final String comment;
+		private final boolean directed;
+		private final int id;
+		private final String label;
+
+		public GMLInfo(String comment, boolean directed, int id, String label) {
+			this.comment = comment;
+			this.directed = directed;
+			this.id = id;
+			this.label = label;
+		}
+
+		public String comment() {
+			return comment;
+		}
+
+		public boolean directed() {
+			return directed;
+		}
+
+		public int id() {
+			return id;
+		}
+
+		public String label() {
+			return label;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (obj == null || obj.getClass() != this.getClass()) return false;
+			var that = (GMLInfo) obj;
+			return Objects.equals(this.comment, that.comment) &&
+				   this.directed == that.directed &&
+				   this.id == that.id &&
+				   Objects.equals(this.label, that.label);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(comment, directed, id, label);
+		}
+
+		@Override
+		public String toString() {
+			return "GMLInfo[" +
+				   "comment=" + comment + ", " +
+				   "directed=" + directed + ", " +
+				   "id=" + id + ", " +
+				   "label=" + label + ']';
+		}
+
 	}
 
 	public static void main(String[] args) throws IOException {
-		var input = """
-				graph [
-				comment "example graph"
-				directed 1
-				id 42
-				label "Graph"
-					node [
-						id 1
-						label "A"
-						sequence "ACGTTGTCGTTG"
-					]
-					node [
-						id 2
-						label "B"
-						sequence "TCGTTGGCGTTG"
-					]
-					node [
-						id 3
-						label "C"
-						sequence "GCGTTGACGTTG"
-					]
-					edge [
-						source 1
-						target 2
-						overlap "6"
-					]
-					edge [
-						source 2
-						target 3
-						overlap "7"
-					]
-					edge [
-						source 3
-						target 1
-						overlap "8"
-					]
-				]
-				""";
+		var input = "graph [\n" +
+					"comment \"example graph\"\n" +
+					"directed 1\n" +
+					"id 42\n" +
+					"label \"Graph\"\n" +
+					"	node [\n" +
+					"		id 1\n" +
+					"		label \"A\"\n" +
+					"		sequence \"ACGTTGTCGTTG\"\n" +
+					"	]\n" +
+					"	node [\n" +
+					"		id 2\n" +
+					"		label \"B\"\n" +
+					"		sequence \"TCGTTGGCGTTG\"\n" +
+					"	]\n" +
+					"	node [\n" +
+					"		id 3\n" +
+					"		label \"C\"\n" +
+					"		sequence \"GCGTTGACGTTG\"\n" +
+					"	]\n" +
+					"	edge [\n" +
+					"		source 1\n" +
+					"		target 2\n" +
+					"		overlap \"6\"\n" +
+					"	]\n" +
+					"	edge [\n" +
+					"		source 2\n" +
+					"		target 3\n" +
+					"		overlap \"7\"\n" +
+					"	]\n" +
+					"	edge [\n" +
+					"		source 3\n" +
+					"		target 1\n" +
+					"		overlap \"8\"\n" +
+					"	]\n" +
+					"]\n";
 
 		var graph = new Graph();
 		var labelNodeValueMap = new HashMap<String, NodeArray<String>>();

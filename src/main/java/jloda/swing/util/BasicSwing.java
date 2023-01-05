@@ -110,10 +110,18 @@ public class BasicSwing {
     public static String getCode(Font font) {
         String result = font.getFamily();
         switch (font.getStyle()) {
-            case Font.PLAIN -> result += "-PLAIN";
-            case Font.ITALIC -> result += "-ITALIC";
-            case Font.BOLD -> result += "-BOLD";
-            case Font.BOLD + Font.ITALIC -> result += "-BOLDITALIC";
+            case Font.PLAIN:
+                result += "-PLAIN";
+                break;
+            case Font.ITALIC:
+                result += "-ITALIC";
+                break;
+            case Font.BOLD:
+                result += "-BOLD";
+                break;
+            case Font.BOLD + Font.ITALIC:
+                result += "-BOLDITALIC";
+                break;
         }
         result += "-" + font.getSize();
         return result;

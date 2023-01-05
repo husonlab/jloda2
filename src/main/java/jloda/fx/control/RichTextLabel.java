@@ -984,15 +984,15 @@ public class RichTextLabel extends TextFlow {
         var tag = "<mark ";
 
         if (shape != null)
-            tag += " shape=\"%s\"".formatted(shape.name());
+            tag += String.format(" shape=\"%s\"", shape.name());
         if (width != null)
-            tag += " width=\"%.2f\"".formatted(width);
+			tag += String.format(" width=\"%.2f\"", width);
         if (height != null)
-            tag += " height=\"%.2f\"".formatted(height);
+			tag += String.format(" height=\"%.2f\"", height);
         if (fill != null)
-            tag += " fill=\"%s\"".formatted(fill);
+			tag += String.format(" fill=\"%s\"", fill);
         if (stroke != null)
-            tag += " stroke=\"%s\"".formatted(stroke);
+			tag += String.format(" stroke=\"%s\"", stroke);
 
         tag += ">";
         return insertPrefix(text, tag);
@@ -1082,26 +1082,38 @@ public class RichTextLabel extends TextFlow {
     public static void setDefaultFont(Font defaultFont) {
         RichTextLabel.defaultFont.set(defaultFont);
     }
-    
-    public static Font getDefaultFont() {
-        return defaultFont.get();
-    }
-    
-    public static ObjectProperty<Font> defaultFontProperty() {
-        return defaultFont;
-    }
-    
 
-    public record Event(RichTextLabel.Event.Change change, int pos, int segmentStart, String argument) {
-        enum Change {
-            htmlStart("<html>"), htmlEnd("</html>"),
-            italicStart("<i>"), italicEnd("</i>"),
-            boldStart("<b>"), boldEnd("</b>"),
-            strikeStart("<a>"), strikeEnd("</a>"),
-            underlineStart("<u>"), underlineEnd("</u>"),
-            supStart("<sup>"), supEnd("</sup>"),
-            subStart("<sub>"), subEnd("</sub>"),
-            colorStart("<c "), colorEnd("</c>"),
+	public static Font getDefaultFont() {
+		return defaultFont.get();
+	}
+
+	public static ObjectProperty<Font> defaultFontProperty() {
+		return defaultFont;
+	}
+
+
+	public static final class Event {
+		private final Change change;
+		private final int pos;
+		private final int segmentStart;
+		private final String argument;
+
+		public Event(Change change, int pos, int segmentStart, String argument) {
+			this.change = change;
+			this.pos = pos;
+			this.segmentStart = segmentStart;
+			this.argument = argument;
+		}
+
+		enum Change {
+			htmlStart("<html>"), htmlEnd("</html>"),
+			italicStart("<i>"), italicEnd("</i>"),
+			boldStart("<b>"), boldEnd("</b>"),
+			strikeStart("<a>"), strikeEnd("</a>"),
+			underlineStart("<u>"), underlineEnd("</u>"),
+			supStart("<sup>"), supEnd("</sup>"),
+			subStart("<sub>"), subEnd("</sub>"),
+			colorStart("<c "), colorEnd("</c>"),
             fontSizeStart("<size "), fontSizeEnd("</size>"),
             fontFamilyStart("<font "), fontFamilyEnd("</font>"),
             background("<bg "),
@@ -1131,7 +1143,7 @@ public class RichTextLabel extends TextFlow {
         public static String[] listTypes() {
             var types = new String[Change.values().length / 2];
             for (var i = 0; i < types.length; i++) {
-                types[i] = Event.Change.values()[2 * i].type();
+				types[i] = Change.values()[2 * i].type();
             }
             return types;
         }
@@ -1149,21 +1161,63 @@ public class RichTextLabel extends TextFlow {
             if (line.startsWith("<mark>")) {
                 return new Event(Change.mark, pos, pos + 5, "");
             }
-            for (Event.Change change : Event.Change.values()) {
-                var tag = change.tag();
-                if (line.startsWith(tag)) {
-                    if (tag.endsWith(" ")) { // requires an argument
-                        var startPos = tag.length() - 1; // start at the trailing " "
-                        var endPos = line.indexOf(">");
-                        var argument = (startPos < endPos ? line.substring(startPos, endPos).trim() : null);
-                        if (argument != null && argument.startsWith("\"") && argument.endsWith("\""))
-                            argument = argument.substring(1, argument.length() - 1);
-                        return new Event(change, pos, pos + endPos + 1, argument);
-                    } else
-                        return new Event(change, pos, pos + tag.length(), null);
-                }
-            }
-            return null;
-        }
-    }
+			for (Change change : Change.values()) {
+				var tag = change.tag();
+				if (line.startsWith(tag)) {
+					if (tag.endsWith(" ")) { // requires an argument
+						var startPos = tag.length() - 1; // start at the trailing " "
+						var endPos = line.indexOf(">");
+						var argument = (startPos < endPos ? line.substring(startPos, endPos).trim() : null);
+						if (argument != null && argument.startsWith("\"") && argument.endsWith("\""))
+							argument = argument.substring(1, argument.length() - 1);
+						return new Event(change, pos, pos + endPos + 1, argument);
+					} else
+						return new Event(change, pos, pos + tag.length(), null);
+				}
+			}
+			return null;
+		}
+
+		public Change change() {
+			return change;
+		}
+
+		public int pos() {
+			return pos;
+		}
+
+		public int segmentStart() {
+			return segmentStart;
+		}
+
+		public String argument() {
+			return argument;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (obj == null || obj.getClass() != this.getClass()) return false;
+			var that = (Event) obj;
+			return Objects.equals(this.change, that.change) &&
+				   this.pos == that.pos &&
+				   this.segmentStart == that.segmentStart &&
+				   Objects.equals(this.argument, that.argument);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(change, pos, segmentStart, argument);
+		}
+
+		@Override
+		public String toString() {
+			return "Event[" +
+				   "change=" + change + ", " +
+				   "pos=" + pos + ", " +
+				   "segmentStart=" + segmentStart + ", " +
+				   "argument=" + argument + ']';
+		}
+
+	}
 }

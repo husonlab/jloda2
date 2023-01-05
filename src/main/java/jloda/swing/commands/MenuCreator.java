@@ -138,31 +138,33 @@ public class MenuCreator {
                     boolean done = false;
                     if (ProgramProperties.isMacOS()) {
                         switch (label) {
-                            case "Quit" -> {
-                                if (AppleSystemMenuItems.setQuitAction(createAction(command))) {
-                                    if (menu.getItemCount() > 0 && menu.getItem(menu.getItemCount() - 1) == null) {
-                                        skipNextSeparator = true;
-                                    }
-                                    done = true;
-                                }
-							}
-                            case "About", "About..." -> {
-                                if (AppleSystemMenuItems.setAboutAction(createAction(command))) {
-                                    if (menu.getItemCount() > 0 && menu.getItem(menu.getItemCount() - 1) == null) {
-                                        skipNextSeparator = true;
-                                    }
-                                    done = true;
-                                }
-							}
-                            case "Preferences", "Preferences..." -> {
-                                if (AppleSystemMenuItems.setPreferencesAction(createAction(command))) {
-                                    if (menu.getItemCount() > 0 && menu.getItem(menu.getItemCount() - 1) == null) {
-                                        skipNextSeparator = true;
-                                    }
-                                    done = true;
-                                }
-							}
-                        }
+							case "Quit":
+								if (AppleSystemMenuItems.setQuitAction(createAction(command))) {
+									if (menu.getItemCount() > 0 && menu.getItem(menu.getItemCount() - 1) == null) {
+										skipNextSeparator = true;
+									}
+									done = true;
+								}
+								break;
+							case "About":
+							case "About...":
+								if (AppleSystemMenuItems.setAboutAction(createAction(command))) {
+									if (menu.getItemCount() > 0 && menu.getItem(menu.getItemCount() - 1) == null) {
+										skipNextSeparator = true;
+									}
+									done = true;
+								}
+								break;
+							case "Preferences":
+							case "Preferences...":
+								if (AppleSystemMenuItems.setPreferencesAction(createAction(command))) {
+									if (menu.getItemCount() > 0 && menu.getItem(menu.getItemCount() - 1) == null) {
+										skipNextSeparator = true;
+									}
+									done = true;
+								}
+								break;
+						}
                     }
                     if (!done) {
                         final JMenuItem menuItem = commandManager.getJMenuItem(command);

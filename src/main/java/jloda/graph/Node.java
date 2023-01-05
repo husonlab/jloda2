@@ -667,10 +667,11 @@ public class Node extends NodeEdge implements Comparable<Node> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof final Node that)) return false;
-        return getOwner() == that.getOwner() && getId() == that.getId();
-    }
+		if (this == o) return true;
+		if (!(o instanceof Node)) return false;
+		var that = (Node) o;
+		return getOwner() == that.getOwner() && getId() == that.getId();
+	}
 
     @Override
     public int hashCode() {

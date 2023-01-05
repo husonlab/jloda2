@@ -41,9 +41,10 @@ public class DraggableUtils {
 			mouseY = e.getSceneY();
 		};
 		mouseDraggedHandlerTranslate = e -> {
-			if (e.getSource() instanceof Node aNode) {
+			if (e.getSource() instanceof Node) {
 				var dx = e.getSceneX() - mouseX;
 				var dy = e.getSceneY() - mouseY;
+				Node aNode = (Node) e.getSource();
 				aNode.setTranslateX(aNode.getTranslateX() + dx);
 				aNode.setTranslateY(aNode.getTranslateY() + dy);
 				mouseX = e.getSceneX();
@@ -52,9 +53,10 @@ public class DraggableUtils {
 			}
 		};
 		mouseDraggedHandlerLayout = e -> {
-			if (e.getSource() instanceof Node aNode) {
+			if (e.getSource() instanceof Node) {
 				var dx = e.getSceneX() - mouseX;
 				var dy = e.getSceneY() - mouseY;
+				var aNode = (Node) e.getSource();
 				aNode.setLayoutX(aNode.getLayoutX() + dx);
 				aNode.setLayoutY(aNode.getLayoutY() + dy);
 				mouseX = e.getSceneX();

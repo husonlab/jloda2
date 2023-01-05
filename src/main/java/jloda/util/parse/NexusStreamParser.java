@@ -1527,7 +1527,7 @@ public class NexusStreamParser extends NexusStreamTokenizer implements Closeable
 			for (var i = 0; i < 4; i++) {
 				var word = getWordRespectCase();
 				switch (i) {
-					case 0 -> {
+					case 0:
 						if (word.equals("null"))
 							return null;
 						if (word.startsWith("#")) // format #rrggbb
@@ -1560,15 +1560,19 @@ public class NexusStreamParser extends NexusStreamTokenizer implements Closeable
 						} else {
 							return AColor.parseColor(word);
 						}
-					}
-					case 1 -> g = Integer.parseInt(word);
-					case 2 -> {
+						break;
+					case 1:
+						g = Integer.parseInt(word);
+						break;
+					case 2:
 						b = Integer.parseInt(word);
 						if (!NumberUtils.isInteger(peekNextWord())) {
 							return new AColor(r, g, b);
 						}
-					}
-					case 3 -> a = Integer.parseInt(word);
+						break;
+					case 3:
+						a = Integer.parseInt(word);
+						break;
 				}
 			}
 			return new AColor(r, g, b, a);

@@ -24,7 +24,6 @@ import java.awt.*;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Serial;
 import java.util.List;
 import java.util.Vector;
 
@@ -34,10 +33,6 @@ import java.util.Vector;
  * Wei Wu and Daniel Huson, 6.2008
  */
 public class ReorderListDialog extends JDialog implements DropTargetListener, ActionListener {
-    /**
-     *
-     */
-    @Serial
     private static final long serialVersionUID = 5234260814801310243L;
     private final Vector originalList = new Vector();//save inputted objects in Vector
     private boolean beApplied = false;//label for action from button apply

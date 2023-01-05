@@ -72,11 +72,12 @@ public class Single<S> implements Comparable<Single<S>>, Comparator<Single<S>> {
 
     public boolean equals(Object other) {
         boolean good = false;
-        if (other instanceof Single p) {
+        if (other instanceof Single) {
+            var single = (Single) other;
             if (value == null) {
-                good = (p.value == null);
+                good = (single.value == null);
             } else {
-                good = value.equals(p.value);
+                good = value.equals(single.value);
             }
         }
         return good;

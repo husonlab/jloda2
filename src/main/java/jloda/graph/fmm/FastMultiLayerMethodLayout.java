@@ -494,19 +494,18 @@ public class FastMultiLayerMethodLayout {
     }
 
     private static void calculateRepulsiveForces(FastMultiLayerMethodOptions options, Graph graph, LayoutBox layoutBox, NodeArray<NodeAttributes> nodeAttributes, EdgeArray<EdgeAttributes> edgeAttributes, NodeArray<DPoint> force) {
-        switch (options.getRepulsiveForcesCalculation()) {
-            case Exact -> {
-                FruchtermanReingold.calculateExactRepulsiveForces(graph, nodeAttributes, force);
-            }
-            case GridApproximation -> {
-                FruchtermanReingold.calculateApproxRepulsiveForces(options, graph, layoutBox, nodeAttributes, force);
-            }
-
-            /*
+        /*
             default:
                 MultipoleMethod.calculate_repulsive_forces(options,graph,box, nodeAttributes, force);
                 break;
              */
+        switch (options.getRepulsiveForcesCalculation()) {
+            case Exact:
+                FruchtermanReingold.calculateExactRepulsiveForces(graph, nodeAttributes, force);
+                break;
+            case GridApproximation:
+                FruchtermanReingold.calculateApproxRepulsiveForces(options, graph, layoutBox, nodeAttributes, force);
+                break;
         }
     }
 
@@ -681,21 +680,26 @@ public class FastMultiLayerMethodLayout {
 
     private static double attractionScalar(FastMultiLayerMethodOptions options, double d, double ind_ideal_edge_length) {
         double s;
-        switch (options.getForceModel()) {
-            default /* includes  FruchtermanReingold */ -> s = d * d / (ind_ideal_edge_length * ind_ideal_edge_length * ind_ideal_edge_length);
-            case Eades -> {
+        switch (options.getForceModel()) {/* includes  FruchtermanReingold */
+            default: {
+                s = d * d / (ind_ideal_edge_length * ind_ideal_edge_length * ind_ideal_edge_length);
+                break;
+            }
+            case Eades: {
                 double c = 10;
                 if (d == 0)
                     s = -1e10;
                 else
                     s = c * Math.log(d / ind_ideal_edge_length) / (Math.log(2) * ind_ideal_edge_length);
+                break;
             }
-            case New -> {
+            case New: {
                 double c = Math.log(d / ind_ideal_edge_length) / Math.log(2);
                 if (d > 0)
                     s = c * d * d / (ind_ideal_edge_length * ind_ideal_edge_length * ind_ideal_edge_length);
                 else
                     s = -1e10;
+                break;
             }
         }
         return s;

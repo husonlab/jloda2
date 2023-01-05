@@ -66,11 +66,11 @@ public class SliderHistogramPresenter {
 							var count = barContentSize[i];
 							series.getData().add(new XYChart.Data<>(StringUtils.removeTrailingZerosAfterDot(bucketMinValue), count));
 							if (bucketMinValue < currentThreshold)
-								barChart.lookup(".data%d.chart-bar".formatted(i)).setStyle("-fx-bar-fill: gray;");
+								barChart.lookup(String.format(".data%d.chart-bar", i)).setStyle("-fx-bar-fill: gray;");
 							else {
 								firstActive = Math.min(firstActive, bucketMinValue);
 								countActive += count;
-								barChart.lookup(".data%d.chart-bar".formatted(i)).setStyle("-fx-bar-fill: green;");
+								barChart.lookup(String.format(".data%d.chart-bar", i)).setStyle("-fx-bar-fill: green;");
 							}
 						}
 
@@ -84,7 +84,7 @@ public class SliderHistogramPresenter {
 								controller.getThresholdSlider().setValue(controller.getThresholdSlider().getMax());
 						}
 
-						controller.getReportLabel().setText("%,d (of %,d)".formatted(countActive, values.size()));
+						controller.getReportLabel().setText(String.format("%,d (of %,d)", countActive, values.size()));
 					}
 				} finally {
 					inUpdate = false;

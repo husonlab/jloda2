@@ -154,7 +154,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 	@Override
 	public boolean cancel() {
 		var canceled = 0;
-		for (var v : IteratorUtils.asStream(algorithmNodes()).filter(a -> a.getService().getState() == State.RUNNING).toList()) {
+		for (var v : IteratorUtils.asStream(algorithmNodes()).filter(a -> a.getService().getState() == State.RUNNING).collect(Collectors.toList())) {
 			if (v.getService().cancel())
 				canceled++;
 		}
@@ -306,7 +306,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 				seen.add(node);
 				buf.append(node.toReportString(true));
 				buf.append("\n");
-				queue.addAll(node.getChildren().stream().filter(n -> !seen.contains(n)).toList());
+				queue.addAll(node.getChildren().stream().filter(n -> !seen.contains(n)).collect(Collectors.toList()));
 			}
 		}
 		return buf.toString();
@@ -446,9 +446,11 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 		for (var node : src.nodes()) {
 			var nodeCopy = nodeCopyNodeMap.get(node);
 			if (nodeCopy == null) {
-				if (node instanceof DataNode dataNode) {
+				if (node instanceof DataNode) {
+					var dataNode = (DataNode) node;
 					nodeCopyNodeMap.put(node, newDataNode(dataNode.getDataBlock()));
-				} else if (node instanceof AlgorithmNode algorithmNode) {
+				} else if (node instanceof AlgorithmNode) {
+					var algorithmNode = (AlgorithmNode) node;
 					nodeCopyNodeMap.put(node, newAlgorithmNode(algorithmNode.getAlgorithm()));
 				}
 			}
