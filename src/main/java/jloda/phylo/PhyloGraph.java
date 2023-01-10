@@ -68,10 +68,26 @@ public class PhyloGraph extends Graph {
      */
     public void clear() {
         super.clear();
+        clearNode2Taxa();
+        clearEdgeWeights();
+        clearEdgeConfidences();
+        clearEdgeProbabilities();
+    }
+
+    public void clearNode2Taxa() {
         taxon2node = null;
         node2taxa = null;
+    }
+
+    public void clearEdgeWeights() {
         edgeWeights = null;
+    }
+
+    public void clearEdgeConfidences() {
         edgeConfidences = null;
+    }
+
+    public void clearEdgeProbabilities() {
         edgeProbabilities = null;
     }
 

@@ -43,23 +43,35 @@ public class PhyloSplitsGraph extends PhyloGraph {
 
 	/**
 	 * Clears the tree.
-     */
-    public void clear() {
+	 */
+	public void clear() {
 		super.clear();
+		clearEdgeSplitMap();
+		clearEdgeAngleMap();
+		clearTaxonCycleMap();
+	}
+
+	public void clearEdgeSplitMap() {
 		edgeSplitMap = null;
+	}
+
+	public void clearEdgeAngleMap() {
 		edgeAngleMap = null;
+	}
+
+	public void clearTaxonCycleMap() {
 		taxonCycleMap = null;
 	}
 
-    /**
-     * copies a graph
-     *
-     * @param src original graph
-     * @return mapping of old nodes to new nodes
-     */
-    public NodeArray<Node> copy(PhyloSplitsGraph src) {
-        NodeArray<Node> oldNode2NewNode = src.newNodeArray();
-        copy(src, oldNode2NewNode, null);
+	/**
+	 * copies a graph
+	 *
+	 * @param src original graph
+	 * @return mapping of old nodes to new nodes
+	 */
+	public NodeArray<Node> copy(PhyloSplitsGraph src) {
+		NodeArray<Node> oldNode2NewNode = src.newNodeArray();
+		copy(src, oldNode2NewNode, null);
         return oldNode2NewNode;
     }
 
