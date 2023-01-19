@@ -90,9 +90,9 @@ public class ProgramProperties {
     public static void store() {
         try (var fos = new FileOutputStream(getDefaultFileName())) {
             props.store(fos, programName);
-            //System.err.println("Stored properties to: " + getDefaultFileName());
+            System.err.println("Stored properties to: " + getDefaultFileName());
         } catch (Exception ex) {
-            //Basic.caught(ex);
+            Basic.caught(ex);
         }
     }
 

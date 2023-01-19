@@ -169,7 +169,12 @@ public class UndoManager {
             redoStack.clear();
         try {
             isPerformingUndoOrRedo.set(true);
-            command.undo();
+            try {
+                command.undo();
+            } catch (Exception ex) {
+                clear();
+                throw ex;
+            }
         } finally {
             isPerformingUndoOrRedo.set(false);
         }
@@ -195,6 +200,9 @@ public class UndoManager {
         try {
             isPerformingUndoOrRedo.set(true);
             command.redo();
+        } catch (Exception ex) {
+            clear();
+            throw ex;
         } finally {
             isPerformingUndoOrRedo.set(false);
         }

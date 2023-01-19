@@ -33,11 +33,11 @@ import java.util.concurrent.TimeUnit;
  * print stream that sends text to text area
  * Daniel Huson, 11.2022
  */
-public class PrintStreamForTextArea extends PrintStream {
+public class EchoPrintStreamForTextArea extends PrintStream {
 	private final LinkedBlockingQueue<String> lines = new LinkedBlockingQueue<>();
 
-	public PrintStreamForTextArea(TextArea textArea) {
-		super(System.out);
+	public EchoPrintStreamForTextArea(PrintStream ps, TextArea textArea) {
+		super(ps);
 
 		// will queue lines and print out sparingly
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
@@ -45,9 +45,10 @@ public class PrintStreamForTextArea extends PrintStream {
 				Platform.runLater(() -> {
 					final long start = System.currentTimeMillis();
 					while (lines.size() > 0) {
-						final String line = lines.remove();
+						final var line = lines.remove();
+						ps.print(line);
 						Platform.runLater(() -> {
-							textArea.setText(textArea.getText() + line);
+							textArea.appendText(line);
 							textArea.positionCaret(textArea.getText().length());
 							textArea.setScrollTop(Double.MAX_VALUE);
 						});
@@ -58,92 +59,92 @@ public class PrintStreamForTextArea extends PrintStream {
 			}
 		}, 0, 100, TimeUnit.MILLISECONDS);
 	}
-		public void println(String x) {
-				lines.add(x);
-				lines.add("\n");
-			}
 
-			public void print(String x) {
-				lines.add(x);
-			}
+	public void println(String x) {
+		lines.add(x);
+		lines.add("\n");
+	}
 
-			public void println(Object x) {
-				lines.add(x + "\n");
-			}
+	public void print(String x) {
+		lines.add(x);
+	}
 
-			public void print(Object x) {
-				lines.add(x==null?null:x.toString());
-			}
+	public void println(Object x) {
+		lines.add(x + "\n");
+	}
 
-			public void println(boolean x) {
-				lines.add(x + "\n");
-			}
+	public void print(Object x) {
+		lines.add(x == null ? null : x.toString());
+	}
 
-			public void print(boolean x) {
-				lines.add("" + x);
-			}
+	public void println(boolean x) {
+		lines.add(x + "\n");
+	}
 
-			public void println(int x) {
-				lines.add(x + "\n");
-			}
+	public void print(boolean x) {
+		lines.add("" + x);
+	}
 
-			public void print(int x) {
-				lines.add("" + x);
-			}
+	public void println(int x) {
+		lines.add(x + "\n");
+	}
 
-			public void println(float x) {
-				lines.add(x + "\n");
-			}
+	public void print(int x) {
+		lines.add("" + x);
+	}
 
-			public void print(float x) {
-				lines.add("" + x);
-			}
+	public void println(float x) {
+		lines.add(x + "\n");
+	}
 
-			public void println(char x) {
-				lines.add(x + "\n");
-			}
+	public void print(float x) {
+		lines.add("" + x);
+	}
 
-			public void print(char x) {
-				lines.add("" + x);
-			}
+	public void println(char x) {
+		lines.add(x + "\n");
+	}
 
-			public void println(double x) {
-				lines.add(x + "\n");
-			}
+	public void print(char x) {
+		lines.add("" + x);
+	}
 
-			public void print(double x) {
-				lines.add("" + x);
-			}
+	public void println(double x) {
+		lines.add(x + "\n");
+	}
 
-			public void println(long x) {
-				lines.add(x + "\n");
-			}
+	public void print(double x) {
+		lines.add("" + x);
+	}
 
-			public void print(long x) {
-				lines.add("" + x);
-			}
+	public void println(long x) {
+		lines.add(x + "\n");
+	}
+
+	public void print(long x) {
+		lines.add("" + x);
+	}
 
 
-			public void println(char[] x) {
-				lines.add(StringUtils.toString(x) + "\n");
-			}
+	public void println(char[] x) {
+		lines.add(StringUtils.toString(x) + "\n");
+	}
 
-			public void print(char[] x) {
-				lines.add(StringUtils.toString(x));
-			}
+	public void print(char[] x) {
+		lines.add(StringUtils.toString(x));
+	}
 
-			public void write(byte[] buf, int off, int len) {
-				lines.add(new String(buf, off, len));
-			}
+	public void write(byte[] buf, int off, int len) {
+		lines.add(new String(buf, off, len));
+	}
 
-			public void setError() {
-			}
+	public void setError() {
+	}
 
-			public boolean checkError() {
-				return false;
-			}
+	public boolean checkError() {
+		return false;
+	}
 
-			public void flush() {
-			}
-
+	public void flush() {
+	}
 }

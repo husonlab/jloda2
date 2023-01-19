@@ -736,7 +736,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 	/**
 	 * post processes a tree that really describes a reticulate network
 	 */
-	public void postProcessReticulate() {
+	public void postProcessReticulate() throws IOException {
 		// determine all the groups of reticulate nodes
 		final var reticulateNumber2Nodes = new HashMap<String, List<Node>>(); // maps each reticulate-node prefix to the set of all nodes that have it
 
@@ -755,7 +755,9 @@ public class PhyloTree extends PhyloSplitsGraph {
 		// collapse all instances of a reticulate node into one node
 		for (var reticulateNumber : reticulateNumber2Nodes.keySet()) {
 			final var list = reticulateNumber2Nodes.get(reticulateNumber);
-			if (list.size() > 0) {
+			if (list.size() == 1)
+				throw new IOException("Unmatched reticulate node: " + reticulateNumber);
+			else if (list.size() > 1) {
 				Node u = null;
 
 				for (var v : list) {
