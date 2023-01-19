@@ -28,6 +28,7 @@ import java.io.PrintStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * print stream that sends text to text area
@@ -36,7 +37,24 @@ import java.util.concurrent.TimeUnit;
 public class EchoPrintStreamForTextArea extends PrintStream {
 	private final LinkedBlockingQueue<String> lines = new LinkedBlockingQueue<>();
 
+	/**
+	 * constructor
+	 *
+	 * @param ps       stream to echo
+	 * @param textArea text area to echo to
+	 */
 	public EchoPrintStreamForTextArea(PrintStream ps, TextArea textArea) {
+		this(ps, s -> s, textArea);
+	}
+
+	/**
+	 * constructor
+	 *
+	 * @param ps       stream to echo
+	 * @param filter   filters output, only non-null results are shown in the text area
+	 * @param textArea text area to echo to
+	 */
+	public EchoPrintStreamForTextArea(PrintStream ps, Function<String, String> filter, TextArea textArea) {
 		super(ps);
 
 		// will queue lines and print out sparingly
@@ -48,9 +66,12 @@ public class EchoPrintStreamForTextArea extends PrintStream {
 						final var line = lines.remove();
 						ps.print(line);
 						Platform.runLater(() -> {
-							textArea.appendText(line);
-							textArea.positionCaret(textArea.getText().length());
-							textArea.setScrollTop(Double.MAX_VALUE);
+							var filtered = filter.apply(line);
+							if (filtered != null) {
+								textArea.appendText(line);
+								textArea.positionCaret(textArea.getText().length());
+								textArea.setScrollTop(Double.MAX_VALUE);
+							}
 						});
 						if (System.currentTimeMillis() - start > 100)
 							break;
@@ -61,8 +82,7 @@ public class EchoPrintStreamForTextArea extends PrintStream {
 	}
 
 	public void println(String x) {
-		lines.add(x);
-		lines.add("\n");
+		lines.add(x+"\n");
 	}
 
 	public void print(String x) {
@@ -124,7 +144,6 @@ public class EchoPrintStreamForTextArea extends PrintStream {
 	public void print(long x) {
 		lines.add("" + x);
 	}
-
 
 	public void println(char[] x) {
 		lines.add(StringUtils.toString(x) + "\n");
