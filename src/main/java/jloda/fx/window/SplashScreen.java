@@ -107,6 +107,11 @@ public class SplashScreen {
         image = ResourceManagerFX.getImage(name);
     }
 
+    public static void setImage(Image image) {
+        SplashScreen.image = image;
+    }
+
+
     public static String getVersionString() {
         return versionString;
     }
