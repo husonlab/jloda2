@@ -82,6 +82,19 @@ public class PhyloTree extends PhyloSplitsGraph {
 		inputHasMultiLabels = false;
 	}
 
+	public void clearRetciulateEdges() {
+		reticulateEdges = null;
+	}
+
+	public void clearTransferAcceptorEdges() {
+		transferAcceptorEdges = null;
+	}
+
+	public void clearLsaChildrenMap() {
+		lsaChildrenMap = null;
+	}
+
+
 	/**
 	 * copies a phylogenetic tree
 	 *
@@ -1040,7 +1053,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 				setRoot(oldNode2newNode.get(src.getRoot()));
 			}
 
-			NodeSet toDelete = new NodeSet(this);
+			var toDelete = new NodeSet(this);
 			toDelete.addAll();
 			extractTreeRec(src.getRoot(), null, collapsedNodes, oldNode2newNode, toDelete);
 			while (!toDelete.isEmpty()) {

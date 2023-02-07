@@ -76,7 +76,7 @@ public class ClusterPoppingAlgorithm {
 										stack.push(w);
 								}
 							}
-							if (!isBelowAChild)
+							if (!isBelowAChild && v != clusterNode)
 								network.newEdge(v, clusterNode);
 						}
 					}
@@ -106,9 +106,10 @@ public class ClusterPoppingAlgorithm {
 					}
 				}
 
-				// set edge weights:
 				network.nodeStream().filter(v -> v.getInDegree() == 1)
 						.forEach(v -> network.setWeight(v.getFirstInEdge(), weightFunction.apply(nodeClusterMap.get(v))));
+
+				network.edgeStream().filter(e -> e.getTarget().getInDegree() > 1).forEach(e -> network.setReticulate(e, true));
 			}
 		}
 	}

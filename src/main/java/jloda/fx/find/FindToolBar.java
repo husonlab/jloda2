@@ -85,7 +85,7 @@ public class FindToolBar extends VBox {
                 if (!getChildren().contains(controller.getAnchorPane()))
                     getChildren().add(controller.getAnchorPane());
                 Platform.runLater(() -> {
-                    controller.getSearchComboBox().requestFocus();
+                    controller.getSearchComboBox().getEditor().requestFocus();
                     controller.getSearchComboBox().getEditor().selectAll();
                 });
             } else {
@@ -311,7 +311,11 @@ public class FindToolBar extends VBox {
 
     public void setShowFindToolBar(boolean showFindToolBar) {
         this.showFindToolBar.set(showFindToolBar);
-        requestFocus();
+        if (showFindToolBar)
+            Platform.runLater(() -> {
+                controller.getSearchComboBox().getEditor().requestFocus();
+                controller.getSearchComboBox().getEditor().selectAll();
+            });
     }
 
     public boolean getShowReplaceToolBar() {
