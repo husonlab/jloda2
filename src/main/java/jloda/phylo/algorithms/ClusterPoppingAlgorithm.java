@@ -40,11 +40,33 @@ public class ClusterPoppingAlgorithm {
 	/**
 	 * runs the cluster popping algorithm to create a rooted tree or network from a set of clusters
 	 *
-	 * @param clusters0      input clusters
-	 * @param weightFunction weights for clusters
+	 * @param clusters input clusters
+	 * @param network  the resulting network
+	 */
+	public static void apply(Collection<BitSet> clusters, PhyloTree network) {
+		apply(clusters, null, null, network);
+	}
+
+	/**
+	 * runs the cluster popping algorithm to create a rooted tree or network from a set of clusters
+	 *
+	 * @param clusters       input clusters
+	 * @param weightFunction weights for clusters, may be null
 	 * @param network        the resulting network
 	 */
-	public static void apply(Collection<BitSet> clusters0, Function<BitSet, Double> weightFunction, PhyloTree network) {
+	public static void apply(Collection<BitSet> clusters, Function<BitSet, Double> weightFunction, PhyloTree network) {
+		apply(clusters, weightFunction, null, network);
+	}
+
+	/**
+	 * runs the cluster popping algorithm to create a rooted tree or network from a set of clusters
+	 *
+	 * @param clusters0          input clusters
+	 * @param weightFunction     weights for clusters, may be null
+	 * @param confidenceFunction confidences for clusters, may be null
+	 * @param network            the resulting network
+	 */
+	public static void apply(Collection<BitSet> clusters0, Function<BitSet, Double> weightFunction, Function<BitSet, Double> confidenceFunction, PhyloTree network) {
 		network.clear();
 
 		if (clusters0.size() > 0) {
@@ -106,8 +128,20 @@ public class ClusterPoppingAlgorithm {
 					}
 				}
 
-				network.nodeStream().filter(v -> v.getInDegree() == 1)
-						.forEach(v -> network.setWeight(v.getFirstInEdge(), weightFunction.apply(nodeClusterMap.get(v))));
+				if (weightFunction != null)
+					network.nodeStream().filter(v -> v.getInDegree() == 1)
+							.forEach(v -> {
+								var weight = weightFunction.apply(nodeClusterMap.get(v));
+								if (weight != -1)
+									network.setWeight(v.getFirstInEdge(), weight);
+							});
+				if (confidenceFunction != null)
+					network.nodeStream().filter(v -> v.getInDegree() == 1)
+							.forEach(v -> {
+								var confidence = confidenceFunction.apply(nodeClusterMap.get(v));
+								if (confidence != -1)
+									network.setConfidence(v.getFirstInEdge(), confidence);
+							});
 
 				network.edgeStream().filter(e -> e.getTarget().getInDegree() > 1).forEach(e -> network.setReticulate(e, true));
 			}

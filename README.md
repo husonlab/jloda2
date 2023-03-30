@@ -4,4 +4,4 @@ This is new release of the JLODA "java library of datastructures and algorithm",
 
 All Java programmings under guthub.com/husonlab will be refactored to use MAVEN for package management.
 
-This is in testing phase and will change substantially over the next couple of months (until Feb 2023).
+This is in testing phase and will change substantially over the next couple of months (until June 2023).
