@@ -292,14 +292,42 @@ public class BitSetUtils {
 
 	/**
 	 * do the three  bitsets intersects?
-	 *
-	 * @return true, if non-empty   intersection
-	 */
-	public static boolean intersects(BitSet a, BitSet b, BitSet c) {
-		for (int i = a.nextSetBit(1); i >= 0; i = a.nextSetBit(i + 1)) {
-			if (b.get(i) && c.get(i))
-				return true;
-		}
-		return false;
-	}
+     *
+     * @return true, if non-empty   intersection
+     */
+    public static boolean intersects(BitSet a, BitSet b, BitSet c) {
+        for (int i = a.nextSetBit(1); i >= 0; i = a.nextSetBit(i + 1)) {
+            if (b.get(i) && c.get(i))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * parses a text description of a bit set.
+     *
+     * @param text values separated by commas and ranges specified as a-b
+     * @return bit set
+     */
+    public static BitSet valueOf(String text) {
+        var bits = new BitSet();
+        for (var token : StringUtils.split(text, ',')) {
+            if (token.contains("-")) {
+                var range = StringUtils.split(token, '-');
+                if (range.length != 2 || !NumberUtils.isInteger(range[0]) || NumberUtils.parseInt(range[0]) < 0 || !NumberUtils.isInteger(range[1]) ||
+                    NumberUtils.parseInt(range[1]) < 0)
+                    throw new NumberFormatException("Illegal range");
+                var a = Math.min(NumberUtils.parseInt(range[0]), NumberUtils.parseInt(range[1]));
+                var b = Math.max(NumberUtils.parseInt(range[0]), NumberUtils.parseInt(range[1]));
+                for (var i = a; i <= b; i++)
+                    bits.set(i);
+            } else if (NumberUtils.isInteger(token)) {
+                var value = NumberUtils.parseInt(token);
+                if (value < 0)
+                    throw new NumberFormatException("Illegal negative value");
+                bits.set(value);
+            }
+        }
+        return bits;
+    }
 }

@@ -20,7 +20,9 @@
 package jloda.util;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * some simple set utilities
@@ -54,10 +56,13 @@ public class SetUtils {
             @Override
             public T next() {
                 final T result = v;
-                while (it.hasNext()) {
-                    v = it.next();
-                    if (b.contains(v))
-                        break;
+                if (result != null) {
+                    v = null;
+                    while (it.hasNext()) {
+                        v = it.next();
+                        if (b.contains(v))
+                            break;
+                    }
                 }
                 return result;
             }
@@ -69,41 +74,50 @@ public class SetUtils {
      *
      * @return intersection
      */
-    public static Iterable union(final Collection... sets) {
-        return () -> new Iterator() {
+    public static <T> Iterable<T> union(final Collection<T>... sets) {
+        return () -> new Iterator<T>() {
             int which = 0;
-            Iterator it = null;
+            Iterator<T> it = sets.length == 0 ? null : sets[0].iterator();
+            final Set<T> seen = new HashSet<T>();
+            T next = null;
 
             {
-                while (which < sets.length && !it.hasNext()) {
-                    it = sets[which++].iterator();
-
+                if (it != null) {
+                    while (which < sets.length && !it.hasNext()) {
+                        it = sets[which++].iterator();
+                    }
+                    if (it.hasNext())
+                        next = it.next();
                 }
             }
 
             @Override
             public boolean hasNext() {
-                return which < sets.length;
+                return next != null;
             }
 
             @Override
-            public Object next() {
-                final Object result = it.next();
-                while (which < sets.length && !it.hasNext()) {
-                    it = sets[which++].iterator();
+            public T next() {
+                var result = next;
+
+                if (result != null) {
+                    next = null;
+                    while (next == null) {
+                        if (it.hasNext()) {
+                            var another = it.next();
+                            if (!seen.contains(another)) {
+                                seen.add(another);
+                                next = another;
+                            }
+                        } else if (which < sets.length) {
+                            it = sets[which++].iterator();
+                        } else
+                            break;
+                    }
                 }
                 return result;
             }
         };
-    }
-
-    /**
-     * union of two sets
-     *
-     * @return union
-     */
-    public static <T> Iterable<T> union(Collection<T> a, Collection<T> b) {
-        return (Iterable<T>) union(new Collection[]{a, b});
     }
 
     /**
@@ -118,9 +132,11 @@ public class SetUtils {
 
             {
                 while (it.hasNext()) {
-                    v = it.next();
-                    if (a.contains(v) != b.contains(v))
+                    var w = it.next();
+                    if (a.contains(w) != b.contains(w)) {
+                        v = w;
                         break;
+                    }
                 }
             }
 
@@ -132,17 +148,16 @@ public class SetUtils {
             @Override
             public T next() {
                 final T result = v;
-                while (it.hasNext()) {
-                    v = it.next();
-                    if (a.contains(v) != b.contains(v))
-                        break;
+                if (result != null) {
+                    v = null;
+                    while (it.hasNext()) {
+                        v = it.next();
+                        if (a.contains(v) != b.contains(v))
+                            break;
+                    }
                 }
                 return result;
             }
         };
-    }
-
-    public static <T> boolean intersect(Collection<T> a, Collection<T> b) {
-        return intersection(a, b).iterator().hasNext();
     }
 }
