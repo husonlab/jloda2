@@ -1,5 +1,5 @@
 /*
- * AService.java Copyright (C) 2022 Daniel H. Huson
+ * AService.java Copyright (C) 2023 Daniel H. Huson
  *
  * (Some files contain contributions from other authors, who are then mentioned separately.)
  *
@@ -15,6 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 package jloda.fx.util;
@@ -24,7 +25,6 @@ import javafx.concurrent.Service;
 import javafx.scene.layout.Pane;
 import jloda.fx.control.ProgressPane;
 import jloda.fx.window.NotificationManager;
-import jloda.util.Basic;
 import jloda.util.progress.ProgressListener;
 
 import java.util.concurrent.Callable;
