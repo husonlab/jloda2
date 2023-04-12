@@ -29,8 +29,6 @@ import java.awt.*;
  * Daniel Huson, 11.2011, 10.2022
  */
 public class ColorUtilsSwing {
-
-
 	/**
 	 * gets color as 'r g b' or 'r g b a' string  or string "null"
 	 *
@@ -55,10 +53,11 @@ public class ColorUtilsSwing {
 	}
 
 	public static AColor convert(Color color) {
-		return new AColor(color.getRGB());
+		return
+				color==null?null:new AColor(color.getRGB());
 	}
 
 	public static Color convert(AColor color) {
-		return new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+		return color==null?null:new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	}
 }
