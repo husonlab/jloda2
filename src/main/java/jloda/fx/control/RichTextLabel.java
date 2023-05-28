@@ -280,10 +280,10 @@ public class RichTextLabel extends TextFlow {
     }
 
     public boolean isShowMarksAtEnd() {
-        if (getAnchor() == null)
+        var labelTransform = getLocalToSceneTransform();
+         if (getAnchor() == null)
             return false;
         else {
-            var labelTransform = getLocalToSceneTransform();
             var start = labelTransform.transform(0, 0);
             var end = labelTransform.transform(20, 0);
             if (start.getX() > end.getX()) {
