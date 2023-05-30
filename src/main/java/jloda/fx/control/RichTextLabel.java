@@ -284,16 +284,18 @@ public class RichTextLabel extends TextFlow {
          if (getAnchor() == null)
             return false;
         else {
-            var start = labelTransform.transform(0, 0);
-            var end = labelTransform.transform(20, 0);
-            if (start.getX() > end.getX()) {
-                var tmp = end;
-                end = start;
-                start = tmp;
-            }
-            var anchorPos = getAnchor().getLocalToSceneTransform().transform(0, 0);
-            //System.err.println(getRawText()+": anchor: "+anchorPos+" start: "+start+" end: "+end);
-            return anchorPos.distance(end) < anchorPos.distance(start);
+             if (!labelTransform.isType2D())
+                 return true;
+             var start = labelTransform.transform(0, 0);
+             var end = labelTransform.transform(20, 0);
+             if (start.getX() > end.getX()) {
+                 var tmp = end;
+                 end = start;
+                 start = tmp;
+             }
+             var anchorPos = getAnchor().getLocalToSceneTransform().transform(0, 0);
+             //System.err.println(getRawText()+": anchor: "+anchorPos+" start: "+start+" end: "+end);
+             return anchorPos.distance(end) < anchorPos.distance(start);
         }
     }
 
@@ -313,10 +315,10 @@ public class RichTextLabel extends TextFlow {
                         var screenAngle = BasicFX.getAngleOnScreen(this);
                          if (screenAngle.isPresent() && screenAngle.get() > 90 && screenAngle.get() < 270) {
                             setRotate(GeometryUtilsFX.modulo360(getRotate() + 180.0));
-                        }
+                         }
                      } finally {
                         _inUprighting = false;
-                        if (getAnchor() != null) {
+                        if (false && getAnchor() != null) { // do not update here because uprighting will be lost
                             Platform.runLater(this::update);
                         }
                     }

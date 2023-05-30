@@ -206,10 +206,13 @@ public class ArgsOptions {
         return buf.toString();
     }
 
+    public static Command createCommand(String name, String description) {
+        return new Command(name, description);
+    }
+
     /**
      * call this once all arguments have been parsed. Quit on help
-     *
-	 */
+     */
     public void done() throws UsageException {
         if (!alreadyHasOtherComment)
             comment(OTHER);

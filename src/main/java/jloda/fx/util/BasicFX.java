@@ -402,10 +402,11 @@ public class BasicFX {
      * @return angle in degrees
      */
     public static Optional<Double> getAngleOnScreen(Pane pane) {
-        var orig = pane.localToScreen(0, 0);
+        var transform = pane.getLocalToSceneTransform();
+        var orig = transform.transform(0, 0, 0);
         if (orig != null) {
-            var x1000 = pane.localToScreen(1000, 0);
-            return Optional.of(GeometryUtilsFX.modulo360(x1000.subtract(orig).angle(1000.0, 0.0)));
+            var x1000 = transform.transform(1000, 0, 0);
+            return Optional.of(GeometryUtilsFX.modulo360(x1000.subtract(orig).angle(1000.0, 0.0, 0)));
         } else
             return Optional.empty();
     }
@@ -418,7 +419,8 @@ public class BasicFX {
      */
     public static Optional<Boolean> isMirrored(Pane pane) {
         var orig = pane.localToScreen(0, 0);
-        if (orig != null) {
+        // todo: how to determine angle if local to scene transform is not type2D?
+        if (orig != null && pane.getLocalToSceneTransform().isType2D()) {
             var x1000 = pane.localToScreen(1000, 0);
             var y1000 = pane.localToScreen(0, 1000);
             var p1 = x1000.subtract(orig);
