@@ -304,21 +304,25 @@ public class RichTextLabel extends TextFlow {
      */
     public void ensureUpright() {
         if (!_inUprighting) {
+            Platform.runLater(this::update);
             Platform.runLater(() -> {
                 if (!_inUprighting) {
                     _inUprighting = true;
+                    var same = true;
                     try {
                         var mirrored = BasicFX.isMirrored(this);
                         if (mirrored.isPresent() && mirrored.get()) {
                             setScaleX(-getScaleX());
+                            same = false;
                         }
                         var screenAngle = BasicFX.getAngleOnScreen(this);
                          if (screenAngle.isPresent() && screenAngle.get() > 90 && screenAngle.get() < 270) {
-                            setRotate(GeometryUtilsFX.modulo360(getRotate() + 180.0));
+                             setRotate(GeometryUtilsFX.modulo360(getRotate() + 180.0));
+                             same = false;
                          }
                      } finally {
                         _inUprighting = false;
-                        if (false && getAnchor() != null) { // do not update here because uprighting will be lost
+                        if (same && getAnchor() != null) {
                             Platform.runLater(this::update);
                         }
                     }
