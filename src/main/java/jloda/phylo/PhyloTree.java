@@ -26,7 +26,7 @@ import jloda.util.BitSetUtils;
 import jloda.util.IteratorUtils;
 import jloda.util.Pair;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -43,8 +43,6 @@ public class PhyloTree extends PhyloSplitsGraph {
 	private volatile EdgeSet reticulateEdges;
 	private volatile NodeArray<List<Node>> lsaChildrenMap; // keep track of children in LSA tree in network
 	private volatile EdgeSet transferAcceptorEdges;
-
-	private NewickIO newickIO = null;
 
 	/**
 	 * Construct a new empty phylogenetic tree.
@@ -146,23 +144,13 @@ public class PhyloTree extends PhyloSplitsGraph {
 		return tree;
 	}
 
-	public void setNewickIO(NewickIO newickIO) {
-		this.newickIO = newickIO;
-	}
-
-	public NewickIO getNewickIO() {
-		if (newickIO == null)
-			newickIO = new NewickIO();
-		return newickIO;
-	}
-
 	/**
 	 * Produces a string representation of the tree in bracket notation.
 	 *
 	 * @return a string representation of the tree in bracket notation
 	 */
 	public String toBracketString() {
-		return getNewickIO().toBracketString(this, true);
+		return (new NewickIO()).toBracketString(this, true);
 	}
 
 	/**
@@ -171,7 +159,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 	 * @return a string representation of the tree in bracket notation
 	 */
 	public String toBracketString(boolean showWeights) {
-		return getNewickIO().toBracketString(this, showWeights);
+		return toBracketString(showWeights, null);
 
 	}
 
@@ -180,95 +168,16 @@ public class PhyloTree extends PhyloSplitsGraph {
 	 *
 	 * @return a string representation of the tree in bracket notation
 	 */
-	public String toString(Map<String, String> translate) {
-		return getNewickIO().toString(this, translate);
+	public String toBracketString(boolean showWeights, Map<String, String> translate) {
+		return (new NewickIO()).toBracketString(this, showWeights, translate);
 	}
 
-	public String toBracketString(NewickIO.OutputFormat format) {
-		return getNewickIO().toBracketString(this, format);
-	}
-
-	/**
-	 * writes a tree
-	 */
-	public void write(final Writer writer, final boolean showWeights, final Function<Node, String> labeler) throws IOException {
-		getNewickIO().write(this, writer,showWeights,labeler);
-	}
-
-	/**
-	 * Writes a tree in bracket notation
-	 *
-	 * @param w            the writer
-	 * @param writeWeights write edge weights or not
-	 */
-	public void write(Writer w, boolean writeWeights) throws IOException {
-		getNewickIO().write(this, w, writeWeights, false);
-	}
-
-	/**
-	 * Writes a tree in bracket notation
-	 *
-	 * @param w            the writer
-	 * @param writeWeights write edge weights or not
-	 */
-	public void write(Writer w, boolean writeWeights, boolean writeEdgeLabelsAsComments) throws IOException {
-		getNewickIO().write(this, w, writeWeights, writeEdgeLabelsAsComments);
-	}
-
-	public void write(Writer w, NewickIO.OutputFormat newickOutputFormat) throws IOException {
-		getNewickIO().write(this, w, newickOutputFormat, null, null);
-
-	}
-
-	/**
-	 * Writes a tree in bracket notation. Uses extended bracket notation to write reticulate network
-	 *
-	 * @param w             the writer
-	 * @param nodeId2Number if non-null, will contain node-id to number mapping after call
-	 * @param edgeId2Number if non-null, will contain edge-id to number mapping after call
-	 */
-	public void write(Writer w, NewickIO.OutputFormat format, Map<Integer, Integer> nodeId2Number, Map<Integer, Integer> edgeId2Number) throws IOException {
-		getNewickIO().write(this,w,format,nodeId2Number,edgeId2Number);
-	}
-
-	/**
-	 * Given a string representation of a tree, returns the tree.
-	 *
-	 * @param str String
-	 * @return tree PhyloTree
-	 */
-	static public PhyloTree valueOf(String str) throws IOException {
-		var tree = new PhyloTree();
-		tree.parseBracketNotation(str, true);
-		return tree;
-	}
-
-	/**
-	 * reads a line and then parses it as a rooted tree or network in Newick format
-	 *
-	 * @param r the reader
-	 */
-	public void read(Reader r) throws IOException {
-		final BufferedReader br;
-		if (r instanceof BufferedReader)
-			br = (BufferedReader) r;
-		else
-			br = new BufferedReader(r);
-		getNewickIO().parseBracketNotation(this,br.readLine(), true, true);
-	}
 
 	/**
 	 * Parses a tree or network in Newick notation, and sets the root, if desired
 	 */
 	public void parseBracketNotation(String str, boolean rooted) throws IOException {
-		getNewickIO().parseBracketNotation(this,str,rooted,true);
-	}
-
-	/**
-	 * Parses a tree or network in Newick notation, and sets the root, if desired
-	 */
-	public void parseBracketNotation(String str, boolean rooted, boolean doClear) throws IOException {
-		getNewickIO().parseBracketNotation(this, str, rooted, doClear);
+		(new NewickIO()).parseBracketNotation(this, str, rooted,true);
 	}
 
 	/**
@@ -277,7 +186,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 	 * @return true, if v is an unlabeled node of degree 2
 	 */
 	public boolean isUnlabeledDiVertex(Node v) {
-		return v.getDegree() == 2 && (getLabel(v) == null || getLabel(v).length() == 0);
+		return v.getDegree() == 2 && (getLabel(v) == null || getLabel(v).isBlank());
 	}
 
 	/**
@@ -409,18 +318,6 @@ public class PhyloTree extends PhyloSplitsGraph {
 					delDivertex(oldRoot);
 			}
 		}
-	}
-
-	/**
-	 * prints a tree
-	 *
-	 * @param out  the print stream
-	 * @param wgts show weights?
-	 */
-	public void print(PrintStream out, boolean wgts) throws Exception {
-		StringWriter st = new StringWriter();
-		write(st, wgts);
-		out.println(st);
 	}
 
 

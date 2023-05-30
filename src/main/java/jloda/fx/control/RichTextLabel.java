@@ -1219,6 +1219,5 @@ public class RichTextLabel extends TextFlow {
 				   "segmentStart=" + segmentStart + ", " +
 				   "argument=" + argument + ']';
 		}
-
 	}
 }

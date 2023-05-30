@@ -38,7 +38,6 @@ import java.util.function.Supplier;
  * Daniel Huson, 2002-2023
  */
 public class NewickIO {
-
 	public static boolean WARN_HAS_MULTILABELS = true;
 	public static final String COLLAPSED_NODE_SUFFIX = "{+}";
 
@@ -60,10 +59,7 @@ public class NewickIO {
 	}
 
 	public String toBracketString(PhyloTree tree, boolean showWeights) {
-		if (PhyloTree.SUPPORT_RICH_NEWICK)
-			return toBracketString(tree, new OutputFormat(showWeights, false, tree.hasEdgeConfidences(), tree.hasEdgeProbabilities(), false));
-		else
-			return toBracketString(tree, new OutputFormat(showWeights, false, false, false, false));
+		return toBracketString(tree, showWeights, null);
 	}
 
 	public String toBracketString(PhyloTree tree, OutputFormat format) {
@@ -81,7 +77,7 @@ public class NewickIO {
 	 *
 	 * @return a string representation of the tree in bracket notation
 	 */
-	public String toString(PhyloTree tree, Map<String, String> translate) {
+	public String toBracketString(PhyloTree tree, boolean showWeights, Map<String, String> translate) {
 		try (var sw = new StringWriter()) {
 			if (translate == null || translate.size() == 0) {
 				write(tree, sw, true, false);
@@ -96,7 +92,7 @@ public class NewickIO {
 							tmpTree.setLabel(v, value);
 					}
 				}
-				write(tmpTree, sw, true, false);
+				write(tmpTree, sw, showWeights, false);
 			}
 			return sw.toString();
 		} catch (Exception ex) {
@@ -358,6 +354,15 @@ public class NewickIO {
 	 * Parses a tree or network in Newick notation, and sets the root, if desired
 	 */
 	public void parseBracketNotation(PhyloTree tree, String str, boolean rooted) throws IOException {
+		parseBracketNotation(tree, str, rooted, true);
+	}
+
+	/**
+	 * Parses a tree or network in Newick notation, and sets the root, if desired
+	 */
+	public void parseBracketNotation(PhyloTree tree, String str, boolean rooted, Consumer<String> newickLeadingCommentConsumer, BiConsumer<Node, String> newickNodeCommentConsumer) throws IOException {
+		setNewickLeadingCommentConsumer(newickLeadingCommentConsumer);
+		setNewickNodeCommentConsumer(newickNodeCommentConsumer);
 		parseBracketNotation(tree, str, rooted, true);
 	}
 
