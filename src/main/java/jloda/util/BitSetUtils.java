@@ -331,4 +331,19 @@ public class BitSetUtils {
         }
         return bits;
     }
+
+    public static BitSet randomSubset (int size, Random random,BitSet set) {
+        if(size>=set.size()) {
+            return copy(set);
+        }
+        else {
+            var small = (size <= 0.5 * set.cardinality()); // if small, will randomly add, otherwise, remove
+            var subset = (small?new BitSet():BitSetUtils.asBitSet(BitSetUtils.range(1,set.cardinality()+1)));
+            while (subset.cardinality() != size) {
+                var v=random.nextInt(set.cardinality()) + 1;
+                subset.set(v,small);
+            }
+            return subset;
+        }
+    }
 }
