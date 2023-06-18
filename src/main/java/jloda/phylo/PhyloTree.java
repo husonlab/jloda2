@@ -226,6 +226,14 @@ public class PhyloTree extends PhyloSplitsGraph {
 		return g;
 	}
 
+	public Node contract(Edge e) {
+		var reroot = (e.getSource() == getRoot());
+		var result = super.contract(e);
+		if (reroot)
+			setRoot(result);
+		return result;
+	}
+
 	/**
 	 * gets the root node if set, or null
 	 *

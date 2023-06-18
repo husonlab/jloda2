@@ -32,18 +32,17 @@ public class Edge extends NodeEdge implements Comparable<Edge> {
     final public static int BEFORE = -1; // insert before reference edge
     final public static int AFTER = 1; // insert after reference edge
 
-    private Node source;   //Source vertex
-    private Node target;   //Target vertex
+    private Node source;   //Source node
+    private Node target;   //Target node
 
-    private Edge sNext;    //Next edge in list of adjacentEdges incident with v
-    private Edge sPrev;    //Previous edge in list of adjacentEdges incident with v
+    private Edge sNext;    //Next edge in list of edges incident with source node
+    private Edge sPrev;    //Previous edge in list of edges incident with source node
 
-    private Edge tNext;   //Next edge in list of adjacentEdges incident with w
-    private Edge tPrev;   //Previous edge in list of adjacentEdges incident with w
+    private Edge tNext;   //Next edge in list of edges incident with target node
+    private Edge tPrev;   //Previous edge in list of edges incident with target node
 
     /**
      * Construct a new edge from v to w.
-     *
      */
     Edge(Graph G, Node v, Node w) throws IllegalSelfEdgeException {
         this(G, v, null, w, null, Edge.AFTER, Edge.AFTER, null);
@@ -417,6 +416,109 @@ public class Edge extends NodeEdge implements Comparable<Edge> {
 
     public void setData(Object data) {
         getOwner().setData(this, data);
+    }
+
+    /**
+     * change the target node to w
+     *
+     * @param w new target node
+     */
+    public void changeTarget(Node w) {
+        if (w != target) {
+            checkOwner(w);
+
+            if (target.getFirstAdjacentEdge() == this)
+                target.setFirstAdjacentEdge(target.getNextAdjacentEdge(this));
+            if (target.getLastAdjacentEdge() == this)
+                target.setLastAdjacentEdge(target.getPrevAdjacentEdge(this));
+
+            if (tPrev != null)
+                tPrev.setNext(target, tNext);
+            if (tNext != null)
+                tNext.setPrev(target, tPrev);
+
+            target.decrementInDegree();
+
+            tPrev = null;
+            tNext = null;
+
+            if (w.getFirstAdjacentEdge() == null)
+                w.setFirstAdjacentEdge(this);
+            if (w.getLastAdjacentEdge() != null) {
+                setPrev(w, w.getLastAdjacentEdge());
+                w.getLastAdjacentEdge().setNext(w, this);
+            }
+            w.setLastAdjacentEdge(this);
+
+            target = w;
+            w.incrementInDegree();
+
+        }
+    }
+
+    /**
+     * change the source node to w
+     *
+     * @param w new source node
+     */
+    public void changeSource(Node w) {
+        if (w != source) {
+            checkOwner(w);
+
+            if (source.getFirstAdjacentEdge() == this)
+                source.setFirstAdjacentEdge(source.getNextAdjacentEdge(this));
+            if (source.getLastAdjacentEdge() == this)
+                source.setLastAdjacentEdge(source.getPrevAdjacentEdge(this));
+
+            if (sPrev != null) {
+                sPrev.setNext(source, sNext);
+            }
+            if (sNext != null) {
+                sNext.setPrev(source, sPrev);
+            }
+
+            source.decrementOutDegree();
+
+            sPrev = null;
+            sNext = null;
+
+            if (w.getFirstAdjacentEdge() == null)
+                w.setFirstAdjacentEdge(this);
+            if (w.getLastAdjacentEdge() != null) {
+                this.setPrev(w, w.getLastAdjacentEdge());
+                w.getLastAdjacentEdge().setNext(w, this);
+            }
+            w.setLastAdjacentEdge(this);
+
+            source = w;
+            w.incrementOutDegree();
+
+        }
+    }
+
+    public static void main(String[] args) {
+        var graph = new Graph();
+        var nodes = List.of(graph.newNode(), graph.newNode(), graph.newNode(), graph.newNode());
+
+        var edges = List.of(graph.newEdge(nodes.get(0), nodes.get(1)), graph.newEdge(nodes.get(1), nodes.get(2)), graph.newEdge(nodes.get(2), nodes.get(3)), graph.newEdge(nodes.get(3), nodes.get(0)));
+
+        System.err.println("Before: " + graph.toStringFull());
+
+        System.err.println("Changing target of edge 4 to node 2:");
+        edges.get(3).changeTarget(nodes.get(1));
+
+        System.err.println("After1: " + graph.toStringFull());
+
+        System.err.println("Changing source of edge 2 to node 1:");
+        edges.get(1).changeSource(nodes.get(0));
+
+        System.err.println("After2: " + graph.toStringFull());
+
+        System.err.println("Delete edge 3:");
+        graph.deleteEdge(edges.get(2));
+
+        System.err.println("After3: " + graph.toStringFull());
+
     }
 }
 

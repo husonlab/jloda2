@@ -26,6 +26,7 @@ import jloda.util.IteratorUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -1815,22 +1816,22 @@ public class Graph extends GraphBase implements INamed {
      * contract an edge
      *
      * @param e to be contracted
-     * @return remaining node
+     * @return remaining target node
      */
     public Node contract(Edge e) {
         var s = e.getSource();
         var t = e.getTarget();
-        for(var f:s.adjacentEdges()) {
-			if (f != e) {
-				var g = f.getTarget() == s ? newEdge(f.getSource(), t) : newEdge(t, f.getTarget());
-				g.setData(f.getData());
-				g.setInfo(f.getInfo());
-				g.setLabel(f.getLabel());
-			}
-		}
-		deleteNode(s);
-		return t;
-	}
+
+        // all edges adjacent to s are made adjacent to t:
+        for (var f : s.adjacentEdgesStream(false).filter(f -> f != e).collect(Collectors.toList())) {
+            if (f.getSource().equals(s))
+                f.changeSource(t);
+            else if (f.getTarget().equals(s))
+                f.changeTarget(t);
+        }
+        deleteNode(s);
+        return t;
+    }
 
 	void close(NodeSet set) {
 		synchronized (nodeSets) {
