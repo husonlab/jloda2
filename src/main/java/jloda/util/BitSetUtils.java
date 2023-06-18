@@ -71,6 +71,12 @@ public class BitSetUtils {
         return result;
     }
 
+    public static BitSet xor(BitSet a, BitSet b) {
+        var xor = copy(a);
+        xor.xor(b);
+        return xor;
+    }
+
     /**
      * does first set contain second set?
      *
