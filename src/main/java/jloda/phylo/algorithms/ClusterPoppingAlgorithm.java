@@ -25,11 +25,9 @@ import jloda.graph.NodeArray;
 import jloda.phylo.PhyloTree;
 import jloda.util.BitSetUtils;
 import jloda.util.IteratorUtils;
+import jloda.util.Pair;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -116,7 +114,8 @@ public class ClusterPoppingAlgorithm {
 				}
 
 				// make sure we have all leaf edges:
-				for (var v : IteratorUtils.asList(network.leaves())) {
+				if(true)
+					for (var v : IteratorUtils.asList(network.leaves())) {
 					var cluster = nodeClusterMap.get(v);
 					if (cluster.cardinality() == 1) {
 						network.addTaxon(v, cluster.nextSetBit(1));
@@ -132,14 +131,20 @@ public class ClusterPoppingAlgorithm {
 				if (weightFunction != null)
 					network.nodeStream().filter(v -> v.getInDegree() == 1)
 							.forEach(v -> {
-								var weight = weightFunction.apply(nodeClusterMap.get(v));
-								if (weight != -1)
+								var weight=-1d;
+								var cluster=nodeClusterMap.get(v);
+								if(cluster!=null)
+								 	weight = weightFunction.apply(cluster);
+								if (weight != -1d)
 									network.setWeight(v.getFirstInEdge(), weight);
 							});
 				if (confidenceFunction != null)
 					network.nodeStream().filter(v -> v.getInDegree() == 1)
 							.forEach(v -> {
-								var confidence = confidenceFunction.apply(nodeClusterMap.get(v));
+								var confidence=-1d;
+								var cluster=nodeClusterMap.get(v);
+								if(cluster!=null)
+									confidence = confidenceFunction.apply(nodeClusterMap.get(v));
 								if (confidence != -1)
 									network.setConfidence(v.getFirstInEdge(), confidence);
 							});
