@@ -198,6 +198,7 @@ public class PngEncoderFX extends Object {
 	 * @return an array of bytes, or null if there was a problem
 	 */
 	public byte[] pngEncode(boolean encodeAlpha) {
+		this.encodeAlpha=encodeAlpha;
 		byte[]  pngIdBytes = {-119, 80, 78, 71, 13, 10, 26, 10};
 
 		if (image == null) {
