@@ -38,7 +38,7 @@ public class CopyableLabel extends TextField {
 
         this.setEditable(false);
         this.setFocusTraversable(false);
-        setStyle("-fx-background-color: transparent;");
+        setStyle("-fx-background-color: transparent;-fx-display-caret: false;");
 
         this.focusedProperty().addListener((v, o, n) -> {
             if (!n)
