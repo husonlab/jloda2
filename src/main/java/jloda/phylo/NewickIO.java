@@ -163,10 +163,7 @@ public class NewickIO {
 
 		if (tree.hasReticulateEdges()) {
 			// following two lines enable us to write reticulate networks in Newick format
-			if (outputNodeReticulationNumberMap == null)
-				outputNodeReticulationNumberMap = tree.newNodeIntArray();
-			else
-				outputNodeReticulationNumberMap.clear();
+			outputNodeReticulationNumberMap = tree.newNodeIntArray();
 			outputReticulationNumber = 0;
 		}
 
