@@ -20,6 +20,7 @@
 
 package jloda.util;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -31,6 +32,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 public class PeakMemoryUsageMonitor {
     private static long start;
+    private static long maximumWallClockTime;
     private static long peak;
 
     /**
@@ -42,6 +44,11 @@ public class PeakMemoryUsageMonitor {
                long used = ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576);
                if (used > peak)
                    peak = used;
+               if (maximumWallClockTime > 0 && System.currentTimeMillis() - start > maximumWallClockTime) {
+                   System.err.println("ABORT: Max wall-clock time exceeded: " + Basic.getDurationString(0, maximumWallClockTime));
+                   report();
+                   System.exit(140); // exceeded time constraints
+               }
            }, 0, 5, SECONDS);
        }
         peak = ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576);
@@ -52,7 +59,7 @@ public class PeakMemoryUsageMonitor {
      * report the recorded memory and time to stderr
      */
     public static void report() {
-        System.err.println("Total time:  " + PeakMemoryUsageMonitor.getSecondsSinceStartString());
+        System.err.println("Total time :  " + PeakMemoryUsageMonitor.getSecondsSinceStartString());
         System.err.println("Peak memory: " + PeakMemoryUsageMonitor.getPeakUsageString());
     }
 
@@ -76,6 +83,28 @@ public class PeakMemoryUsageMonitor {
      * @return seconds since start
      */
     public static String getSecondsSinceStartString() {
-        return String.format("%,.1fs", (System.currentTimeMillis() - start) / 1000.0);
+        return Basic.getDurationString(start, System.currentTimeMillis());
+    }
+
+    /**
+     * set maximum amount of wall-clock program is allowed to run
+     *
+     * @param maxTimeInMilliSeconds maximum amount of time, or 0, if there is no constraint
+     */
+    public static void setMaximumWallClockTime(long maxTimeInMilliSeconds) {
+        PeakMemoryUsageMonitor.maximumWallClockTime = maxTimeInMilliSeconds;
+    }
+
+    /**
+     * sets the maximum wall-clock time for the program
+     *
+     * @param durationString duration string, e.g. 15s, 30m, 12h or 6d
+     */
+    public static void setMaximumWallClockTime(String durationString) {
+        maximumWallClockTime = Duration.parse("PT" + durationString.toUpperCase()).toMillis();
+    }
+
+    public static long getMaximumWallClockTime() {
+        return maximumWallClockTime;
     }
 }

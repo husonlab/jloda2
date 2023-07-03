@@ -80,7 +80,6 @@ public class StringUtils {
 			list.add(str.substring(i, j));
 		}
 		return list.toArray(new String[0]);
-
 	}
 
 	/**

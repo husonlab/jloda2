@@ -311,14 +311,18 @@ public class Basic {
     }
 
     public static String getDurationString(long start, long end) {
-        long diff = Math.abs(end - start);
+        var milliseconds = end - start;
+        var seconds = (milliseconds / 1000) % 60;
+        var minutes = (milliseconds / (1000 * 60)) % 60;
+        var hours = milliseconds / (1000 * 60 * 60);
 
-        if (diff > 3600000)
-            return String.format("%.1f", diff / 3600000.0) + "m";
-        else if (diff > 60000)
-            return String.format("%.1f", diff / 60000.0) + "m";
-        else
-            return String.format("%.1f", diff / 1000.0) + "s";
+        if (hours >= 1) {
+            return String.format("%dh %dm %ds", hours, minutes, seconds);
+        } else if (minutes >= 1) {
+            return String.format("%dm %ds", minutes, seconds);
+        } else {
+            return String.format("%ds", seconds);
+        }
     }
 
     /**

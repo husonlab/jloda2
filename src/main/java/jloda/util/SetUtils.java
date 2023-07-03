@@ -46,6 +46,7 @@ public class SetUtils {
                     v = it.next();
                     if (b.contains(v))
                         break;
+                    v = null;
                 }
             }
 
