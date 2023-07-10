@@ -423,8 +423,7 @@ public class NewickIO {
 							tree.setConfidence(v.getFirstInEdge(), NumberUtils.parseDouble(tree.getLabel(v)));
 							tree.setLabel(v, null);
 						});
-				var maxValue = tree.nodeStream().filter(v -> !v.isLeaf() && v.getInDegree() == 1)
-						.mapToDouble(v -> NumberUtils.parseDouble(tree.getLabel(v))).max();
+				var maxValue=tree.edgeStream().filter(e->!e.getTarget().isLeaf()).mapToDouble(e -> tree.getConfidence(e)).max();
 				if (maxValue.isPresent()) {
 					double leafValue = (maxValue.getAsDouble() > 1 && maxValue.getAsDouble() <= 100 ? 100 : 1);
 					tree.nodeStream().filter(v -> v.isLeaf() && v.getInDegree() == 1)
