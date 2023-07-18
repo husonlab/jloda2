@@ -80,7 +80,7 @@ public class NewickIO {
 	public String toBracketString(PhyloTree tree, boolean showWeights, Map<String, String> translate) {
 		try (var sw = new StringWriter()) {
 			if (translate == null || translate.size() == 0) {
-				write(tree, sw, true, false);
+				write(tree, sw, showWeights, false);
 			} else {
 				var tmpTree = new PhyloTree();
 				tmpTree.copy(tree);
@@ -111,14 +111,14 @@ public class NewickIO {
 	/**
 	 * Writes a tree in bracket notation
 	 *
-	 * @param w            the writer
-	 * @param writeWeights write edge weights or not
+	 * @param w           the writer
+	 * @param showWeights write edge weights or not
 	 */
-	public void write(PhyloTree tree, Writer w, boolean writeWeights, boolean writeEdgeLabelsAsComments) throws IOException {
+	public void write(PhyloTree tree, Writer w, boolean showWeights, boolean writeEdgeLabelsAsComments) throws IOException {
 		if (PhyloTree.SUPPORT_RICH_NEWICK) {
-			write(tree, w, new OutputFormat(writeWeights, false, tree.hasEdgeConfidences(), tree.hasEdgeProbabilities(), writeEdgeLabelsAsComments), null, null);
+			write(tree, w, new OutputFormat(showWeights, false, tree.hasEdgeConfidences(), tree.hasEdgeProbabilities(), writeEdgeLabelsAsComments), null, null);
 		} else {
-			write(tree, w, new OutputFormat(writeWeights, false, false, false, writeEdgeLabelsAsComments), null, null);
+			write(tree, w, new OutputFormat(showWeights, false, false, false, writeEdgeLabelsAsComments), null, null);
 		}
 	}
 
