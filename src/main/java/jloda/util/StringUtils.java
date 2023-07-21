@@ -1511,7 +1511,7 @@ public class StringUtils {
 			for (var pos = 0; pos < string.length(); pos++) {
 				final var ch = string.charAt(pos);
 				if (Character.isUpperCase(ch)) {
-					if (!afterWhiteSpace && !afterCapital) {
+					if (!afterWhiteSpace && !afterCapital || (afterCapital && pos + 1 < string.length() && !Character.isUpperCase(string.charAt(pos + 1)))) {
 						buf.append(" ");
 					}
 					afterCapital = true;

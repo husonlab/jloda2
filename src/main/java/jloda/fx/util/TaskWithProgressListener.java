@@ -107,7 +107,7 @@ abstract public class TaskWithProgressListener<T> extends Task<T> implements Cal
 
                 @Override
                 public boolean isUserCancelled() {
-                    return false;
+                    return TaskWithProgressListener.this.isCanceled;
                 }
 
                 @Override
