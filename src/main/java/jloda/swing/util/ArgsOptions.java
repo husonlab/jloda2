@@ -445,11 +445,11 @@ public class ArgsOptions {
         if (!longKey.startsWith("-"))
             longKey = "--" + longKey;
 
-        if (shortKeys.contains(shortKey))
+        if (!isDoHelp() && shortKeys.contains(shortKey))
             throw new RuntimeException("Internal error: multiple definitions of short key: " + shortKey);
         else
             shortKeys.add(shortKey);
-        if (longKeys.contains(longKey))
+        if (!isDoHelp() && longKeys.contains(longKey))
             throw new RuntimeException("Internal error: multiple definitions of long key: " + longKey);
         else
             longKeys.add(longKey);
@@ -497,11 +497,11 @@ public class ArgsOptions {
         if (!longKey.startsWith("-"))
             longKey = "--" + longKey;
 
-        if (shortKeys.contains(shortKey))
+        if (!isDoHelp() && shortKeys.contains(shortKey))
             throw new RuntimeException("Internal error: multiple definitions of short key: " + shortKey);
         else
             shortKeys.add(shortKey);
-        if (longKeys.contains(longKey))
+        if (!isDoHelp() && longKeys.contains(longKey))
             throw new RuntimeException("Internal error: multiple definitions of long key: " + longKey);
         else
             longKeys.add(longKey);
@@ -555,11 +555,11 @@ public class ArgsOptions {
         if (!longKey.startsWith("-"))
             longKey = "--" + longKey;
 
-        if (shortKeys.contains(shortKey))
+        if (!isDoHelp() && shortKeys.contains(shortKey))
             throw new RuntimeException("Internal error: multiple definitions of short key: " + shortKey);
         else
             shortKeys.add(shortKey);
-        if (longKeys.contains(longKey))
+        if (!isDoHelp() && longKeys.contains(longKey))
             throw new RuntimeException("Internal error: multiple definitions of long key: " + longKey);
         else
             longKeys.add(longKey);
@@ -610,11 +610,11 @@ public class ArgsOptions {
         if (!longKey.startsWith("-"))
             longKey = "--" + longKey;
 
-        if (shortKeys.contains(shortKey))
+        if (!isDoHelp() && shortKeys.contains(shortKey))
             throw new RuntimeException("Internal error: multiple definitions of short key: " + shortKey);
         else
             shortKeys.add(shortKey);
-        if (longKeys.contains(longKey))
+        if (!isDoHelp() && longKeys.contains(longKey))
             throw new RuntimeException("Internal error: multiple definitions of long key: " + longKey);
         else
             longKeys.add(longKey);
