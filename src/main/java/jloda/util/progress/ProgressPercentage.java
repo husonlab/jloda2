@@ -67,7 +67,8 @@ public class ProgressPercentage implements ProgressListener {
 	 */
 	public ProgressPercentage(final String taskName) {
 		this(0);
-		System.err.println(taskName);
+		if (taskName != null && !taskName.isBlank())
+			System.err.println(taskName);
 	}
 
 	/**
