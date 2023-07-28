@@ -31,50 +31,51 @@ import java.util.BitSet;
  */
 public class GuessSequenceType {
 
-    /**
-     * does file contain nucleotides
-     *
+	/**
+	 * does file contain nucleotides
 	 */
-    public static boolean isFileContainsNucleotides(String fileName) throws IOException {
-        final BitSet chars = new BitSet();
-        int count = 0;
+	public static boolean isFileContainsNucleotides(String fileName) throws IOException {
+		final BitSet chars = new BitSet();
+		int count = 0;
 
-        try (IFastAIterator it = FastAFileIterator.getFastAOrFastQAsFastAIterator(fileName)) {
-            loop:
-            while (it.hasNext()) {
-                final String sequence = it.next().getSecond();
-                for (int i = 0; i < sequence.length(); i++) {
-                    chars.set(Character.toUpperCase(sequence.charAt(i)));
-                    count++;
-                    if (count >= 5000)
-                        break loop;
-                }
-            }
-        }
-        boolean result = allNucleotides(chars) && chars.get('A') && chars.get('C') && chars.get('G') && (chars.get('T') || chars.get('U'));
-        if (!result) {
-            System.err.println("Chars: ");
-            for (int i = chars.nextSetBit(0); i != -1; i = chars.nextSetBit(i + 1)) {
-                System.err.print((char) i);
-            }
-            System.err.println();
-        }
-        return result;
-    }
+		try (IFastAIterator it = FastAFileIterator.getFastAOrFastQAsFastAIterator(fileName)) {
+			loop:
+			while (it.hasNext()) {
+				final String sequence = it.next().getSecond();
+				for (int i = 0; i < sequence.length(); i++) {
+					chars.set(Character.toUpperCase(sequence.charAt(i)));
+					count++;
+					if (count >= 5000)
+						break loop;
+				}
+			}
+		}
+		boolean result = allNucleotides(chars) && chars.get('A') && chars.get('C') && chars.get('G') && (chars.get('T') || chars.get('U'));
+		if (false) {
+			if (!result) {
+				System.err.println("Chars: ");
+				for (int i = chars.nextSetBit(0); i != -1; i = chars.nextSetBit(i + 1)) {
+					System.err.print((char) i);
+				}
+				System.err.println();
+			}
+		}
+		return result;
+	}
 
-    private static boolean allNucleotides(BitSet set) {
-        final String nucleotides = "ACGHKMRSTUVWY";
+	private static boolean allNucleotides(BitSet set) {
+		final String nucleotides = "ACGHKMRSTUVWY";
 
-        boolean ok = true;
-        for (int c = set.nextSetBit(0); c != -1; c = set.nextSetBit(c + 1)) {
-            if (nucleotides.indexOf(c) == -1) {
-                if (ok)
-                    ok = false;
-                else
-                    return false;
-            }
-        }
-        return true;
-    }
+		boolean ok = true;
+		for (int c = set.nextSetBit(0); c != -1; c = set.nextSetBit(c + 1)) {
+			if (nucleotides.indexOf(c) == -1) {
+				if (ok)
+					ok = false;
+				else
+					return false;
+			}
+		}
+		return true;
+	}
 }
 
