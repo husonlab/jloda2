@@ -7,6 +7,9 @@ module jloda2 {
 
 	requires VectorGraphics2D;
 	requires javafx.swing;
+	requires org.fxmisc.richtext;
+	requires org.apache.pdfbox;
+	requires org.apache.fontbox;
 
 	exports jloda.fx.dialog;
 	exports jloda.fx.colorscale;
@@ -57,4 +60,6 @@ module jloda2 {
 	exports jloda.fx.workflow;
 	exports jloda.phylo.algorithms;
 	exports jloda.fx.selection.rubberband;
+
+	exports jloda.xtra;
 }
