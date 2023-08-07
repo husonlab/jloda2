@@ -538,4 +538,40 @@ public class BasicFX {
         }
     }
 
+    /**
+     * copies a list of menu items, setting up listeners for the appropriate properties
+     *
+     * @param items items to copy
+     * @return copies of items
+     */
+    public static List<MenuItem> copyMenu(List<MenuItem> items) {
+        var result = new ArrayList<MenuItem>();
+        for (var sourceItem : items) {
+            MenuItem targetItem;
+            if (sourceItem instanceof SeparatorMenuItem) {
+                targetItem = new SeparatorMenuItem();
+            } else if (sourceItem instanceof CheckMenuItem sourceCheckMenuItem) {
+                targetItem = new CheckMenuItem(sourceCheckMenuItem.getText());
+                ((CheckMenuItem) targetItem).selectedProperty().bindBidirectional(sourceCheckMenuItem.selectedProperty());
+            } else if (sourceItem instanceof RadioMenuItem sourceRadioMenuItem) {
+                targetItem = new RadioMenuItem(sourceRadioMenuItem.getText());
+                ((RadioMenuItem) targetItem).selectedProperty().bindBidirectional(sourceRadioMenuItem.selectedProperty());
+            } else if (sourceItem instanceof Menu sourceMenu) {
+                var subMenu = new Menu(sourceMenu.getText());
+                subMenu.getItems().addAll(copyMenu(sourceMenu.getItems()));
+                targetItem = subMenu;
+            } else {
+                targetItem = new MenuItem(sourceItem.getText());
+            }
+            targetItem.setOnAction(e -> {
+                var action = sourceItem.getOnAction();
+                if (action != null)
+                    Platform.runLater(() -> action.handle(e));
+            });
+            targetItem.disableProperty().bindBidirectional(sourceItem.disableProperty());
+            result.add(targetItem);
+
+        }
+        return result;
+    }
 }
