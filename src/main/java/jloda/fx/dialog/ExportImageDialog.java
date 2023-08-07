@@ -20,23 +20,17 @@
 
 package jloda.fx.dialog;
 
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import jloda.fx.util.PrintUtils;
 import jloda.fx.util.ProgramProperties;
 import jloda.fx.util.SaveToPDF;
+import jloda.fx.util.SaveToPNG;
 import jloda.fx.util.SaveToSVG;
 import jloda.fx.window.NotificationManager;
 import jloda.util.FileUtils;
 import jloda.util.StringUtils;
 
-import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -51,7 +45,7 @@ public class ExportImageDialog {
 		final var fileChooser = new FileChooser();
 		fileChooser.setTitle("Export Image");
 
-		var previousFormat = ProgramProperties.get("SaveImageFormat", "gif");
+		var previousFormat = ProgramProperties.get("SaveImageFormat", "png");
 		var previousDir = new File(ProgramProperties.get("SaveImageDir", ""));
 		if (previousDir.isDirectory()) {
 			fileChooser.setInitialDirectory(previousDir);
@@ -59,7 +53,7 @@ public class ExportImageDialog {
 			fileChooser.setInitialDirectory((new File(file).getParentFile()));
 		fileChooser.setInitialFileName(FileUtils.getFileNameWithoutPathOrSuffix(file) + "." + previousFormat);
 
-		var supported = new String[]{"gif", "png", "tif", "pdf", "svg"}; // ImageIO.getWriterFileSuffixes(); // not all work
+		var supported = new String[]{"png", "pdf", "svg"}; // ImageIO.getWriterFileSuffixes(); // not all work
 		var formats = Arrays.stream(supported).map(f -> "*." + f).toArray(String[]::new);
 		fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(String.format("Image Files (%s)", StringUtils.toString(supported, ", ")), formats));
 
@@ -81,21 +75,11 @@ public class ExportImageDialog {
 	}
 
 	public static void saveNodeAsImage(Node node, String formatName, File file) throws IOException {
-		if (formatName.equalsIgnoreCase("pdf")) {
-			SaveToPDF.apply(node, file);
-		} else if (formatName.equalsIgnoreCase("svg")) {
-			SaveToSVG.apply(node, file);
-		} else {
-			if (node instanceof Pane pane) {
-				var scrollPane = pane.getChildren().stream().filter(c -> c instanceof ScrollPane).map(c -> (ScrollPane) c).findAny().orElse(null);
-				node = PrintUtils.createImage(pane, scrollPane);
-			}
-			var parameters = new SnapshotParameters();
-			parameters.setFill(Color.TRANSPARENT);
-			var snapshot = node.snapshot(parameters, null);
-			if (!ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), formatName, file)) {
-				throw new IOException("Write failed: format not supported: " + formatName);
-			}
+		switch (formatName.toLowerCase()) {
+			case "pdf" -> SaveToPDF.apply(node, file);
+			case "svg" -> SaveToSVG.apply(node, file);
+			case "png" -> SaveToPNG.apply(node, file);
+			default -> throw new IOException("Write failed: format not supported: " + formatName);
 		}
 	}
 }
