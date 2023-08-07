@@ -27,13 +27,12 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import jloda.util.FileUtils;
 import jloda.util.ProgramProperties;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -59,22 +58,22 @@ public class RecentFilesManager {
 
         maxNumberRecentFiles = ProgramProperties.get("MaxNumberRecentFiles", 40);
 
-        for (String fileName : ProgramProperties.get("RecentFiles", new String[0])) {
-            if (new File(fileName).exists() && recentFiles.size() < maxNumberRecentFiles && !recentFiles.contains(fileName))
+        for (var fileName : ProgramProperties.get("RecentFiles", new String[0])) {
+            if (FileUtils.fileExistsAndIsNonEmpty(fileName) && recentFiles.size() < maxNumberRecentFiles && !recentFiles.contains(fileName))
                 recentFiles.add(fileName);
         }
 
         recentFiles.addListener((ListChangeListener<String>) (c) -> Platform.runLater(() -> {
 
-            final Set<WeakReference<Menu>> deadRefs = new HashSet<>();
+            var deadRefs = new HashSet<WeakReference<Menu>>();
 
             while (c.next()) {
                 if (c.wasRemoved()) {
-                    for (WeakReference<Menu> ref : menuReferences) {
-                        final Menu menu = ref.get();
+                    for (var ref : menuReferences) {
+                        var menu = ref.get();
                         if (menu != null) {
-                            final ArrayList<MenuItem> toDelete = new ArrayList<>();
-                            for (MenuItem menuItem : menu.getItems()) {
+                            var toDelete = new ArrayList<MenuItem>();
+                            for (var menuItem : menu.getItems()) {
                                 if (c.getRemoved().contains(menuItem.getText())) {
                                     toDelete.add(menuItem);
 
@@ -86,12 +85,12 @@ public class RecentFilesManager {
                     }
                 }
                 if (c.wasAdded()) {
-                    for (WeakReference<Menu> ref : menuReferences) {
-                        final Menu menu = ref.get();
+                    for (var ref : menuReferences) {
+                        var menu = ref.get();
                         if (menu != null) {
                             try {
-								for (String fileName : c.getAddedSubList()) {
-									final MenuItem openMenuItem = new MenuItem(fileName);
+                                for (var fileName : c.getAddedSubList()) {
+                                    var openMenuItem = new MenuItem(fileName);
 									openMenuItem.setOnAction((e) -> fileOpener.get().accept(fileName));
 									openMenuItem.disableProperty().bind(disable);
 									menu.getItems().add(0, openMenuItem);
@@ -104,7 +103,7 @@ public class RecentFilesManager {
                 }
             }
 
-            if (deadRefs.size() > 0) {
+            if (!deadRefs.isEmpty()) {
                 menuReferences.removeAll(deadRefs); // purge anything that has been garbage collected
             }
             ProgramProperties.put("RecentFiles", recentFiles.toArray(new String[0]));
@@ -130,7 +129,7 @@ public class RecentFilesManager {
 
         if (fileOpener.get() != null) {
 			for (var fileName : recentFiles) {
-				final MenuItem openMenuItem = new MenuItem(fileName);
+                var openMenuItem = new MenuItem(fileName);
 				openMenuItem.setOnAction(e -> fileOpener.get().accept(fileName));
 				openMenuItem.disableProperty().bind(disable);
 				menu.getItems().add(openMenuItem);
