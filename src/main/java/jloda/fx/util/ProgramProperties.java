@@ -87,14 +87,23 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 
 	public static void track(IntegerProperty property, Integer defaultValue) {
 		var label = (property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
+		track(label,property,defaultValue);
+	}
+
+	public static void track(String label,IntegerProperty property, Integer defaultValue) {
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
 		property.addListener((v, o, n) -> put(label, property.get()));
 	}
 
+
 	public static void track(DoubleProperty property, Double defaultValue) {
 		var label =(property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
+		track(label,property,defaultValue);
+	}
+
+	public static void track(String label,DoubleProperty property, Double defaultValue) {
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
@@ -103,6 +112,10 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 
 	public static void track(BooleanProperty property, Boolean defaultValue) {
 		var label =(property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
+		track(label,property,defaultValue);
+	}
+
+	public static void track(String label,BooleanProperty property, Boolean defaultValue) {
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}
@@ -111,6 +124,10 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 
 	public static void track(StringProperty property, String defaultValue) {
 		var label = (property.getBean()!=null?property.getBean().getClass().getName() :"") + property.getName();
+		track(label,property,defaultValue);
+	}
+
+	public static void track(String label,StringProperty property, String defaultValue) {
 		if (!property.isBound()) {
 			property.set(get(label, defaultValue));
 		}

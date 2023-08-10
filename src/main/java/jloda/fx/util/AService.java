@@ -77,7 +77,7 @@ public class AService<T> extends Service<T> {
 			}
 		});
 		setOnFailed(e -> NotificationManager.showError("Failed: "  // + Basic.getShortName(AService.this.getException().getClass())
-													   + (AService.this.getException().getMessage() != null ? ": " + AService.this.getException().getMessage() : "")));
+													   + (AService.this.getException().getMessage() != null ? AService.this.getException().getMessage() : "")));
 	}
 
 	@Override
