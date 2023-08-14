@@ -20,7 +20,9 @@
 
 package jloda.util;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -311,31 +313,64 @@ public class BitSetUtils {
     }
 
     /**
-     * parses a text description of a bit set.
+     * parses a set of non-negative value definitions in the format e.g. a,b,x-y/s, where a and b are values and x-y is a range (inclusive) using step size s
      *
-     * @param text values separated by commas and ranges specified as a-b
-     * @return bit set
+     * @param text the values string
+     * @return the set of all specified numbers
+     * @throws IOException if parsing fails
      */
-    public static BitSet valueOf(String text) {
-        var bits = new BitSet();
-        for (var token : StringUtils.split(text, ',')) {
-            if (token.contains("-")) {
-                var range = StringUtils.split(token, '-');
-                if (range.length != 2 || !NumberUtils.isInteger(range[0]) || NumberUtils.parseInt(range[0]) < 0 || !NumberUtils.isInteger(range[1]) ||
-                    NumberUtils.parseInt(range[1]) < 0)
-                    throw new NumberFormatException("Illegal range");
-                var a = Math.min(NumberUtils.parseInt(range[0]), NumberUtils.parseInt(range[1]));
-                var b = Math.max(NumberUtils.parseInt(range[0]), NumberUtils.parseInt(range[1]));
-                for (var i = a; i <= b; i++)
-                    bits.set(i);
-            } else if (NumberUtils.isInteger(token)) {
-                var value = NumberUtils.parseInt(token);
-                if (value < 0)
-                    throw new NumberFormatException("Illegal negative value");
-                bits.set(value);
+    public static BitSet valueOf(String text) throws IOException {
+        return valueOf(text, false);
+    }
+
+    /**
+     * parses a set of non-negative value definitions in the format e.g. a,b,x-y/s, where a and b are values and x-y is a range (inclusive) using step size s
+     * @param text the values string
+     * @param allowZero is zero allowed?
+     * @return the set of all specified numbers
+     * @throws IOException if parsing fails
+     */
+    public static BitSet valueOf(String text, boolean allowZero) throws IOException {
+        var result = new BitSet();
+        for (var part : StringUtils.split(text, ',')) {
+            var matcher = Pattern.compile("^(\\d+)-(\\d+)/(\\d+)$").matcher(part);
+            if (matcher.find()) {
+                // Extract the first, second, and third numbers
+                var a = Integer.parseInt(matcher.group(1));
+                var b = Integer.parseInt(matcher.group(2));
+                var step = Integer.parseInt(matcher.group(3));
+                if ((a > 0 || a == 0 && allowZero) && a <= b && step > 0) {
+                    for (var v = a; v <= b; v += step) {
+                        result.set(v);
+                    }
+                } else
+                    throw new IOException("Failed to parse: " + part);
+            } else {
+                matcher = Pattern.compile("^(\\d+)-(\\d+)$").matcher(part);
+                if (matcher.find()) {
+                    // Extract the first, second, and third numbers
+                    var a = Integer.parseInt(matcher.group(1));
+                    var b = Integer.parseInt(matcher.group(2));
+                    if ((a > 0 || a == 0 && allowZero) && a <= b) {
+                        for (var v = a; v <= b; v++) {
+                            result.set(v);
+                        }
+                    } else
+                        throw new IOException("Failed to parse: " + part);
+                } else {
+                    matcher = Pattern.compile("^(\\d+)$").matcher(part);
+                    if (matcher.find()) {
+                        int a = Integer.parseInt(matcher.group(1));
+                        if (a > 0 || a == 0 && allowZero)
+                            result.set(a);
+                        else
+                            throw new IOException("Failed to parse: " + part);
+                    } else
+                        throw new IOException("Failed to parse: " + part);
+                }
             }
         }
-        return bits;
+        return result;
     }
 
     public static BitSet randomSubset (int size, Random random,BitSet set) {

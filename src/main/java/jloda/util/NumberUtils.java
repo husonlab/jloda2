@@ -20,8 +20,13 @@
 
 package jloda.util;
 
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 public class NumberUtils {
 	/**
@@ -402,5 +407,144 @@ public class NumberUtils {
 		for (var i = low; i < high; i++)
 			list.add(i);
 		return list;
+	}
+
+
+	/**
+	 * computes a set of numbers from a list of comma-separated values, and ranges a-b or a-b/step
+	 *
+	 * @param text
+	 * @param allowZero
+	 * @return
+	 * @throws IOException
+	 */
+	public static Set<Integer> parsePositiveIntegers(String text, boolean allowZero) throws IOException {
+		// var doubleRegEx = "(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)";
+		var result = new TreeSet<Integer>();
+		for (var part : StringUtils.split(text, ',')) {
+			var matcher = Pattern.compile("^(\\d+)-(\\d+)/(\\d+)$").matcher(part);
+			if (matcher.find()) {
+				// Extract the first, second, and third numbers
+				var a = Integer.parseInt(matcher.group(1));
+				var b = Integer.parseInt(matcher.group(2));
+				var step = Integer.parseInt(matcher.group(3));
+				if ((a > 0 || allowZero && a == 0) && a <= b && step > 0) {
+					for (var v = a; v <= b; v += step) {
+						result.add(v);
+					}
+				} else
+					throw new IOException("Failed to parse: " + part);
+			} else {
+				matcher = Pattern.compile("^(\\d+)-(\\d+)$").matcher(part);
+				if (matcher.find()) {
+					var a = Integer.parseInt(matcher.group(1));
+					var b = Integer.parseInt(matcher.group(2));
+
+					if ((a > 0 || a == 0 && allowZero) && a <= b) {
+						if (a == 0 && b == 0)
+							result.add(0);
+						else {
+							var step = 1;
+							for (var v = a; v <= b; v += step) {
+								result.add(v);
+							}
+						}
+					} else
+						throw new IOException("Failed to parse: " + part);
+				} else {
+					matcher = Pattern.compile("^(\\d+)$").matcher(part);
+					if (matcher.find()) {
+						var a = Integer.parseInt(matcher.group(1));
+						if (a > 0 || a == 0 && allowZero)
+							result.add(a);
+						else
+							throw new IOException("Failed to parse: " + part);
+					} else
+						throw new IOException("Failed to parse: " + part);
+				}
+			}
+		}
+		return result;
+	}
+
+
+	/**
+	 * computes a set of numbers from a list of comma-separated values, and ranges a-b or a-b/step
+	 *
+	 * @param text
+	 * @param allowZero
+	 * @return
+	 * @throws IOException
+	 */
+	public static Set<Double> parsePositiveDoubles(String text, boolean allowZero) throws IOException {
+		// var doubleRegEx = "(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)";
+		var result = new TreeSet<Double>();
+		for (var part : StringUtils.split(text, ',')) {
+			var matcher = Pattern.compile("^(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)-(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)/(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)$").matcher(part);
+			if (matcher.find()) {
+				// Extract the first, second, and third numbers
+				var a = Double.parseDouble(matcher.group(1));
+				var b = Double.parseDouble(matcher.group(2));
+				var step = Double.parseDouble(matcher.group(3));
+				if ((a > 0 || allowZero && a == 0) && a <= b && step > 0) {
+					for (var v = a; v <= b; v += step) {
+						result.add(v);
+					}
+				} else
+					throw new IOException("Failed to parse: " + part);
+			} else {
+				matcher = Pattern.compile("^(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)-(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)$").matcher(part);
+				if (matcher.find()) {
+					var a = Double.parseDouble(matcher.group(1));
+					var b = Double.parseDouble(matcher.group(2));
+
+					if ((a > 0 || a == 0 && allowZero) && a <= b) {
+						if (a == 0 && b == 0)
+							result.add(0.0);
+						else {
+							var step = computeSmallestDigit(a > 0 ? a : b);
+							for (var v = a; v <= b; v += step) {
+								result.add(v);
+							}
+						}
+					} else
+						throw new IOException("Failed to parse: " + part);
+				} else {
+					matcher = Pattern.compile("^(\\d+\\.\\d+|\\d+\\.?|\\.\\d+)$").matcher(part);
+					if (matcher.find()) {
+						var a = Double.parseDouble(matcher.group(1));
+						if (a > 0 || a == 0 && allowZero)
+							result.add(a);
+						else
+							throw new IOException("Failed to parse: " + part);
+					} else
+						throw new IOException("Failed to parse: " + part);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * gets the smallest digit in a number, e.g. 0.123 will result in 0.001
+	 *
+	 * @param value the input value
+	 * @return the smallest digit
+	 */
+	public static double computeSmallestDigit(double value) {
+		var df = new DecimalFormat("0.##########");
+		var valueString = df.format(value);
+		if (valueString.endsWith("."))
+			return 1.0;
+		else {
+			var buf = new StringBuilder();
+			for (var i = 0; i < valueString.length() - 1; i++) {
+				if (valueString.charAt(i) == '.')
+					buf.append(".");
+				else buf.append("0");
+			}
+			buf.append(1);
+			return Double.parseDouble(buf.toString());
+		}
 	}
 }
