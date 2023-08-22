@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * basic stuff for FX
@@ -134,19 +135,18 @@ public class BasicFX {
      * recursively gets node and all nodes below it
      */
     public static Collection<Node> getAllRecursively(Node node, Predicate<Node> nodePredicate) {
-        final var all = new ArrayList<Node>();
-        final var queue = new LinkedList<Node>();
-        queue.add(node);
-        while (queue.size() > 0) {
-            node = queue.pop();
-            if (nodePredicate.test(node))
-                all.add(node);
-            if (node instanceof Parent) {
-                var parent = (Parent) node;
-                queue.addAll(parent.getChildrenUnmodifiable());
+        var all = new ArrayList<Node>();
+        getRec(node, all);
+        return all.stream().filter(nodePredicate).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private static void getRec(Node v, ArrayList<Node> all) {
+        all.add(v);
+        if (v instanceof Parent parent) {
+            for (var w : parent.getChildrenUnmodifiable()) {
+                getRec(w, all);
             }
         }
-        return all;
     }
 
     /**
