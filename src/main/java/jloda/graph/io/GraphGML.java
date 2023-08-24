@@ -20,25 +20,24 @@
 
 package jloda.graph.io;
 
-import jloda.graph.EdgeArray;
+import jloda.fx.util.TriConsumer;
+import jloda.graph.Edge;
 import jloda.graph.Graph;
 import jloda.graph.Node;
-import jloda.graph.NodeArray;
 import jloda.util.parse.NexusStreamParser;
 
 import java.io.*;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.BiFunction;
 
 /**
- * i/o in GraphGML
- * daniel huson, 3.2021
+ * read and write a graph in GML format
+ * Daniel Huson, 2020
  */
 public class GraphGML {
-
 	/**
 	 * write a graph in GraphGML
 	 *
@@ -47,47 +46,64 @@ public class GraphGML {
 	 * @param labelNodeValueMap for given labels, provides a node value maps
 	 * @param labelEdgeValueMap for given labels, provides node value maps
 	 */
-	public static void writeGML(Graph graph, String comment, String graphLabel, boolean directed, int graphId, Writer w, Map<String, NodeArray<String>> labelNodeValueMap, Map<String, EdgeArray<String>> labelEdgeValueMap) throws IOException {
-		if (labelNodeValueMap == null)
-			labelNodeValueMap = Collections.emptyMap();
-		if (labelEdgeValueMap == null)
-			labelEdgeValueMap = Collections.emptyMap();
+	public static void writeGML(Graph graph, String comment, String graphLabel, boolean directed, int graphId, Writer w,
+								Map<String, Map<Node, String>> labelNodeValueMap, Map<String, Map<Edge, String>> labelEdgeValueMap) throws IOException {
+		var nodeLabelNames = (labelNodeValueMap == null ? null : labelNodeValueMap.keySet());
+		BiFunction<String, Node, String> labelNodeValueFunction = (labelNodeValueMap == null ? null : (n, v) -> {
+			var map = labelNodeValueMap.get(n);
+			return map == null ? null : map.get(v);
+		});
+		var edgeLabelNames = (labelEdgeValueMap == null ? null : labelEdgeValueMap.keySet());
+		BiFunction<String, Edge, String> labelEdgeValueFunction = (labelEdgeValueMap == null ? null : (n, e) -> {
+			var map = labelEdgeValueMap.get(n);
+			return map == null ? null : map.get(e);
+		});
+		writeGML(graph, comment, graphLabel, directed, graphId, w, nodeLabelNames, labelNodeValueFunction, edgeLabelNames, labelEdgeValueFunction);
+	}
 
+	/**
+	 * write a graph in GraphGML
+	 *
+	 * @param graph                  the graph
+	 * @param w                      the writer
+	 * @param labelNodeValueFunction for given labels, provides a node value maps
+	 * @param labelEdgeValueFunction for given labels, provides node value maps
+	 */
+	public static void writeGML(Graph graph, String comment, String graphLabel, boolean directed, int graphId, Writer w,
+								Collection<String> nodeLabelNames, BiFunction<String, Node, String> labelNodeValueFunction,
+								Collection<String> edgeLabelNames, BiFunction<String, Edge, String> labelEdgeValueFunction) throws IOException {
 		var gmlInfo = new GMLInfo(comment, directed, graphId, graphLabel);
 		w.write("graph [\n");
 		if (gmlInfo.comment() != null)
-			w.write("\tcomment \"" + gmlInfo.comment() + "\"\n");
+			w.write("\tcomment \"" + protectQuotes(gmlInfo.comment()) + "\"\n");
 		w.write("\tdirected " + (gmlInfo.directed() ? 1 : 0) + "\n");
 		w.write("\tid " + gmlInfo.id() + "\n");
 		if (gmlInfo.label() != null)
-			w.write("\tlabel \"" + gmlInfo.label() + "\"\n");
-
-		var nodeLabels = labelNodeValueMap.get("label");
-
+			w.write("\tlabel \"" + protectQuotes(gmlInfo.label()) + "\"\n");
+		
 		for (var v : graph.nodes()) {
 			w.write("\tnode [\n");
 			w.write("\t\tid " + v.getId() + "\n");
-			if ((nodeLabels != null && nodeLabels.containsKey(v)))
-				w.write("\t\tlabel \"" + nodeLabels.get(v) + "\"\n");
-			for (String aLabel : labelNodeValueMap.keySet().stream().filter(a -> !a.equals("label")).collect(Collectors.toList())) {
-				var value = labelNodeValueMap.get(aLabel).get(v);
-				w.write("\t\t" + aLabel + " \"" + value + "\"\n");
+			if (nodeLabelNames != null && labelNodeValueFunction != null) {
+				for (var name : nodeLabelNames) {
+					var value = labelNodeValueFunction.apply(name, v);
+					if (value != null)
+						w.write("\t\t" + name + " \"" + protectQuotes(value) + "\"\n");
+				}
 			}
 			w.write("\t]\n");
 		}
-
-		var edgeLabels = labelEdgeValueMap.get("label");
 
 		for (var e : graph.edges()) {
 			w.write("\tedge [\n");
 			w.write("\t\tsource " + e.getSource().getId() + "\n");
 			w.write("\t\ttarget " + e.getTarget().getId() + "\n");
-
-			if ((edgeLabels != null && edgeLabels.containsKey(e)))
-				w.write("\t\tlabel \"" + edgeLabels.get(e) + "\"\n");
-			for (String aLabel : labelEdgeValueMap.keySet().stream().filter(a -> !a.equals("label")).collect(Collectors.toList())) {
-				var value = labelEdgeValueMap.get(aLabel).get(e);
-				w.write("\t\t" + aLabel + " \"" + value + "\"\n");
+			if (edgeLabelNames != null && labelNodeValueFunction != null) {
+				for (var name : edgeLabelNames) {
+					var value = labelEdgeValueFunction.apply(name, e);
+					if (value != null)
+						w.write("\t\t" + name + " \"" + protectQuotes(value) + "\"\n");
+				}
 			}
 			w.write("\t]\n");
 		}
@@ -97,15 +113,48 @@ public class GraphGML {
 
 	/**
 	 * read a graph in GraphGML for that was previously saved using writeGML. This is not a general parser.
+	 * @param r the reader
+	 * @param graph the graph to write to
+	 * @param labelNodeValueMap a label-node-value map
+	 * @param labelEdgeValueMap a label-edge-value map
+	 * @return a GML info item
+	 * @throws IOException if parsing fails
 	 */
-	public static GMLInfo readGML(Reader r, Graph graph, Map<String, NodeArray<String>> labelNodeValueMap, Map<String, EdgeArray<String>> labelEdgeValueMap) throws IOException {
-		if (labelNodeValueMap == null)
-			labelNodeValueMap = Collections.emptyMap();
-		if (labelEdgeValueMap == null)
-			labelEdgeValueMap = Collections.emptyMap();
+	public static GMLInfo readGML(Reader r, Graph graph, Map<String, Map<Node, String>> labelNodeValueMap, Map<String, Map<Edge, String>> labelEdgeValueMap) throws IOException {
+		TriConsumer<String, Node, String> labelNodeValueConsumer = (label, node, value) -> {
+			if (labelNodeValueMap != null)
+				labelNodeValueMap.computeIfAbsent(label, k -> new HashMap<>()).put(node, value);
+		};
+		TriConsumer<String, Edge, String> labelEdgeValueConsumer = (label, edge, value) -> {
+			if (labelEdgeValueMap != null)
+				labelEdgeValueMap.computeIfAbsent(label, k -> new HashMap<>()).put(edge, value);
+		};
+		return readGML(r, graph, labelNodeValueConsumer, labelEdgeValueConsumer);
+	}
+
+	/**
+	 * read a graph in GraphGML for that was previously saved using writeGML. This is not a general parser.
+	 * @param r the reader
+	 * @param graph the graph to write to
+	 * @param labelNodeValueConsumer a label-node-value consumer
+	 * @param labelEdgeValueConsumer a label-edge-value consumer
+	 * @return a GML info item
+	 * @throws IOException if parsing fails
+	 */
+	public static GMLInfo readGML(Reader r, Graph graph, TriConsumer<String, Node, String> labelNodeValueConsumer, TriConsumer<String, Edge, String> labelEdgeValueConsumer) throws IOException {
+		if (labelNodeValueConsumer == null) {
+			labelNodeValueConsumer = (s, node, s2) -> {
+			};
+		}
+		if (labelEdgeValueConsumer == null) {
+			labelEdgeValueConsumer = (s, edge, s2) -> {
+			};
+		}
 
 		final var np = new NexusStreamParser(r);
+		np.setSyntaxNoQuote();
 		np.setSquareBracketsSurroundComments(false);
+		np.setPunctuationCharacters("(),;:=\"{}");
 
 		graph.clear();
 
@@ -113,7 +162,7 @@ public class GraphGML {
 		String graphComment;
 		if (np.peekMatchIgnoreCase("comment")) {
 			np.matchIgnoreCase("comment");
-			graphComment = NexusStreamParser.getQuotedString(np);
+			graphComment = unprotectQuotes(NexusStreamParser.getQuotedString(np));
 		} else
 			graphComment = null;
 
@@ -131,7 +180,7 @@ public class GraphGML {
 
 		if (np.peekMatchIgnoreCase("label")) {
 			np.matchIgnoreCase("label");
-			graphLabel = NexusStreamParser.getQuotedString(np);
+			graphLabel = unprotectQuotes(NexusStreamParser.getQuotedString(np));
 		} else
 			graphLabel = null;
 
@@ -146,10 +195,10 @@ public class GraphGML {
 				var label = np.getLabelRespectCase();
 				String value;
 				if (np.peekMatchIgnoreCase("\""))
-					value = NexusStreamParser.getQuotedString(np);
+					value = unprotectQuotes(NexusStreamParser.getQuotedString(np));
 				else
 					value = np.getWordRespectCase();
-				labelNodeValueMap.computeIfAbsent(label, n -> graph.newNodeArray()).put(v, value);
+				labelNodeValueConsumer.accept(label,v,value);
 			}
 			np.matchIgnoreCase("]");
 		}
@@ -168,16 +217,25 @@ public class GraphGML {
 				var label = np.getLabelRespectCase();
 				String value;
 				if (np.peekMatchIgnoreCase("\""))
-					value = NexusStreamParser.getQuotedString(np);
+					value = unprotectQuotes(NexusStreamParser.getQuotedString(np));
 				else
 					value = np.getWordRespectCase();
-				labelEdgeValueMap.computeIfAbsent(label, n -> graph.newEdgeArray()).put(e, value);
+				labelEdgeValueConsumer.accept(label,e,value);
 			}
 			np.matchIgnoreCase("]");
 		}
 		np.matchIgnoreCase("]");
 		return new GMLInfo(graphComment, graphDirected, graphId, graphLabel);
 	}
+
+	public static String protectQuotes(String text) {
+		return text.replaceAll("\"", "`");
+	}
+
+	public static String unprotectQuotes(String text) {
+		return text.replaceAll("`","\"");
+	}
+
 
 	public static final class GMLInfo {
 		private final String comment;
@@ -212,11 +270,11 @@ public class GraphGML {
 		public boolean equals(Object obj) {
 			if (obj == this) return true;
 			if (obj == null || obj.getClass() != this.getClass()) return false;
-			var that = (GMLInfo) obj;
-			return Objects.equals(this.comment, that.comment) &&
-				   this.directed == that.directed &&
-				   this.id == that.id &&
-				   Objects.equals(this.label, that.label);
+			var that = (GraphGML.GMLInfo) obj;
+			return Objects.equals(this.comment, that.comment()) &&
+				   this.directed == that.directed() &&
+				   this.id == that.id() &&
+				   Objects.equals(this.label, that.label());
 		}
 
 		@Override
@@ -236,50 +294,52 @@ public class GraphGML {
 	}
 
 	public static void main(String[] args) throws IOException {
-		var input = "graph [\n" +
-					"comment \"example graph\"\n" +
-					"directed 1\n" +
-					"id 42\n" +
-					"label \"Graph\"\n" +
-					"	node [\n" +
-					"		id 1\n" +
-					"		label \"A\"\n" +
-					"		sequence \"ACGTTGTCGTTG\"\n" +
-					"	]\n" +
-					"	node [\n" +
-					"		id 2\n" +
-					"		label \"B\"\n" +
-					"		sequence \"TCGTTGGCGTTG\"\n" +
-					"	]\n" +
-					"	node [\n" +
-					"		id 3\n" +
-					"		label \"C\"\n" +
-					"		sequence \"GCGTTGACGTTG\"\n" +
-					"	]\n" +
-					"	edge [\n" +
-					"		source 1\n" +
-					"		target 2\n" +
-					"		overlap \"6\"\n" +
-					"	]\n" +
-					"	edge [\n" +
-					"		source 2\n" +
-					"		target 3\n" +
-					"		overlap \"7\"\n" +
-					"	]\n" +
-					"	edge [\n" +
-					"		source 3\n" +
-					"		target 1\n" +
-					"		overlap \"8\"\n" +
-					"	]\n" +
-					"]\n";
+		var input = """
+				graph [
+				comment "example graph"
+				directed 1
+				id 42
+				label "Graph"
+					node [
+						id 1
+						label "A"
+						sequence "ACGTTGTCGTTG"
+					]
+					node [
+						id 2
+						label "B"
+						sequence "TCGTTGGCGTTG"
+					]
+					node [
+						id 3
+						label "C `x`"
+						sequence "GCGTTGACGTTG"
+					]
+					edge [
+						source 1
+						target 2
+						overlap "6"
+					]
+					edge [
+						source 2
+						target 3
+						overlap "7"
+					]
+					edge [
+						source 3
+						target 1
+						overlap "8"
+					]
+				]
+				""";
 
 		var graph = new Graph();
-		var labelNodeValueMap = new HashMap<String, NodeArray<String>>();
-		var labelEdgeValueMap = new HashMap<String, EdgeArray<String>>();
-		var gmlInfo = GraphGML.readGML(new StringReader(input), graph, labelNodeValueMap, labelEdgeValueMap);
+		var labelNodeValueMap = new HashMap<String, Map<Node, String>>();
+		var labelEdgeValueMap = new HashMap<String, Map<Edge, String>>();
+		var gmlInfo = readGML(new StringReader(input), graph, labelNodeValueMap, labelEdgeValueMap);
 
 		try (var w = new StringWriter()) {
-			GraphGML.writeGML(graph, gmlInfo.comment(), gmlInfo.label(), gmlInfo.directed(), gmlInfo.id(), w, labelNodeValueMap, labelEdgeValueMap);
+			writeGML(graph, gmlInfo.comment(), gmlInfo.label(), gmlInfo.directed(), gmlInfo.id(), w, labelNodeValueMap, labelEdgeValueMap);
 			System.out.println(w);
 		}
 	}

@@ -153,7 +153,7 @@ public class FastMultiLayerMethodLayout {
 
         var x = 0.0;
         var inEdge = (Edge) null;
-        var random = new Random();
+        var random = new Random(options.getRandSeed());
 
         do {
             nodeAttributes.get(v).setPosition(x, 0.1 * options.getUnitEdgeLength() * random.nextDouble());
@@ -179,7 +179,7 @@ public class FastMultiLayerMethodLayout {
         var total = graph.edgeStream().mapToDouble(e -> edgeAttributes.get(e).getLength()).sum();
         var v = graph.getFirstNode();
         var inEdge = (Edge) null;
-        var random = new Random();
+        var random = new Random(options.getRandSeed());
         var part = 0.0;
         var radius = total / (2 * Math.PI);
         var x = Math.cos(0) * radius;
@@ -736,7 +736,7 @@ public class FastMultiLayerMethodLayout {
             }
         } else { // random
             layoutBox.init(graph, nodeAttributes);
-            var random = new Random();
+            var random = new Random(options.getRandSeed());
             if (options.getInitialPlacementForces() == FastMultiLayerMethodOptions.InitialPlacementForces.RandomTime)//(RANDOM based on actual CPU-time)
                 random.setSeed(System.currentTimeMillis());
             for (var v : graph.nodes()) {

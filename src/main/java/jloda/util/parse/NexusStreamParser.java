@@ -1641,8 +1641,11 @@ public class NexusStreamParser extends NexusStreamTokenizer implements Closeable
 	public static String getQuotedString(NexusStreamParser np) throws IOException {
 		np.matchIgnoreCase("\"");
 		var words = new ArrayList<String>();
-		while (!np.peekMatchIgnoreCase("\""))
+		while (!np.peekMatchIgnoreCase("\"")) {
 			words.add(np.getWordRespectCase());
+			if (np.ttype == TT_EOF)
+				break;
+		}
 		np.matchIgnoreCase("\"");
 		return StringUtils.toString(words, " ");
 	}

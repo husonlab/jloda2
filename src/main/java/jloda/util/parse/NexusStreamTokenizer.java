@@ -91,7 +91,7 @@ public class NexusStreamTokenizer extends StreamTokenizer implements Closeable {
     public int nextToken() throws java.io.IOException {
         int tt;
 
-        if (ttypes.size() > 0) {
+        if (!ttypes.isEmpty()) {
             if (nvals.getFirst() == null) {
                 nval = 0;
                 nvals.removeFirst();

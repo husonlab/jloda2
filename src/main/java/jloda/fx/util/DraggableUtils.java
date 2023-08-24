@@ -42,10 +42,9 @@ public class DraggableUtils {
 			mouseY = e.getSceneY();
 		};
 		mouseDraggedHandlerTranslate = e -> {
-			if (e.getSource() instanceof Node) {
+			if (e.getSource() instanceof Node aNode) {
 				var dx = e.getSceneX() - mouseX;
 				var dy = e.getSceneY() - mouseY;
-				Node aNode = (Node) e.getSource();
 				aNode.setTranslateX(aNode.getTranslateX() + dx);
 				aNode.setTranslateY(aNode.getTranslateY() + dy);
 				mouseX = e.getSceneX();
@@ -54,10 +53,9 @@ public class DraggableUtils {
 			}
 		};
 		mouseDraggedHandlerLayout = e -> {
-			if (e.getSource() instanceof Node) {
+			if (e.getSource() instanceof Node aNode) {
 				var dx = e.getSceneX() - mouseX;
 				var dy = e.getSceneY() - mouseY;
-				var aNode = (Node) e.getSource();
 				aNode.setLayoutX(aNode.getLayoutX() + dx);
 				aNode.setLayoutY(aNode.getLayoutY() + dy);
 				mouseX = e.getSceneX();
@@ -65,16 +63,37 @@ public class DraggableUtils {
 				e.consume();
 			}
 		};
-
 	}
 
 	public static void setupDragMouseTranslate(Node node) {
-		node.setOnMousePressed(mousePressedHander);
-		node.setOnMouseDragged(mouseDraggedHandlerTranslate);
+		setupDragMouseTranslate(node, null);
 	}
 
 	public static void setupDragMouseLayout(Node node) {
-		node.setOnMousePressed(mousePressedHander);
+		setupDragMouseLayout(node, null);
+	}
+
+	public static void setupDragMouseTranslate(Node node, Runnable runOnPressed) {
+		if (runOnPressed == null)
+			node.setOnMousePressed(mousePressedHander);
+		else {
+			node.setOnMousePressed(e -> {
+				mousePressedHander.handle(e);
+				runOnPressed.run();
+			});
+		}
+		node.setOnMouseDragged(mouseDraggedHandlerTranslate);
+	}
+
+	public static void setupDragMouseLayout(Node node, Runnable runOnPressed) {
+		if (runOnPressed == null)
+			node.setOnMousePressed(mousePressedHander);
+		else {
+			node.setOnMousePressed(e -> {
+				mousePressedHander.handle(e);
+				runOnPressed.run();
+			});
+		}
 		node.setOnMouseDragged(mouseDraggedHandlerLayout);
 	}
 }
