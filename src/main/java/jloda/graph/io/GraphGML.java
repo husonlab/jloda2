@@ -24,14 +24,15 @@ import jloda.fx.util.TriConsumer;
 import jloda.graph.Edge;
 import jloda.graph.Graph;
 import jloda.graph.Node;
+import jloda.util.IOExceptionWithLineNumber;
+import jloda.util.StringUtils;
 import jloda.util.parse.NexusStreamParser;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
+
+import static java.io.StreamTokenizer.TT_EOF;
 
 /**
  * read and write a graph in GML format
@@ -75,11 +76,11 @@ public class GraphGML {
 		var gmlInfo = new GMLInfo(comment, directed, graphId, graphLabel);
 		w.write("graph [\n");
 		if (gmlInfo.comment() != null)
-			w.write("\tcomment \"" + protectQuotes(gmlInfo.comment()) + "\"\n");
+			w.write("\tcomment " + asQuotedString(gmlInfo.comment()) + "\n");
 		w.write("\tdirected " + (gmlInfo.directed() ? 1 : 0) + "\n");
 		w.write("\tid " + gmlInfo.id() + "\n");
 		if (gmlInfo.label() != null)
-			w.write("\tlabel \"" + protectQuotes(gmlInfo.label()) + "\"\n");
+			w.write("\tlabel " + asQuotedString(gmlInfo.label()) + "\n");
 		
 		for (var v : graph.nodes()) {
 			w.write("\tnode [\n");
@@ -88,7 +89,7 @@ public class GraphGML {
 				for (var name : nodeLabelNames) {
 					var value = labelNodeValueFunction.apply(name, v);
 					if (value != null)
-						w.write("\t\t" + name + " \"" + protectQuotes(value) + "\"\n");
+						w.write("\t\t" + name + " " + asQuotedString(value) + "\n");
 				}
 			}
 			w.write("\t]\n");
@@ -102,7 +103,7 @@ public class GraphGML {
 				for (var name : edgeLabelNames) {
 					var value = labelEdgeValueFunction.apply(name, e);
 					if (value != null)
-						w.write("\t\t" + name + " \"" + protectQuotes(value) + "\"\n");
+						w.write("\t\t" + name + " " + asQuotedString(value) + "\n");
 				}
 			}
 			w.write("\t]\n");
@@ -154,7 +155,7 @@ public class GraphGML {
 		final var np = new NexusStreamParser(r);
 		np.setSyntaxNoQuote();
 		np.setSquareBracketsSurroundComments(false);
-		np.setPunctuationCharacters("(),;:=\"{}");
+		np.setPunctuationCharacters("(),;:=\"{}`");
 
 		graph.clear();
 
@@ -162,7 +163,7 @@ public class GraphGML {
 		String graphComment;
 		if (np.peekMatchIgnoreCase("comment")) {
 			np.matchIgnoreCase("comment");
-			graphComment = unprotectQuotes(NexusStreamParser.getQuotedString(np));
+			graphComment = asUnquotedString(np);
 		} else
 			graphComment = null;
 
@@ -180,7 +181,7 @@ public class GraphGML {
 
 		if (np.peekMatchIgnoreCase("label")) {
 			np.matchIgnoreCase("label");
-			graphLabel = unprotectQuotes(NexusStreamParser.getQuotedString(np));
+			graphLabel = asUnquotedString(np);
 		} else
 			graphLabel = null;
 
@@ -193,11 +194,7 @@ public class GraphGML {
 			id2node.put(id, v);
 			while (!np.peekMatchIgnoreCase("]")) {
 				var label = np.getLabelRespectCase();
-				String value;
-				if (np.peekMatchIgnoreCase("\""))
-					value = unprotectQuotes(NexusStreamParser.getQuotedString(np));
-				else
-					value = np.getWordRespectCase();
+				var value = asUnquotedString(np);
 				labelNodeValueConsumer.accept(label,v,value);
 			}
 			np.matchIgnoreCase("]");
@@ -215,11 +212,7 @@ public class GraphGML {
 			var e = graph.newEdge(id2node.get(sourceId), id2node.get(targetId), null);
 			while (!np.peekMatchIgnoreCase("]")) {
 				var label = np.getLabelRespectCase();
-				String value;
-				if (np.peekMatchIgnoreCase("\""))
-					value = unprotectQuotes(NexusStreamParser.getQuotedString(np));
-				else
-					value = np.getWordRespectCase();
+				var value = asUnquotedString(np);
 				labelEdgeValueConsumer.accept(label,e,value);
 			}
 			np.matchIgnoreCase("]");
@@ -228,14 +221,38 @@ public class GraphGML {
 		return new GMLInfo(graphComment, graphDirected, graphId, graphLabel);
 	}
 
-	public static String protectQuotes(String text) {
-		return text.replaceAll("\"", "`");
+	public static String asQuotedString(String text) {
+		if (text.contains("\""))
+			return "`" + text + "`";
+		else return "\"" + text + "\"";
 	}
 
-	public static String unprotectQuotes(String text) {
-		return text.replaceAll("`","\"");
-	}
+	public static String asUnquotedString(NexusStreamParser np) throws IOExceptionWithLineNumber {
+		if (np.peekMatchIgnoreCase("`")) {
+			np.setPunctuationCharacters("(),;:={}`");
+			try {
+				np.matchIgnoreCase("`");
+				var words = new ArrayList<String>();
+				while (!np.peekMatchIgnoreCase("`") && np.ttype != TT_EOF) {
 
+					words.add(np.getWordRespectCase());
+				}
+				np.matchIgnoreCase("`");
+				return StringUtils.toString(words, " ");
+			} finally {
+				np.setPunctuationCharacters("(),;:=\"{}`");
+			}
+		} else if (np.peekMatchIgnoreCase("\"")) {
+			np.matchIgnoreCase("\"");
+			var words = new ArrayList<String>();
+			while (!np.peekMatchIgnoreCase("\"") && np.ttype != TT_EOF) {
+				words.add(np.getWordRespectCase());
+			}
+			np.matchIgnoreCase("\"");
+			return StringUtils.toString(words, " ");
+		}
+		return np.getWordRespectCase();
+	}
 
 	public static final class GMLInfo {
 		private final String comment;
@@ -312,7 +329,7 @@ public class GraphGML {
 					]
 					node [
 						id 3
-						label "C `x`"
+						label `C "x"`
 						sequence "GCGTTGACGTTG"
 					]
 					edge [

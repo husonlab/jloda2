@@ -1119,7 +1119,7 @@ public class StringUtils {
 				int j = string.indexOf('\"', i + 1);
 				if (j == -1) {
 					list.add(string.substring(i + 1).trim());
-					break;  // unfinished quote, really should throw an exception
+					break;  // unfinished asQuotedString, really should throw an exception
 				} else {
 					list.add(string.substring(i + 1, j).trim());
 					i = j + 2;
@@ -1143,7 +1143,7 @@ public class StringUtils {
 	}
 
 	/**
-	 * returns a quoted string if the string for value contains a tab and not a quote
+	 * returns a quoted string if the string for value contains a tab and not a asQuotedString
 	 *
 	 * @return string or quoted string
 	 */

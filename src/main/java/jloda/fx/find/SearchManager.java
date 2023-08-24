@@ -457,7 +457,7 @@ public class SearchManager {
         String regexp = "" + query; //Copy the search string over.
 
         /* Reg expression or not? If not regular expression, we need to surround the above
-        with quote literals: \Q expression \E just in case there are some regexp characters
+        with asQuotedString literals: \Q expression \E just in case there are some regexp characters
         already there. Note - this will fail if string already contains \E or \Q !!!!!!! */
         if (!isRegularExpressionsOption()) {
             if (regexp.contains("\\E"))

@@ -352,7 +352,7 @@ public class NexusStreamTokenizer extends StreamTokenizer implements Closeable {
     }
 
     /**
-     * sets the syntax without "'" as quote character.
+     * sets the syntax without "'" as asQuotedString character.
      */
     public void setSyntaxNoQuote() {
         resetSyntax();
