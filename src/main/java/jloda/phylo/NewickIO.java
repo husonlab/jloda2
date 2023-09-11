@@ -72,6 +72,10 @@ public class NewickIO {
 		}
 	}
 
+	public static String toString(PhyloTree tree,boolean showWeights) {
+		return new NewickIO().toBracketString(tree,showWeights);
+	}
+
 	/**
 	 * Produces a string representation of the tree in bracket notation.
 	 *
@@ -79,7 +83,7 @@ public class NewickIO {
 	 */
 	public String toBracketString(PhyloTree tree, boolean showWeights, Map<String, String> translate) {
 		try (var sw = new StringWriter()) {
-			if (translate == null || translate.size() == 0) {
+			if (translate == null || translate.isEmpty()) {
 				write(tree, sw, showWeights, false);
 			} else {
 				var tmpTree = new PhyloTree();
@@ -237,7 +241,7 @@ public class NewickIO {
 							writer.write(getEdgeString(tree, format, f));
 							if (getNewickNodeCommentSupplier() != null) {
 								var comment = getNewickNodeCommentSupplier().apply(w);
-								if (comment != null && comment.trim().length() > 0) {
+								if (comment != null && !comment.trim().isEmpty()) {
 									writer.write("[" + comment.trim() + "]");
 								}
 							}
@@ -247,7 +251,7 @@ public class NewickIO {
 				}
 				writer.write(")");
 			}
-			if (nodeLabel != null && nodeLabel.length() > 0) {
+			if (nodeLabel != null && !nodeLabel.isEmpty()) {
 				writer.write(nodeLabel);
 			}
 		}
@@ -423,7 +427,7 @@ public class NewickIO {
 							tree.setConfidence(v.getFirstInEdge(), NumberUtils.parseDouble(tree.getLabel(v)));
 							tree.setLabel(v, null);
 						});
-				var maxValue=tree.edgeStream().filter(e->!e.getTarget().isLeaf()).mapToDouble(e -> tree.getConfidence(e)).max();
+				var maxValue=tree.edgeStream().filter(e->!e.getTarget().isLeaf()).mapToDouble(tree::getConfidence).max();
 				if (maxValue.isPresent()) {
 					double leafValue = (maxValue.getAsDouble() > 1 && maxValue.getAsDouble() <= 100 ? 100 : 1);
 					tree.nodeStream().filter(v -> v.isLeaf() && v.getInDegree() == 1)
@@ -478,7 +482,7 @@ public class NewickIO {
 					}
 					label = buf.toString().trim();
 
-					if (label.length() > 0) {
+					if (!label.isEmpty()) {
 						if (!isAllowMultiLabeledNodes() && seen.containsKey(label) && PhyloTreeNetworkIOUtils.findReticulateLabel(label) == null)
 						// if label already used, make unique, unless this is a reticulate node
 						{
@@ -504,7 +508,7 @@ public class NewickIO {
 						seen.put(label, w);
 					}
 					tree.setLabel(w, label);
-					if (label.length() == 0)
+					if (label.isEmpty())
 						throw new IOException("Expected label at position " + pos0);
 				}
 			} else // everything to next ) : or , is considered a label:
@@ -526,7 +530,7 @@ public class NewickIO {
 				if (label.startsWith("'") && label.endsWith("'") && label.length() > 1)
 					label = label.substring(1, label.length() - 1).trim();
 
-				if (label.length() > 0) {
+				if (!label.isEmpty()) {
 					if (!isAllowMultiLabeledNodes() && seen.containsKey(label) && PhyloTreeNetworkIOUtils.findReticulateLabel(label) == null) {
 						// give first occurrence of this label the suffix .1
 						var old = seen.get(label);
@@ -550,7 +554,7 @@ public class NewickIO {
 					seen.put(label, w);
 				}
 				tree.setLabel(w, label);
-				if (label.length() == 0)
+				if (label.isEmpty())
 					throw new IOException("Expected label at position " + pos0);
 			}
 			Edge e = null;
@@ -872,4 +876,19 @@ public class NewickIO {
 		}
 	}
 
+	/*
+	public static void main(String[] args) throws IOException {
+		var newick="[&&NHX:GN=Kitty]((a,b),(c,d),e);";
+
+		var newickIO=new NewickIO();
+		var tree=new PhyloTree();
+		newickIO.setNewickLeadingCommentConsumer(c->{
+			if(c.startsWith("&&NHX:GN="))
+				tree.setName(c.substring(c.indexOf("=")+1));
+		});
+		newickIO.parseBracketNotation(tree,newick,true,true);
+		System.err.println(tree.getName());
+		System.err.println(newickIO.toBracketString(tree,false));
+	}
+	*/
 }
