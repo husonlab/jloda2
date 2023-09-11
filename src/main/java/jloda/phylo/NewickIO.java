@@ -73,7 +73,16 @@ public class NewickIO {
 	}
 
 	public static String toString(PhyloTree tree,boolean showWeights) {
-		return new NewickIO().toBracketString(tree,showWeights);
+		return toString(tree,showWeights,false,false);
+	}
+
+	public static String toString(PhyloTree tree,boolean showWeights,boolean showConfidences) {
+		return toString(tree,showWeights,showConfidences,false);
+	}
+
+	public static String toString(PhyloTree tree,boolean showWeights,boolean showConfidences,boolean showProbabilities) {
+		var format=new NewickIO.OutputFormat(showWeights,showConfidences,showConfidences,showProbabilities,false);
+		return new NewickIO().toBracketString(tree,format);
 	}
 
 	/**
@@ -878,11 +887,11 @@ public class NewickIO {
 
 	/*
 	public static void main(String[] args) throws IOException {
-		var newick="[&&NHX:GN=Kitty]((a,b),(c,d),e);";
+		var newick="((a,b),(c,d),e)[&&NHX:GN=Kitty];";
 
 		var newickIO=new NewickIO();
 		var tree=new PhyloTree();
-		newickIO.setNewickLeadingCommentConsumer(c->{
+		newickIO.setNewickNodeCommentConsumer((v,c)->{
 			if(c.startsWith("&&NHX:GN="))
 				tree.setName(c.substring(c.indexOf("=")+1));
 		});
