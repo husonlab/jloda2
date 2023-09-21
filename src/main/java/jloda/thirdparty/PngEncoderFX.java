@@ -18,8 +18,7 @@ import java.util.zip.DeflaterOutputStream;
  * PngEncoder takes a Java Image object and creates a byte string which can be saved as a PNG file.
  * The Image is presumed to use the DirectColorModel.
  *
- * <p>Thanks to Jay Denny at KeyPoint Software
- *    http://www.keypoint.com/
+ * <p>Thanks to Jay Denny at KeyPoint Software <a href="http://www.keypoint.com/">www.keypoint.com</a>
  * who let me develop this code on company time.</p>
  *
  * <p>You may contact me with (probably very-much-needed) improvements,

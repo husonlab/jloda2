@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 /**
- * save pane to PDF, trying to draw as objects
+ * save pane to PNG
  * This is quite incomplete, for example, doesn't draw effects or borders
  * Daniel Huson, 6.2023
  */
@@ -41,14 +41,14 @@ public class SaveToPNG {
 	/**
 	 * draws given pane to a file in PNG format
 	 *
-	 * @param pane the pane
+	 * @param root the pane
 	 * @param file the file
 	 */
-	public static void apply(Node pane, File file) throws IOException {
+	public static void apply(Node root, File file) throws IOException {
 		if (file.exists())
 			Files.delete(file.toPath());
-		var bounds = pane.getLayoutBounds();
-		var image = createImage(pane, 2 * bounds.getWidth(), 2 * bounds.getHeight(), true);
+		var bounds = root.getLayoutBounds();
+		var image = createImage(root, 2 * bounds.getWidth(), 2 * bounds.getHeight(), true);
 
 		var bytes = new PngEncoderFX(image, true).pngEncode();
 		try (var outs = new FileOutputStream(file)) {
