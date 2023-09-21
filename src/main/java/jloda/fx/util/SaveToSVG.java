@@ -476,27 +476,27 @@ public class SaveToSVG {
 			return "Helvetica";
 	}
 
-	public static Rectangle2D computeBoundingBox(Node pane) {
+	public static Rectangle2D computeBoundingBox(Node root) {
 		double minX = Double.MAX_VALUE;
 		double minY = Double.MAX_VALUE;
 		double maxX = Double.MIN_VALUE;
 		double maxY = Double.MIN_VALUE;
 
-		for (var node : BasicFX.getAllRecursively(pane, n -> true)) {
+		for (var node : BasicFX.getAllRecursively(root, n -> true)) {
 			if (node instanceof Shape) {
-				var bounds = pane.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
+				var bounds = node.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
 				minX = Math.min(minX, bounds.getMinX());
 				minY = Math.min(minY, bounds.getMinY());
 				maxX = Math.max(maxX, bounds.getMaxX());
 				maxY = Math.max(maxY, bounds.getMaxY());
 			}
 		}
-		if (true) { // this restricts to the currently
-			minX = Math.max(minX, pane.getBoundsInLocal().getMinX());
-			minY = Math.max(minY, pane.getBoundsInLocal().getMinY());
+		{ // this restricts to the root bounding box
+			minX = Math.max(minX, root.getBoundsInLocal().getMinX());
+			minY = Math.max(minY, root.getBoundsInLocal().getMinY());
 
-			maxX = Math.min(maxX, (pane.getBoundsInLocal().getMaxX()));
-			maxY = Math.min(maxY, (pane.getBoundsInLocal().getMaxY()));
+			maxX = Math.min(maxX, (root.getBoundsInLocal().getMaxX()));
+			maxY = Math.min(maxY, (root.getBoundsInLocal().getMaxY()));
 		}
 
 		return new Rectangle2D(minX, minY, maxX - minX, maxY - minY);
