@@ -40,7 +40,14 @@ import java.util.Arrays;
  * Daniel Huson, 4.2023
  */
 public class ExportImageDialog {
-
+	/**
+	 * show a dialog for saving as an images in PNG, SVG or PDF format.
+	 * Currently, the format is determined by the suffix that the user provides
+	 *
+	 * @param file     the document file name, suffix will be replaced
+	 * @param stage    the main stage,  used for positioning the dialog
+	 * @param mainNode the main node to be exported
+	 */
 	public static void show(String file, Stage stage, Node mainNode) {
 		final var fileChooser = new FileChooser();
 		fileChooser.setTitle("Export Image");
