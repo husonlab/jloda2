@@ -60,7 +60,7 @@ public class ExportImageDialog {
 			fileChooser.setInitialDirectory((new File(file).getParentFile()));
 		fileChooser.setInitialFileName(FileUtils.getFileNameWithoutPathOrSuffix(file) + "." + previousFormat);
 
-		var supported = new String[]{"png", "pdf", "svg"}; // ImageIO.getWriterFileSuffixes(); // not all work
+		var supported = new String[]{"png", "pdf", "svg"};
 		var formats = Arrays.stream(supported).map(f -> "*." + f).toArray(String[]::new);
 		fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(String.format("Image Files (%s)", StringUtils.toString(supported, ", ")), formats));
 

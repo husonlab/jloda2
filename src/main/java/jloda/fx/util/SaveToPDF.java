@@ -214,7 +214,7 @@ public class SaveToPDF {
 						contentStream.setLineWidth(ps.apply(polygon.getStrokeWidth()));
 						contentStream.setLineDashPattern(getLineDashPattern(polygon), 0);
 						var points = polygon.getPoints();
-						if (points.size() > 0) {
+						if (!points.isEmpty()) {
 							var sX = px.apply(pane.sceneToLocal(polygon.localToScene(polygon.getPoints().get(0), polygon.getPoints().get(1))).getX());
 							var sY = py.apply(pane.sceneToLocal(polygon.localToScene(polygon.getPoints().get(0), polygon.getPoints().get(1))).getY());
 
@@ -231,7 +231,7 @@ public class SaveToPDF {
 						contentStream.setLineWidth(ps.apply(polyline.getStrokeWidth()));
 						contentStream.setLineDashPattern(getLineDashPattern(polyline), 0);
 						var points = polyline.getPoints();
-						if (points.size() > 0) {
+						if (!points.isEmpty()) {
 							var sX = px.apply(pane.sceneToLocal(polyline.localToScene(polyline.getPoints().get(0), polyline.getPoints().get(1))).getX());
 							var sY = py.apply(pane.sceneToLocal(polyline.localToScene(polyline.getPoints().get(0), polyline.getPoints().get(1))).getY());
 							contentStream.moveTo(sX, sY);
@@ -513,7 +513,7 @@ public class SaveToPDF {
 	}
 
 	public static float[] getLineDashPattern(Shape shape) {
-		if (shape.getStrokeDashArray().size() > 0) {
+		if (!shape.getStrokeDashArray().isEmpty()) {
 			var array = new float[shape.getStrokeDashArray().size()];
 			for (var i = 0; i < shape.getStrokeDashArray().size(); i++) {
 				array[i] = 0.5f * shape.getStrokeDashArray().get(i).floatValue(); // need to scale
