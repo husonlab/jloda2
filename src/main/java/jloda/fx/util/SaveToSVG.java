@@ -44,20 +44,27 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 import static jloda.fx.util.SaveToPDF.*;
 
+/**
+ * save a root node and all descendants to an SVG image
+ * Daniel Huson, 6.2023
+ */
 public class SaveToSVG {
 	/**
 	 * draws given pane to a file in PDF format
 	 *
-	 * @param pane the pane
+	 * @param root the root node to be saved
 	 * @param file the file
 	 * @throws IOException
 	 */
-	public static void apply(Node pane, File file) throws IOException {
+	public static void apply(Node root, File file) throws IOException {
 		if (file.exists())
 			Files.delete(file.toPath());
 
@@ -79,7 +86,7 @@ public class SaveToSVG {
 		double svgHeight;
 		{
 
-			var bbox = computeBoundingBox(pane);
+			var bbox = computeBoundingBox(root);
 			svgMinX = bbox.getMinX();
 			svgMaxX = bbox.getMaxX();
 			svgWidth = bbox.getWidth();
@@ -91,8 +98,8 @@ public class SaveToSVG {
 					.formatted(svgWidth, svgHeight, svgMinX, svgMinY, svgWidth, svgHeight));
 		}
 
-		var paneWidth = pane.getBoundsInLocal().getWidth();
-		var paneHeight = pane.getBoundsInLocal().getHeight();
+		var paneWidth = root.getBoundsInLocal().getWidth();
+		var paneHeight = root.getBoundsInLocal().getHeight();
 
 		var factor = Math.min(svgWidth / paneWidth, svgHeight / paneHeight);
 
@@ -101,13 +108,13 @@ public class SaveToSVG {
 		Function<Double, Double> py = y -> (y * factor + svgMinY);
 
 		if (MainWindowManager.isUseDarkTheme()) {
-			appendRect(buf, -5, -5, svgWidth + 10, svgHeight + 10, 0, Collections.EMPTY_LIST, Color.TRANSPARENT, Color.web("rgb(60, 63, 65)"));
+			appendRect(buf, -5, -5, svgWidth + 10, svgHeight + 10, 0, new ArrayList<>(), Color.TRANSPARENT, Color.web("rgb(60, 63, 65)"));
 		}
 
-		for (var n : BasicFX.getAllRecursively(pane, n -> true)) {
+		for (var n : BasicFX.getAllRecursively(root, n -> true)) {
 			// System.err.println("n: " + n.getClass().getSimpleName());
 			if (isNodeVisible(n)) {
-				buf.append(getSVG(pane, px, py, ps, n));
+				buf.append(getSVG(root, px, py, ps, n));
 			}
 		}
 		buf.append("</svg>\n");
@@ -171,7 +178,7 @@ public class SaveToSVG {
 				appendCubicCurve(buf, sX, sY, c1X, c1Y, c2X, c2Y, tX, tY, curve.getStrokeWidth(), adjustDashArray(curve.getStrokeDashArray()), curve.getStroke());
 			} else if (node instanceof Path path) {
 				if (!containedInText(path))
-					appendPath(buf, path, pane, px, py, ps, path.getStrokeWidth(), adjustDashArray(path.getStrokeDashArray()), path.getStroke());
+					appendPath(buf, path, pane, px, py, path.getStrokeWidth(), adjustDashArray(path.getStrokeDashArray()), path.getStroke());
 			} else if (node instanceof Polygon polygon) {
 				var points = new ArrayList<Point2D>();
 				for (var i = 0; i < polygon.getPoints().size(); i += 2) {
@@ -238,8 +245,7 @@ public class SaveToSVG {
 			buf.append(" stroke=\"none\"");
 		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
 		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\" />");
-
+			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
 		}
 		buf.append("/>\n");
 	}
@@ -255,6 +261,9 @@ public class SaveToSVG {
 			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
 		else
 			buf.append(" fill=\"none\"");
+		if (!strokeDashArray.isEmpty()) {
+			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
+		}
 		buf.append("/>\n");
 	}
 
@@ -269,6 +278,9 @@ public class SaveToSVG {
 			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
 		else
 			buf.append(" fill=\"none\"");
+		if (!strokeDashArray.isEmpty()) {
+			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
+		}
 		buf.append("/>\n");
 	}
 
@@ -283,6 +295,9 @@ public class SaveToSVG {
 			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
 		else
 			buf.append(" fill=\"none\"");
+		if (!strokeDashArray.isEmpty()) {
+			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
+		}
 		buf.append("/>\n");
 	}
 
@@ -293,6 +308,9 @@ public class SaveToSVG {
 		else
 			buf.append(" stroke=\"none\"");
 		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
+		if (!strokeDashArray.isEmpty()) {
+			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
+		}
 		buf.append("/>\n");
 	}
 
@@ -303,10 +321,13 @@ public class SaveToSVG {
 		else
 			buf.append(" stroke=\"none\"");
 		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
+		if (!strokeDashArray.isEmpty()) {
+			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
+		}
 		buf.append("/>\n");
 	}
 
-	private static void appendPath(StringBuilder buf, Path path, Node pane, Function<Double, Double> px, Function<Double, Double> py, Function<Double, Double> ps,
+	private static void appendPath(StringBuilder buf, Path path, Node pane, Function<Double, Double> px, Function<Double, Double> py,
 								   double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
 		var local = new Point2D(0, 0);
 		buf.append("<path d=\"");
@@ -351,17 +372,17 @@ public class SaveToSVG {
 			}
 		} finally {
 			buf.append("\"");
-			if (path.getStroke() instanceof Color color && path.getStroke() != Color.TRANSPARENT)
+			if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
 				buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
 			else
 				buf.append(" stroke=\"none\"");
-			buf.append(" stroke-width=\"%.2f\"".formatted(path.getStrokeWidth()));
+			buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
 			if (path.getFill() instanceof Color color && color != Color.TRANSPARENT)
 				buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
 			else
 				buf.append(" fill=\"none\"");
 			if (!strokeDashArray.isEmpty()) {
-				buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\" />");
+				buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
 			}
 			buf.append("/>\n");
 		}
