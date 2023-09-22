@@ -72,17 +72,17 @@ public class NewickIO {
 		}
 	}
 
-	public static String toString(PhyloTree tree,boolean showWeights) {
-		return toString(tree,showWeights,false,false);
+	public static String toString(PhyloTree tree, boolean showWeights) {
+		return toString(tree, showWeights, false, false);
 	}
 
-	public static String toString(PhyloTree tree,boolean showWeights,boolean showConfidences) {
-		return toString(tree,showWeights,showConfidences,false);
+	public static String toString(PhyloTree tree, boolean showWeights, boolean showConfidences) {
+		return toString(tree, showWeights, showConfidences, false);
 	}
 
-	public static String toString(PhyloTree tree,boolean showWeights,boolean showConfidences,boolean showProbabilities) {
-		var format=new NewickIO.OutputFormat(showWeights,showConfidences,showConfidences,showProbabilities,false);
-		return new NewickIO().toBracketString(tree,format);
+	public static String toString(PhyloTree tree, boolean showWeights, boolean showConfidences, boolean showProbabilities) {
+		var format = new NewickIO.OutputFormat(showWeights, showConfidences, showConfidences, showProbabilities, false);
+		return new NewickIO().toBracketString(tree, format);
 	}
 
 	/**
@@ -436,7 +436,7 @@ public class NewickIO {
 							tree.setConfidence(v.getFirstInEdge(), NumberUtils.parseDouble(tree.getLabel(v)));
 							tree.setLabel(v, null);
 						});
-				var maxValue=tree.edgeStream().filter(e->!e.getTarget().isLeaf()).mapToDouble(tree::getConfidence).max();
+				var maxValue = tree.edgeStream().filter(e -> !e.getTarget().isLeaf()).mapToDouble(tree::getConfidence).max();
 				if (maxValue.isPresent()) {
 					double leafValue = (maxValue.getAsDouble() > 1 && maxValue.getAsDouble() <= 100 ? 100 : 1);
 					tree.nodeStream().filter(v -> v.isLeaf() && v.getInDegree() == 1)
@@ -473,6 +473,8 @@ public class NewickIO {
 		for (pos = StringUtils.skipSpaces(str, pos); pos < str.length(); pos = StringUtils.skipSpaces(str, pos + 1)) {
 			var w = tree.newNode();
 			String label = null;
+			var confidenceValue = new Single<Double>();
+
 			if (str.charAt(pos) == '(') {
 				pos = parseBracketNotationRec(tree, seen, depth + 1, w, pos + 1, str);
 				if (str.charAt(pos) != ')')
@@ -492,29 +494,33 @@ public class NewickIO {
 					label = buf.toString().trim();
 
 					if (!label.isEmpty()) {
-						if (!isAllowMultiLabeledNodes() && seen.containsKey(label) && PhyloTreeNetworkIOUtils.findReticulateLabel(label) == null)
-						// if label already used, make unique, unless this is a reticulate node
-						{
-							if (label.startsWith("'") && label.endsWith("'") && label.length() > 1)
-								label = label.substring(1, label.length() - 1);
-							// give first occurrence of this label the suffix .1
-							final Node old = seen.get(label);
-							if (old != null) // change label of node
+						if (NumberUtils.isDouble(label)) {
+							confidenceValue.set(NumberUtils.parseDouble(label));
+						} else {
+							if (!isAllowMultiLabeledNodes() && seen.containsKey(label) && PhyloTreeNetworkIOUtils.findReticulateLabel(label) == null)
+							// if label already used, make unique, unless this is a reticulate node
 							{
-								tree.setLabel(old, label + ".1");
-								seen.put(label, null); // keep label in, but null indicates has changed
-								seen.put(label + ".1", old);
-								inputHasMultiLabels = true;
-							}
+								if (label.startsWith("'") && label.endsWith("'") && label.length() > 1)
+									label = label.substring(1, label.length() - 1);
+								// give first occurrence of this label the suffix .1
+								final Node old = seen.get(label);
+								if (old != null) // change label of node
+								{
+									tree.setLabel(old, label + ".1");
+									seen.put(label, null); // keep label in, but null indicates has changed
+									seen.put(label + ".1", old);
+									inputHasMultiLabels = true;
+								}
 
-							var t = 1;
-							String labelt;
-							do {
-								labelt = label + "." + (++t);
-							} while (seen.containsKey(labelt));
-							label = labelt;
+								var t = 1;
+								String labelt;
+								do {
+									labelt = label + "." + (++t);
+								} while (seen.containsKey(labelt));
+								label = labelt;
+							}
+							seen.put(label, w);
 						}
-						seen.put(label, w);
 					}
 					tree.setLabel(w, label);
 					if (label.isEmpty())
@@ -569,6 +575,9 @@ public class NewickIO {
 			Edge e = null;
 			if (v != null)
 				e = tree.newEdge(v, w);
+
+			if (confidenceValue.isNotNull())
+				tree.setConfidence(e, confidenceValue.get());
 
 			// detect and read embedded bootstrap values:
 			pos = StringUtils.skipSpaces(str, pos);
@@ -885,19 +894,21 @@ public class NewickIO {
 		}
 	}
 
-	/*
 	public static void main(String[] args) throws IOException {
-		var newick="((a,b),(c,d),e)[&&NHX:GN=Kitty];";
+		var newick = "(a40:0.0899376429,((a47:0.1357332613,((tei_1:0.0000021732,tei_2:0.0000021732)100:0.1172693229,uk6:0.0808904571)73:0.0221078288)62:0.0179176982,(((bal:0.1407598263,(dec_1:0.1259715854,(dec_2:0.0642686547,van:0.0607203380)100:0.0606318912)93:0.0321244472)100:0.0887287403,((ker:0.0077780118,nog:0.0025525455)100:0.1687566009,(ris:0.0522666677,risA:0.0548213374)100:0.1431814732)70:0.0279369285)73:0.0183299149,(((cor:1.0478535960,gp6:0.7479808257)99:0.2441475379,isocom:0.3338813419)66:0.0959063961,(mis:0.3248559905,rim:0.3091183550)85:0.1240669481)100:0.2858317671)81:0.0321174501)100:0.0997399456,a50:0.0588594162);";
 
-		var newickIO=new NewickIO();
-		var tree=new PhyloTree();
-		newickIO.setNewickNodeCommentConsumer((v,c)->{
-			if(c.startsWith("&&NHX:GN="))
-				tree.setName(c.substring(c.indexOf("=")+1));
+		var newickIO = new NewickIO();
+		newickIO.setAllowMultiLabeledNodes(false);
+		var tree = new PhyloTree();
+		newickIO.setNewickNodeCommentConsumer((v, c) -> {
+			if (c.startsWith("&&NHX:GN="))
+				tree.setName(c.substring(c.indexOf("=") + 1));
 		});
-		newickIO.parseBracketNotation(tree,newick,true,true);
+		newickIO.parseBracketNotation(tree, newick, true, true);
+		System.err.println("isInputHasMultiLabels: " + newickIO.isInputHasMultiLabels());
+		System.err.println("hasEdgeWeights: " + tree.hasEdgeWeights());
+		System.err.println("hasEdgeConfidences: " + tree.hasEdgeConfidences());
 		System.err.println(tree.getName());
-		System.err.println(newickIO.toBracketString(tree,false));
+		System.err.println(newickIO.toBracketString(tree, true));
 	}
-	*/
 }
