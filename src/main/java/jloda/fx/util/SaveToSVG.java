@@ -47,7 +47,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 
 
 /**
@@ -74,7 +73,6 @@ public class SaveToSVG {
 	 * @param file   the file
 	 * @param bounds the bounds to use
 	 * @throws IOException failed
-	 *                     todo: implement rotation of elements
 	 */
 	public static void apply(Node root, Bounds bounds, File file) throws IOException {
 		if (file.exists())
@@ -102,7 +100,7 @@ public class SaveToSVG {
 			 */
 
 		if (MainWindowManager.isUseDarkTheme()) {
-			appendRect(buf, -5, -5, bounds.getWidth() + 10, bounds.getHeight() + 10, 0, new ArrayList<>(), Color.TRANSPARENT, Color.web("rgb(60, 63, 65)"));
+			buf.append(createRect(-5, -5, bounds.getWidth() + 10, bounds.getHeight() + 10, "fill=\"%s\"".formatted(asSvgColor(Color.web("rgb(60, 63, 65)")))));
 		}
 
 		for (var n : BasicFX.getAllRecursively(root, n -> true)) {
@@ -126,17 +124,23 @@ public class SaveToSVG {
 	 */
 	public static String getSVG(Node root, Node node) {
 		var scaleFactor = SaveToPDF.computeScaleFactor(root, node);
-		var strokeWidth = (node instanceof Shape shape ? scaleFactor * shape.getStrokeWidth() : 1.0);
-		var strokeDashArray = (node instanceof Shape shape ? shape.getStrokeDashArray().stream().map(v -> scaleFactor*v).toList():new ArrayList<Double>());
+
+		var formatting = createFormattingString(root, node, scaleFactor);
 
 		var buf = new StringBuilder();
 		try {
 			if (node instanceof Pane pane) { // this might contain a background color
 				if (pane.getBackground() != null && pane.getBackground().getFills().size() == 1) {
 					var fill = pane.getBackground().getFills().get(0);
-					if (fill.getFill() instanceof Color) {
-						var bounds = root.sceneToLocal(pane.localToScene(pane.getBoundsInLocal()));
-						appendRect(buf, (bounds.getMinX()), (bounds.getMinY()), bounds.getWidth(), bounds.getHeight(), strokeWidth, strokeDashArray, null, fill.getFill());
+					if (fill.getFill() instanceof Color color) {
+						var widthInScreenCoordinates = pane.localToScreen(new Point2D(pane.getWidth(), 0)).subtract(pane.localToScreen(new Point2D(0, 0))).magnitude();
+						var heightInScreenCoordinates = pane.localToScreen(new Point2D(0, pane.getHeight())).subtract(pane.localToScreen(new Point2D(0, 0))).magnitude();
+						var width = root.sceneToLocal(new Point2D(widthInScreenCoordinates, 0)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
+						var height = root.sceneToLocal(new Point2D(0, heightInScreenCoordinates)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
+						var screenBounds = pane.localToScreen(pane.getBoundsInLocal());
+						var location = root.screenToLocal(new Point2D(screenBounds.getMinX(), screenBounds.getMinY()));
+						var format = createFormattingString(root, node, scaleFactor) + " fill=\"%s\"".formatted(asSvgColor(color));
+						buf.append(createRect(location.getX(), location.getY(), width, height, format));
 					}
 				}
 			} else if (node instanceof Line line) {
@@ -144,23 +148,29 @@ public class SaveToSVG {
 				var y1 = (root.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getY());
 				var x2 = (root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getX());
 				var y2 = (root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getY());
-				appendLine(buf, x1, y1, x2, y2, strokeWidth, strokeDashArray, line.getStroke());
+				buf.append(createLine(x1, y1, x2, y2, formatting));
 			} else if (node instanceof Rectangle rectangle) {
-				var bounds = root.sceneToLocal(rectangle.localToScene(rectangle.getBoundsInLocal()));
-				appendRect(buf, (bounds.getMinX()), (bounds.getMinY()), bounds.getWidth(), bounds.getHeight(), strokeWidth, strokeDashArray, rectangle.getStroke(), rectangle.getFill());
+				var widthInScreenCoordinates = rectangle.localToScreen(new Point2D(rectangle.getWidth(), 0)).subtract(rectangle.localToScreen(new Point2D(0, 0))).magnitude();
+				var heightInScreenCoordinates = rectangle.localToScreen(new Point2D(0, rectangle.getHeight())).subtract(rectangle.localToScreen(new Point2D(0, 0))).magnitude();
+				var width = root.sceneToLocal(new Point2D(widthInScreenCoordinates, 0)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
+				var height = root.sceneToLocal(new Point2D(0, heightInScreenCoordinates)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
+
+				var screenBounds = rectangle.localToScreen(rectangle.getBoundsInLocal());
+				var location = root.screenToLocal(new Point2D(screenBounds.getMinX(), screenBounds.getMinY()));
+				buf.append(createRect(location.getX(), location.getY(), width, height, formatting));
 			} else if (node instanceof Circle circle) {
 				var bounds = root.sceneToLocal(circle.localToScene(circle.getBoundsInLocal()));
 				var r = (0.5 * bounds.getHeight());
 				var x = (bounds.getCenterX());
 				var y = (bounds.getCenterY());
-				appendCircle(buf, x, y, r, strokeWidth, strokeDashArray, circle.getStroke(), circle.getFill());
+				buf.append(createCircle(x, y, r, formatting));
 			} else if (node instanceof Ellipse ellipse) {
 				var bounds = root.sceneToLocal(ellipse.localToScene(ellipse.getBoundsInLocal()));
 				var rx = (ellipse.getRadiusX());
 				var ry = (ellipse.getRadiusY());
 				var x = (bounds.getCenterX());
 				var y = (bounds.getCenterY());
-				appendEllipse(buf, x, y, rx, ry, strokeWidth, strokeDashArray, ellipse.getStroke(), ellipse.getFill());
+				buf.append(createEllipse(x, y, rx, ry, formatting));
 			} else if (node instanceof QuadCurve curve) {
 				var sX = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
 				var sY = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
@@ -168,7 +178,7 @@ public class SaveToSVG {
 				var cY = (root.sceneToLocal(curve.localToScene(curve.getControlX(), curve.getControlY())).getY());
 				var tX = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
 				var tY = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
-				appendQuadCurve(buf, sX, sY, cX, cY, tX, tY, strokeWidth, strokeDashArray, curve.getStroke());
+				buf.append(createQuadCurve(sX, sY, cX, cY, tX, tY, formatting));
 			} else if (node instanceof CubicCurve curve) {
 				var sX = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
 				var sY = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
@@ -178,10 +188,10 @@ public class SaveToSVG {
 				var c2Y = (root.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getY());
 				var tX = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
 				var tY = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
-				appendCubicCurve(buf, sX, sY, c1X, c1Y, c2X, c2Y, tX, tY, strokeWidth, strokeDashArray, curve.getStroke());
+				buf.append(createCubicCurve(sX, sY, c1X, c1Y, c2X, c2Y, tX, tY, formatting));
 			} else if (node instanceof Path path) {
 				if (!SaveToPDF.containedInText(path))
-					appendPath(buf, path, root, strokeWidth, strokeDashArray, path.getStroke());
+					buf.append(createPath(path, root, formatting));
 			} else if (node instanceof Polygon polygon) {
 				var points = new ArrayList<Point2D>();
 				for (var i = 0; i < polygon.getPoints().size(); i += 2) {
@@ -189,7 +199,7 @@ public class SaveToSVG {
 					var y = (root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getY());
 					points.add(new Point2D(x, y));
 				}
-				appendPolygon(buf, points, strokeWidth, strokeDashArray, polygon.getStroke(), polygon.getFill());
+				buf.append(createPolygon(points, formatting));
 			} else if (node instanceof Polyline polyline) {
 				var points = new ArrayList<Point2D>();
 				for (var i = 0; i < polyline.getPoints().size(); i += 2) {
@@ -197,7 +207,7 @@ public class SaveToSVG {
 					var y = (root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getY());
 					points.add(new Point2D(x, y));
 				}
-				appendPolyline(buf, points, strokeWidth, strokeDashArray, polyline.getStroke());
+				buf.append(createPolyline(points, formatting));
 			} else if (node instanceof Text text) {
 				if (!text.getText().isBlank()) {
 					double screenAngle = SaveToPDF.getAngleOnScreen(text);
@@ -212,7 +222,7 @@ public class SaveToSVG {
 					var altFontHeight =scaleFactor*0.87 * localBounds.getHeight();
 					if (!(text instanceof TextExt) && Math.abs(fontHeight - altFontHeight) > 2)
 						fontHeight = altFontHeight;
-					appendText(buf, (rotateAnchorX), (rotateAnchorY), screenAngle, text.getText(), text.getFont(), fontHeight, text.getFill());
+					buf.append(createText((rotateAnchorX), (rotateAnchorY), screenAngle, text.getText(), text.getFont(), fontHeight, text.getFill()));
 				}
 			} else if (node instanceof ImageView imageView) {
 				var bounds = root.sceneToLocal(imageView.localToScene(imageView.getBoundsInLocal()));
@@ -220,7 +230,7 @@ public class SaveToSVG {
 				var width = (bounds.getWidth());
 				var y = (bounds.getMinY());
 				var height = (bounds.getHeight());
-				appendImage(buf, x, y, width, height, imageView.getImage());
+				buf.append(createImage(x, y, width, height, imageView.getImage()));
 			} else if (node instanceof Shape3D || node instanceof Canvas || node instanceof Chart) {
 				var parameters = new SnapshotParameters();
 				parameters.setFill(Color.TRANSPARENT);
@@ -230,7 +240,7 @@ public class SaveToSVG {
 				var width = (bounds.getWidth());
 				var y = (bounds.getMinY());
 				var height = (bounds.getHeight());
-				appendImage(buf, x, y, width, height, snapShot);
+				buf.append(createImage(x, y, width, height, snapShot));
 			}
 		} catch (Exception ex) {
 			Basic.caught(ex);
@@ -239,98 +249,33 @@ public class SaveToSVG {
 	}
 
 
-	public static void appendLine(StringBuilder buf, double x1, double y1, double x2, double y2, double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
-		buf.append("<line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\"".formatted(x1, y1, x2, y2));
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-		}
-		buf.append("/>\n");
+	public static String createLine(double x1, double y1, double x2, double y2, String formatting) {
+		return "<line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" %s/>%n".formatted(x1, y1, x2, y2, formatting);
 	}
 
-	public static void appendRect(StringBuilder buf, double x, double y, double width, double height, double strokeWidth, List<Double> strokeDashArray, Paint stroke, Paint fill) {
-		buf.append("<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\"".formatted(x, y, width, height));
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (fill instanceof Color color && color != Color.TRANSPARENT)
-			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" fill=\"none\"");
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-		}
-		buf.append("/>\n");
+	public static String createRect(double x, double y, double width, double height, String formatting) {
+		return ("<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" %s/>%n".formatted(x, y, width, height, formatting));
 	}
 
-	public static void appendCircle(StringBuilder buf, double x, double y, double radius, double strokeWidth, List<Double> strokeDashArray, Paint stroke, Paint fill) {
-		buf.append("<circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\"".formatted(x, y, radius));
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (fill instanceof Color color && color != Color.TRANSPARENT)
-			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" fill=\"none\"");
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-		}
-		buf.append("/>\n");
+	public static String createCircle(double x, double y, double radius, String formatting) {
+		return "<circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" %s/>%n".formatted(x, y, radius, formatting);
 	}
 
-	public static void appendEllipse(StringBuilder buf, double x, double y, double rx, double ry, double strokeWidth, List<Double> strokeDashArray, Paint stroke, Paint fill) {
-		buf.append("<ellipse cx=\"%.2f\" cy=\"%.2f\" rx=\"%.2f\" ry=\"%.2f\"".formatted(x, y, rx, ry));
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (fill instanceof Color color && color != Color.TRANSPARENT)
-			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" fill=\"none\"");
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-		}
-		buf.append("/>\n");
+	public static String createEllipse(double x, double y, double rx, double ry, String formatting) {
+		return ("<ellipse cx=\"%.2f\" cy=\"%.2f\" rx=\"%.2f\" ry=\"%.2f\" %s/>%n".formatted(x, y, rx, ry, formatting));
 	}
 
-	public static void appendQuadCurve(StringBuilder buf, Double sX, Double sY, Double cX, Double cY, Double tX, Double tY, double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
-		buf.append("<path d=\"M%.2f,%.2f Q%.2f,%.2f %.2f,%.2f\"".formatted(sX, sY, cX, cY, tX, tY));
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-		}
-		buf.append("/>\n");
+	public static String createQuadCurve(Double sX, Double sY, Double cX, Double cY, Double tX, Double tY, String formatting) {
+		return ("<path d=\"M%.2f,%.2f Q%.2f,%.2f %.2f,%.2f\" %s/>%n".formatted(sX, sY, cX, cY, tX, tY, formatting));
 	}
 
-	public static void appendCubicCurve(StringBuilder buf, Double sX, Double sY, Double c1X, Double c1Y, Double c2X, Double c2Y, Double tX, Double tY, double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
-		buf.append("<path d=\"M%.2f,%.2f C%.2f,%.2f %.2f,%.2f %.2f,%.2f\"".formatted(sX, sY, c1X, c1Y, c2X, c2Y, tX, tY));
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-		}
-		buf.append("/>\n");
+	public static String createCubicCurve(Double sX, Double sY, Double c1X, Double c1Y, Double c2X, Double c2Y, Double tX, Double tY, String formatting) {
+		return ("<path d=\"M%.2f,%.2f C%.2f,%.2f %.2f,%.2f %.2f,%.2f\" %s/>%n".formatted(sX, sY, c1X, c1Y, c2X, c2Y, tX, tY, formatting));
 	}
 
-	private static void appendPath(StringBuilder buf, Path path, Node pane, double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
+	private static String createPath(Path path, Node pane, String formatting) {
 		var local = new Point2D(0, 0);
+		var buf = new StringBuilder();
 		buf.append("<path d=\"");
 		try {
 			for (var element : path.getElements()) {
@@ -372,46 +317,23 @@ public class SaveToSVG {
 				}
 			}
 		} finally {
-			buf.append("\"");
-			if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-				buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-			else
-				buf.append(" stroke=\"none\"");
-			buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-			if (path.getFill() instanceof Color color && color != Color.TRANSPARENT)
-				buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-			else
-				buf.append(" fill=\"none\"");
-			if (!strokeDashArray.isEmpty()) {
-				buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
-			}
-			buf.append("/>\n");
+			buf.append("\" ").append(formatting).append("/>\n");
 		}
+		return buf.toString();
 	}
 
-	public static void appendPolygon(StringBuilder buf, ArrayList<Point2D> points, double strokeWidth, List<Double> strokeDashArray, Paint stroke, Paint fill) {
+	public static String createPolygon(ArrayList<Point2D> points, String formatting) {
+		var buf = new StringBuilder();
 		buf.append("<polygon points=\"");
 		for (var point : points) {
 			buf.append(" %.2f,%.2f".formatted(point.getX(), point.getY()));
 		}
-		buf.append("\"");
-
-		if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-			buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" stroke=\"none\"");
-		buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-		if (fill instanceof Color color && color != Color.TRANSPARENT)
-			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-		else
-			buf.append(" fill=\"none\"");
-		if (!strokeDashArray.isEmpty()) {
-			buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\" />");
-		}
-		buf.append("/>\n");
+		buf.append("\" ").append(formatting).append("/>\n");
+		return buf.toString();
 	}
 
-	public static void appendPolyline(StringBuilder buf, ArrayList<Point2D> points, double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
+	public static String createPolyline(ArrayList<Point2D> points, String formatting) {
+		var buf = new StringBuilder();
 		if (!points.isEmpty()) {
 			try {
 				buf.append("<path d=\"");
@@ -421,22 +343,14 @@ public class SaveToSVG {
 					buf.append(" L%.2f,%.2f".formatted(point.getX(), point.getY()));
 				}
 			} finally {
-				buf.append("\"");
-				if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-					buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-				else
-					buf.append(" stroke=\"none\"");
-				buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-				buf.append(" fill=\"none\"");
-				if (!strokeDashArray.isEmpty()) {
-					buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\" />");
-				}
-				buf.append("/>\n");
+				buf.append("\" ").append(formatting).append("/>\n");
 			}
 		}
+		return buf.toString();
 	}
 
-	public static void appendText(StringBuilder buf, Double x, Double y, double angle, String text, Font font, Double fontSize, Paint textFill) {
+	public static String createText(Double x, Double y, double angle, String text, Font font, Double fontSize, Paint textFill) {
+		var buf = new StringBuilder();
 		buf.append("<text x=\"%.2f\" y=\"%.2f\"".formatted(x, y));
 		buf.append(" font-family=\"%s\"".formatted(getSVGFontName(font.getFamily())));
 		buf.append(" font-size=\"%.1f\"".formatted(fontSize));
@@ -452,13 +366,16 @@ public class SaveToSVG {
 		buf.append("><![CDATA[");
 		buf.append(text);
 		buf.append("]]></text>\n");
+		return buf.toString();
 	}
 
-	public static void appendImage(StringBuilder buf, double x, double y, double width, double height, Image image) {
+	public static String createImage(double x, double y, double width, double height, Image image) {
+		var buf = new StringBuilder();
 		var encoder = new PngEncoderFX(image);
 		var base64Data = Base64.getEncoder().encodeToString(encoder.pngEncode(true));
 		buf.append("<image xlink:href=\"data:image/png;base64,").append(base64Data).append("\"");
 		buf.append(" x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\"/>\n".formatted(x, y, width, height));
+		return buf.toString();
 	}
 
 	public static Object getSVGFontName(String fontFamily) {
@@ -490,4 +407,37 @@ public class SaveToSVG {
 		return hexColor;
 	}
 
+	public static String createFormattingString(Node root, Node node, double scaleFactor) {
+		var buf = new StringBuilder();
+		if (node instanceof Shape shape) {
+			var stroke = shape.getStroke();
+			if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
+				buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
+			else
+				buf.append(" stroke=\"none\"");
+			var fill = shape.getFill();
+			if (fill instanceof Color color && color != Color.TRANSPARENT)
+				buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
+			else
+				buf.append(" fill=\"none\"");
+			buf.append(" stroke-width=\"%.2f\"".formatted(scaleFactor * shape.getStrokeWidth()));
+			var strokeDashArray = shape.getStrokeDashArray().stream().map(v -> scaleFactor * v).toList();
+			if (!strokeDashArray.isEmpty()) {
+				buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\"");
+			}
+		}
+
+		{
+			double screenAngle = SaveToPDF.getAngleOnScreen(node);
+			var localBounds = node.getBoundsInLocal();
+			var origX = localBounds.getMinX();
+			var origY = localBounds.getMinY() + localBounds.getHeight();
+			var rotateAnchorX = root.sceneToLocal(node.localToScene(origX, origY)).getX();
+			var rotateAnchorY = root.sceneToLocal(node.localToScene(origX, origY)).getY();
+			if ((screenAngle % 360.0) != 0)
+				buf.append(" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(screenAngle, rotateAnchorX, rotateAnchorY));
+		}
+		return buf.toString();
+
+	}
 }
