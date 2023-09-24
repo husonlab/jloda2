@@ -19,6 +19,7 @@
 
 package jloda.fx.util;
 
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
@@ -27,12 +28,12 @@ import javafx.scene.chart.Chart;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.transform.Scale;
 import jloda.fx.control.RichTextLabel;
 import jloda.fx.window.MainWindowManager;
 import jloda.thirdparty.PngEncoderFX;
@@ -72,11 +73,27 @@ public class SaveToPDF {
 	 * @throws IOException failed
 	 */
 	public static void apply(Node root, File file) throws IOException {
+		apply(root, root.getBoundsInLocal(), file);
+	}
+
+	/**
+	 * draws given pane to a file in PDF format
+	 *
+	 * @param root       the root node
+	 * @param file       the file
+	 * @param rootBounds the bounds to use
+	 * @throws IOException failed
+	 *                     todo: implement rotation of elements
+	 */
+	public static void apply(Node root, Bounds rootBounds, File file) throws IOException {
 		if (file.exists())
 			Files.delete(file.toPath());
 
 		var document = new PDDocument();
-		var page = new PDPage(computeBoundingBox(root));
+		//var page = new PDPage(computeBoundingBox(root));
+
+		var boundingBox = new PDRectangle((float) rootBounds.getMinX(), (float) rootBounds.getMinY(), (float) rootBounds.getWidth(), (float) rootBounds.getHeight());
+		var page=new PDPage(boundingBox);
 		document.addPage(page);
 
 		{
@@ -91,113 +108,107 @@ public class SaveToPDF {
 			documentInformation.setModificationDate(calendar);
 		}
 
-		var pdfMinX = page.getCropBox().getLowerLeftX();
-		//var pdfMaxX = page.getCropBox().getUpperRightX();
-		var pdfWidth = page.getCropBox().getWidth();
-
-		//var pdfMinY = page.getCropBox().getLowerLeftY();
-		var pdfMaxY = page.getCropBox().getUpperRightY();
-		var pdfHeight = page.getCropBox().getHeight();
-
-		var paneWidth = root.getBoundsInLocal().getWidth();
-		var paneHeight = root.getBoundsInLocal().getHeight();
-
-		var factor = Math.min(pdfWidth / paneWidth, pdfHeight / paneHeight);
-
-		Function<Double, Float> ps = s -> (float) (s * factor);
-		Function<Double, Float> px = x -> (float) (x * factor + pdfMinX);
-		Function<Double, Float> py = y -> (float) (pdfMaxY - y * factor);
-
-		//var xPane = root.localToScene(root.getBoundsInLocal()).getMinX();
-		//var yPane = root.localToScene(root.getBoundsInLocal()).getMinY();
-
 		var contentStream = new PDPageContentStream(document, page);
+
+		Function<Double, Float> py=s->boundingBox.getUpperRightY()-s.floatValue();
 
 		if (MainWindowManager.isUseDarkTheme()) {
 			contentStream.setNonStrokingColor(pdfColor(Color.web("rgb(60, 63, 65)")));
-			contentStream.addRect(-5, -5, page.getMediaBox().getWidth() + 10, page.getMediaBox().getHeight() + 10);
+			contentStream.addRect(boundingBox.getLowerLeftX(), boundingBox.getLowerLeftY(), boundingBox.getWidth(), boundingBox.getHeight());
 			contentStream.fill();
 		}
 
-		for (var n : BasicFX.getAllRecursively(root, n -> true)) {
-			// System.err.println("n: " + n.getClass().getSimpleName());
-			if (isNodeVisible(n)) {
-				try {
-					if (n instanceof Line line) {
-						contentStream.setLineWidth(ps.apply(line.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(line), 0);
 
-						var x1 = px.apply(root.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getX());
+		for (var node : BasicFX.getAllRecursively(root, n -> true)) {
+			// System.err.println("n: " + n.getClass().getSimpleName());
+			if (isNodeVisible(node)) {
+				var scaleFactor = (float) computeScaleFactor(root, node);
+				var strokeWidth = (float) (node instanceof Shape shape ? scaleFactor * shape.getStrokeWidth() : 1.0);
+				var strokeDashArray = (node instanceof Shape shape ? strokeDashArray(scaleFactor, shape) : new float[0]);
+				try {
+					if (node instanceof Pane pane) { // this might contain a background color
+						if (pane.getBackground() != null && pane.getBackground().getFills().size() == 1) {
+							var fill = pane.getBackground().getFills().get(0);
+							if (fill.getFill() instanceof Color) {
+								var bounds = root.sceneToLocal(pane.localToScene(pane.getBoundsInLocal()));
+								contentStream.addRect((float) (bounds.getMinX()), py.apply(bounds.getMaxY()), (float) (bounds.getWidth()), (float) (bounds.getHeight()));
+								doFillStroke(contentStream, null, fill.getFill());
+							}
+						}
+					} else if (node instanceof Line line) {
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
+						var x1 = (float) (root.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getX());
 						var y1 = py.apply(root.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getY());
-						var x2 = px.apply(root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getX());
+						var x2 = (float) (root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getX());
 						var y2 = py.apply(root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getY());
 						contentStream.moveTo(x1, y1);
 						contentStream.lineTo(x2, y2);
 						doFillStroke(contentStream, line.getStroke(), line.getFill());
-					} else if (n instanceof Rectangle rectangle) {
-						// todo: this might break of rectangle has been rotated
-						contentStream.setLineWidth(ps.apply(rectangle.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(rectangle), 0);
+					} else if (node instanceof Rectangle rectangle) {
+						// todo: this might break if rectangle has been rotated
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var bounds = root.sceneToLocal(rectangle.localToScene(rectangle.getBoundsInLocal()));
-						contentStream.addRect(px.apply(bounds.getMinX()), py.apply(bounds.getMaxY()), ps.apply(bounds.getWidth()), ps.apply(bounds.getHeight()));
+						contentStream.addRect((float) (bounds.getMinX() - 0.5 * bounds.getWidth()), py.apply(bounds.getMaxY()), (float) (bounds.getWidth()), (float)(bounds.getHeight()));
 						doFillStroke(contentStream, rectangle.getStroke(), rectangle.getFill());
-					} else if (n instanceof Ellipse ellipse) {
-						contentStream.setLineWidth(ps.apply(ellipse.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(ellipse), 0);
+					} else if (node instanceof Ellipse ellipse) {
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var bounds = root.sceneToLocal(ellipse.localToScene(ellipse.getBoundsInLocal()));
-						var rx = ps.apply(0.5 * bounds.getHeight());
-						var ry = ps.apply(0.5 * bounds.getWidth());
-						var x = px.apply(bounds.getCenterX());
+						var rx = (float) (0.5 * bounds.getHeight());
+						var ry = py.apply(0.5 * bounds.getWidth());
+						var x = (float)(bounds.getCenterX()-rx);
 						var y = py.apply(bounds.getCenterY());
 						addEllipse(contentStream, x, y, rx, ry);
 						doFillStroke(contentStream, ellipse.getStroke(), ellipse.getFill());
-					} else if (n instanceof Circle circle) {
-						contentStream.setLineWidth(ps.apply(circle.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(circle), 0);
+					} else if (node instanceof Circle circle) {
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var bounds = root.sceneToLocal(circle.localToScene(circle.getBoundsInLocal()));
-						var r = ps.apply(0.5 * Math.min(bounds.getHeight(), bounds.getWidth()));
-						var x = px.apply(bounds.getCenterX());
+						var r = (float) (0.5 * Math.min(bounds.getHeight(), bounds.getWidth()));
+						var x = (float)(bounds.getCenterX()-r);
 						var y = py.apply(bounds.getCenterY());
 						addCircle(contentStream, x, y, r);
 						doFillStroke(contentStream, circle.getStroke(), circle.getFill());
-					} else if (n instanceof QuadCurve || n instanceof CubicCurve) {
-						var curve = (n instanceof QuadCurve ? convertQuadCurveToCubicCurve((QuadCurve) n) : (CubicCurve) n);
-						contentStream.setLineWidth(ps.apply(curve.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(curve), 0);
-						var sX = px.apply(root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
+					} else if (node instanceof QuadCurve || node instanceof CubicCurve) {
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
+						var curve = (node instanceof QuadCurve ? convertQuadCurveToCubicCurve((QuadCurve) node) : (CubicCurve) node);
+						var sX = (float) (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
 						var sY = py.apply(root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
-						var c1X = px.apply(root.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getX());
+						var c1X = (float) (root.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getX());
 						var c1Y = py.apply(root.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getY());
-						var c2X = px.apply(root.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getX());
+						var c2X = (float) (root.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getX());
 						var c2Y = py.apply(root.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getY());
-						var tX = px.apply(root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
+						var tX = (float) (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
 						var tY = py.apply(root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
 						contentStream.moveTo(sX, sY);
 						contentStream.curveTo(c1X, c1Y, c2X, c2Y, tX, tY);
 						doFillStroke(contentStream, curve.getStroke(), curve.getFill());
-					} else if (n instanceof Path path) {
+					} else if (node instanceof Path path) {
 						if (containedInText(path))
 							continue; // don't draw caret
-						contentStream.setLineWidth(ps.apply(path.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(path), 0);
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var local = new Point2D(0, 0);
 						for (var element : path.getElements()) {
 							if (element instanceof MoveTo moveTo) {
 								local = new Point2D(moveTo.getX(), moveTo.getY());
 								var t = root.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-								contentStream.moveTo(px.apply(t.getX()), py.apply(t.getY()));
+								contentStream.moveTo((float)(t.getX()), py.apply(t.getY()));
 							} else if (element instanceof LineTo lineTo) {
 								local = new Point2D(lineTo.getX(), lineTo.getY());
 								var t = root.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-								contentStream.lineTo(px.apply(t.getX()), py.apply(t.getY()));
+								contentStream.lineTo((float)(t.getX()), py.apply(t.getY()));
 							} else if (element instanceof HLineTo lineTo) {
 								local = new Point2D(lineTo.getX(), local.getY());
 								var t = root.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-								contentStream.lineTo(px.apply(t.getX()), py.apply(t.getY()));
+								contentStream.lineTo((float)(t.getX()), py.apply(t.getY()));
 							} else if (element instanceof VLineTo lineTo) {
 								local = new Point2D(local.getX(), lineTo.getY());
 								var t = root.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-								contentStream.lineTo(px.apply(t.getX()), py.apply(t.getY()));
+								contentStream.lineTo((float)(t.getX()), py.apply(t.getY()));
 							} else if (element instanceof ArcTo arcTo) {
 								local = new Point2D(arcTo.getX(), arcTo.getY());
 								System.err.println("arcTo: not implemented");
@@ -206,43 +217,43 @@ public class SaveToPDF {
 								var t = root.sceneToLocal(path.localToScene(curveTo.getX(), curveTo.getY()));
 								var c1 = root.sceneToLocal(path.localToScene(curveTo.getControlX1(), curveTo.getControlY1()));
 								var c2 = root.sceneToLocal(path.localToScene(curveTo.getControlX2(), curveTo.getControlY2()));
-								contentStream.curveTo(px.apply(c1.getX()), py.apply(c1.getY()), px.apply(c2.getX()), py.apply(c2.getY()), px.apply(t.getX()), py.apply(t.getY()));
+								contentStream.curveTo((float) (c1.getX()), py.apply(c1.getY()), (float) (c2.getX()), py.apply(c2.getY()), (float)(t.getX()), py.apply(t.getY()));
 							}
 						}
 						doFillStroke(contentStream, path.getStroke(), path.getFill());
-					} else if (n instanceof Polygon polygon) {
-						contentStream.setLineWidth(ps.apply(polygon.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(polygon), 0);
+					} else if (node instanceof Polygon polygon) {
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var points = polygon.getPoints();
 						if (!points.isEmpty()) {
-							var sX = px.apply(root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(0), polygon.getPoints().get(1))).getX());
+							var sX = (float) (root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(0), polygon.getPoints().get(1))).getX());
 							var sY = py.apply(root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(0), polygon.getPoints().get(1))).getY());
 
 							contentStream.moveTo(sX, sY);
 							for (var i = 2; i < points.size(); i += 2) {
-								var x = px.apply(root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getX());
+								var x = (float) (root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getX());
 								var y = py.apply(root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getY());
 								contentStream.lineTo(x, y);
 							}
 							contentStream.closePath();
 							doFillStroke(contentStream, polygon.getStroke(), polygon.getFill());
 						}
-					} else if (n instanceof Polyline polyline) {
-						contentStream.setLineWidth(ps.apply(polyline.getStrokeWidth()));
-						contentStream.setLineDashPattern(getLineDashPattern(polyline), 0);
+					} else if (node instanceof Polyline polyline) {
+						contentStream.setLineWidth(strokeWidth);
+						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var points = polyline.getPoints();
 						if (!points.isEmpty()) {
-							var sX = px.apply(root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(0), polyline.getPoints().get(1))).getX());
+							var sX = (float) (root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(0), polyline.getPoints().get(1))).getX());
 							var sY = py.apply(root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(0), polyline.getPoints().get(1))).getY());
 							contentStream.moveTo(sX, sY);
 							for (var i = 0; i < points.size(); i += 2) {
-								var x = px.apply(root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getX());
+								var x = (float) (root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getX());
 								var y = py.apply(root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getY());
 								contentStream.lineTo(x, y);
 							}
 							doFillStroke(contentStream, polyline.getStroke(), polyline.getFill());
 						}
-					} else if (n instanceof Text text) {
+					} else if (node instanceof Text text) {
 						if (!text.getText().isBlank()) {
 							double screenAngle = 360 - getAngleOnScreen(text); // because y axis points upward in PDF
 							var localBounds = text.getBoundsInLocal();
@@ -253,37 +264,36 @@ public class SaveToPDF {
 							contentStream.beginText();
 							if (isMirrored(text)) // todo: this is untested:
 								screenAngle = 360 - screenAngle;
-							contentStream.setTextMatrix(Matrix.getRotateInstance(Math.toRadians(screenAngle), px.apply(rotateAnchorX), py.apply(rotateAnchorY)));
+							contentStream.setTextMatrix(Matrix.getRotateInstance(Math.toRadians(screenAngle), (float)(rotateAnchorX), py.apply(rotateAnchorY)));
 							contentStream.setNonStrokingColor(pdfColor(text.getFill()));
-							var fontHeight = ps.apply(text.getFont().getSize());
-							var altFontHeight = ps.apply(0.87 * localBounds.getHeight());
+							var fontHeight = (float) (scaleFactor * text.getFont().getSize());
+							var altFontHeight = (float)(scaleFactor*0.87 * localBounds.getHeight());
 							if (!(text instanceof TextExt) && Math.abs(fontHeight - altFontHeight) > 2)
 								fontHeight = altFontHeight;
-							fontHeight *= (float) getScaleFactors(text).getY();
 							setFont(contentStream, text, fontHeight);
 							contentStream.showText(text.getText());
 							contentStream.endText();
 						}
-					} else if (n instanceof ImageView imageView) {
+					} else if (node instanceof ImageView imageView) {
 						var encoder = new PngEncoderFX(imageView.getImage());
 						var image = PDImageXObject.createFromByteArray(document, encoder.pngEncode(true), "image/png");
 						var bounds = root.sceneToLocal(imageView.localToScene(imageView.getBoundsInLocal()));
-						var x = px.apply(bounds.getMinX());
-						var width = ps.apply(bounds.getWidth());
-						var y = py.apply(bounds.getMaxY());
-						var height = ps.apply(bounds.getHeight());
+						var x = (float) (bounds.getMinX());
+						var width = (float) (bounds.getWidth());
+						var y = (float) (bounds.getMaxY());
+						var height = (float)(bounds.getHeight());
 						contentStream.drawImage(image, x, y, width, height);
-					} else if (n instanceof Shape3D || n instanceof Canvas || n instanceof Chart) {
+					} else if (node instanceof Shape3D || node instanceof Canvas || node instanceof Chart) {
 						var parameters = new SnapshotParameters();
 						parameters.setFill(Color.TRANSPARENT);
-						var snapShot = n.snapshot(parameters, null);
+						var snapShot = node.snapshot(parameters, null);
 						var encoder = new PngEncoderFX(snapShot);
 						var image = PDImageXObject.createFromByteArray(document, encoder.pngEncode(true), "image/png");
-						var bounds = root.sceneToLocal(n.localToScene(n.getBoundsInLocal()));
-						var x = px.apply(bounds.getMinX());
-						var width = ps.apply(bounds.getWidth());
-						var y = py.apply(bounds.getMaxY());
-						var height = ps.apply(bounds.getHeight());
+						var bounds = root.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
+						var x = (float) (bounds.getMinX());
+						var width = (float) (bounds.getWidth());
+						var y = (float) (bounds.getMaxY());
+						var height = (float)(bounds.getHeight());
 						contentStream.drawImage(image, x, y, width, height);
 					}
 				} catch (IOException ex) {
@@ -361,18 +371,11 @@ public class SaveToPDF {
 	}
 
 	private static void addCircle(PDPageContentStream contentStream, float cx, float cy, float r) throws IOException {
-		final float k = 0.552284749831f;
-		//System.err.println("Circle at: " + cx + "," + cy);
-		contentStream.moveTo(cx - r, cy);
-		contentStream.curveTo(cx - r, cy + k * r, cx - k * r, cy + r, cx, cy + r);
-		contentStream.curveTo(cx + k * r, cy + r, cx + r, cy + k * r, cx + r, cy);
-		contentStream.curveTo(cx + r, cy - k * r, cx + k * r, cy - r, cx, cy - r);
-		contentStream.curveTo(cx - k * r, cy - r, cx - r, cy - k * r, cx - r, cy);
+		addEllipse(contentStream,cx,cy,r,r);
 	}
 
 	private static void addEllipse(PDPageContentStream contentStream, float cx, float cy, float rx, float ry) throws IOException {
 		final float k = 0.552284749831f;
-		//System.err.println("Circle at: " + cx + "," + cy);
 		contentStream.moveTo(cx - rx, cy);
 		contentStream.curveTo(cx - rx, cy + k * ry, cx - k * rx, cy + ry, cx, cy + ry);
 		contentStream.curveTo(cx + k * rx, cy + ry, cx + rx, cy + k * ry, cx + rx, cy);
@@ -512,32 +515,20 @@ public class SaveToPDF {
 		return false;
 	}
 
-	public static float[] getLineDashPattern(Shape shape) {
+	public static float[] strokeDashArray(float scaleFactor,Shape shape) {
 		if (!shape.getStrokeDashArray().isEmpty()) {
 			var array = new float[shape.getStrokeDashArray().size()];
 			for (var i = 0; i < shape.getStrokeDashArray().size(); i++) {
-				array[i] = 0.5f * shape.getStrokeDashArray().get(i).floatValue(); // need to scale
+				array[i] = scaleFactor * shape.getStrokeDashArray().get(i).floatValue(); // need to scale
 			}
 			return array;
 		} else
 			return new float[0];
 	}
 
-	public static Point2D getScaleFactors(Node node) {
-		var scaleX = 1.0;
-		var scaleY = 1.0;
-
-		while (node != null) {
-			scaleX *= node.getScaleX();
-			scaleY *= node.getScaleY();
-			for (var transform : node.getTransforms()) {
-				if (transform instanceof Scale scale) {
-					scaleX *= scale.getX();
-					scaleY *= scale.getY();
-				}
-			}
-			node = node.getParent();
-		}
-		return new Point2D(scaleX, scaleY);
+	public static double computeScaleFactor(Node root, Node node) {
+		var scaleX = root.sceneToLocal(node.localToScene(1.0, 0.0)).getX() - root.sceneToLocal(node.localToScene(0.0, 0.0)).getX();
+		var scaleY = root.sceneToLocal(node.localToScene(0.0, 1.0)).getY() - root.sceneToLocal(node.localToScene(0.0, 0.0)).getY();
+		return Math.min(scaleX, scaleY); // todo: could also try average here?
 	}
 }

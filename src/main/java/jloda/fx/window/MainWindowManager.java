@@ -283,6 +283,14 @@ public class MainWindowManager {
         }
     }
 
+    public static void ensureDarkTheme(Stage stage, boolean useDarkTheme) {
+        if (stage != null) {
+            stage.getScene().getStylesheets().remove("jloda/resources/css/dark.css");
+            if (useDarkTheme)
+                stage.getScene().getStylesheets().add("jloda/resources/css/dark.css");
+        }
+    }
+
     public static void setUseDarkTheme(boolean useDarkTheme) {
         useDarkThemeProperty().set(useDarkTheme);
     }

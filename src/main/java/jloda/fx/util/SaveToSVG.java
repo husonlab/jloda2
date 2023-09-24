@@ -19,14 +19,15 @@
 
 package jloda.fx.util;
 
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.chart.Chart;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.*;
@@ -35,90 +36,83 @@ import javafx.scene.text.Text;
 import jloda.fx.window.MainWindowManager;
 import jloda.thirdparty.PngEncoderFX;
 import jloda.util.Basic;
+import jloda.util.FileUtils;
 import jloda.util.StringUtils;
 import org.fxmisc.richtext.TextExt;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
-import static jloda.fx.util.SaveToPDF.*;
 
 /**
- * save a root node and all descendants to an SVG image
+ * save a root node and all descendants to an SVG image.
+ * This is very incomplete. It doesn't reproduce CSS styling and doesn't reproduce effects and non-color paints
  * Daniel Huson, 6.2023
  */
 public class SaveToSVG {
 	/**
-	 * draws given pane to a file in PDF format
+	 * draws given root node to a file in SVG format
 	 *
 	 * @param root the root node to be saved
 	 * @param file the file
-	 * @throws IOException
+	 * @throws IOException failed
 	 */
 	public static void apply(Node root, File file) throws IOException {
+		apply(root, root.getBoundsInLocal(), file);
+	}
+
+	/**
+	 * draws given root node to a file in SVG format
+	 *
+	 * @param root   the root node to be saved
+	 * @param file   the file
+	 * @param bounds the bounds to use
+	 * @throws IOException failed
+	 *                     todo: implement rotation of elements
+	 */
+	public static void apply(Node root, Bounds bounds, File file) throws IOException {
 		if (file.exists())
 			Files.delete(file.toPath());
 
 		var buf = new StringBuilder();
 
-		{
-			var currentDateTime = LocalDateTime.now();
-			var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-			var formattedDateTime = currentDateTime.format(formatter);
-			buf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!-- Creator: %s -->\n<!-- Creation Date: %s -->\n".formatted(System.getProperty("user.name"), formattedDateTime));
-		}
+		var currentDateTime = LocalDateTime.now();
+		var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		var formattedDateTime = currentDateTime.format(formatter);
+		buf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n<!-- Creator: %s -->%n<!-- Created: %s -->%n<!-- Software: JLODA2 https://github.com/husonlab/jloda2 -->%n".formatted(System.getProperty("user.name"), formattedDateTime));
 
-		double svgMinX;
-		double svgMaxX;
-		double svgWidth;
+		buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%.1f\" height=\"%.1f\" viewBox=\"%.1f %.1f %.1f %.1f\">\n"
+				.formatted(bounds.getWidth(), bounds.getHeight(), bounds.getMinX(), bounds.getMinY(), bounds.getWidth(), bounds.getHeight()));
+			/*
+			buf.append("""
+					<defs>
+						<clipPath id="global-clip">
+					    	<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" />
+					 	</clipPath>
+					</defs>%n""".formatted(svgMinX, svgMinY, svgWidth, svgHeight));
 
-		double svgMinY;
-		double svgMaxY;
-		double svgHeight;
-		{
-
-			var bbox = computeBoundingBox(root);
-			svgMinX = bbox.getMinX();
-			svgMaxX = bbox.getMaxX();
-			svgWidth = bbox.getWidth();
-			svgMinY = bbox.getMinY();
-			svgMaxY = bbox.getMaxY();
-			svgHeight = bbox.getHeight();
-
-			buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%.1f\" height=\"%.1f\" viewBox=\"%.1f %.1f %.1f %.1f\">\n"
-					.formatted(svgWidth, svgHeight, svgMinX, svgMinY, svgWidth, svgHeight));
-		}
-
-		var paneWidth = root.getBoundsInLocal().getWidth();
-		var paneHeight = root.getBoundsInLocal().getHeight();
-
-		var factor = Math.min(svgWidth / paneWidth, svgHeight / paneHeight);
-
-		Function<Double, Double> ps = s -> (s * factor);
-		Function<Double, Double> px = x -> (x * factor + svgMinX);
-		Function<Double, Double> py = y -> (y * factor + svgMinY);
+				then attach this to all items that should be clipped:
+				<use xlink:href="#global-clip" />
+			 */
 
 		if (MainWindowManager.isUseDarkTheme()) {
-			appendRect(buf, -5, -5, svgWidth + 10, svgHeight + 10, 0, new ArrayList<>(), Color.TRANSPARENT, Color.web("rgb(60, 63, 65)"));
+			appendRect(buf, -5, -5, bounds.getWidth() + 10, bounds.getHeight() + 10, 0, new ArrayList<>(), Color.TRANSPARENT, Color.web("rgb(60, 63, 65)"));
 		}
 
 		for (var n : BasicFX.getAllRecursively(root, n -> true)) {
 			// System.err.println("n: " + n.getClass().getSimpleName());
-			if (isNodeVisible(n)) {
-				buf.append(getSVG(root, px, py, ps, n));
+			if (jloda.fx.util.SaveToPDF.isNodeVisible(n)) {
+				buf.append(getSVG(root, n));
 			}
 		}
 		buf.append("</svg>\n");
-		try (var writer = new FileWriter(file)) {
+		try (var writer = FileUtils.getOutputWriterPossiblyZIPorGZIP(file.getPath())) {
 			writer.write(buf.toString());
 		}
 	}
@@ -126,108 +120,116 @@ public class SaveToSVG {
 	/**
 	 * constructs the SVG description for a node that represents a shape or image
 	 *
-	 * @param pane the pane containing the node, used for determining the apparent size and angle
-	 * @param px   scaling conversion of x coordinates
-	 * @param py   scaling conversion of y coordinates
-	 * @param ps   scaling conversion in all dimensions
+	 * @param root the root node containing the node, used for determining the apparent size and angle
 	 * @param node the node to report
 	 * @return the SVG string or empty string
 	 */
-	public static String getSVG(Node pane, Function<Double, Double> px, Function<Double, Double> py, Function<Double, Double> ps, Node node) {
+	public static String getSVG(Node root, Node node) {
+		var scaleFactor = SaveToPDF.computeScaleFactor(root, node);
+		var strokeWidth = (node instanceof Shape shape ? scaleFactor * shape.getStrokeWidth() : 1.0);
+		var strokeDashArray = (node instanceof Shape shape ? shape.getStrokeDashArray().stream().map(v -> scaleFactor*v).toList():new ArrayList<Double>());
+
 		var buf = new StringBuilder();
 		try {
-			if (node instanceof Line line) {
-				var x1 = px.apply(pane.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getX());
-				var y1 = py.apply(pane.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getY());
-				var x2 = px.apply(pane.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getX());
-				var y2 = py.apply(pane.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getY());
-				appendLine(buf, x1, y1, x2, y2, line.getStrokeWidth(), adjustDashArray(line.getStrokeDashArray()), line.getStroke());
+			if (node instanceof Pane pane) { // this might contain a background color
+				if (pane.getBackground() != null && pane.getBackground().getFills().size() == 1) {
+					var fill = pane.getBackground().getFills().get(0);
+					if (fill.getFill() instanceof Color) {
+						var bounds = root.sceneToLocal(pane.localToScene(pane.getBoundsInLocal()));
+						appendRect(buf, (bounds.getMinX()), (bounds.getMinY()), bounds.getWidth(), bounds.getHeight(), strokeWidth, strokeDashArray, null, fill.getFill());
+					}
+				}
+			} else if (node instanceof Line line) {
+				var x1 = (root.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getX());
+				var y1 = (root.sceneToLocal(line.localToScene(line.getStartX(), line.getStartY())).getY());
+				var x2 = (root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getX());
+				var y2 = (root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getY());
+				appendLine(buf, x1, y1, x2, y2, strokeWidth, strokeDashArray, line.getStroke());
 			} else if (node instanceof Rectangle rectangle) {
-				var bounds = pane.sceneToLocal(rectangle.localToScene(rectangle.getBoundsInLocal()));
-				appendRect(buf, px.apply(bounds.getMinX()), py.apply(bounds.getMinY()), ps.apply(bounds.getWidth()), ps.apply(bounds.getHeight()), rectangle.getStrokeWidth(), adjustDashArray(rectangle.getStrokeDashArray()), rectangle.getStroke(), rectangle.getFill());
+				var bounds = root.sceneToLocal(rectangle.localToScene(rectangle.getBoundsInLocal()));
+				appendRect(buf, (bounds.getMinX()), (bounds.getMinY()), bounds.getWidth(), bounds.getHeight(), strokeWidth, strokeDashArray, rectangle.getStroke(), rectangle.getFill());
 			} else if (node instanceof Circle circle) {
-				var bounds = pane.sceneToLocal(circle.localToScene(circle.getBoundsInLocal()));
-				var r = ps.apply(0.5 * bounds.getHeight());
-				var x = px.apply(bounds.getCenterX());
-				var y = py.apply(bounds.getCenterY());
-				appendCircle(buf, x, y, r, circle.getStrokeWidth(), adjustDashArray(circle.getStrokeDashArray()), circle.getStroke(), circle.getFill());
+				var bounds = root.sceneToLocal(circle.localToScene(circle.getBoundsInLocal()));
+				var r = (0.5 * bounds.getHeight());
+				var x = (bounds.getCenterX());
+				var y = (bounds.getCenterY());
+				appendCircle(buf, x, y, r, strokeWidth, strokeDashArray, circle.getStroke(), circle.getFill());
 			} else if (node instanceof Ellipse ellipse) {
-				var bounds = pane.sceneToLocal(ellipse.localToScene(ellipse.getBoundsInLocal()));
-				var rx = ps.apply(ellipse.getRadiusX());
-				var ry = ps.apply(ellipse.getRadiusY());
-				var x = px.apply(bounds.getCenterX());
-				var y = py.apply(bounds.getCenterY());
-				appendEllipse(buf, x, y, rx, ry, ellipse.getStrokeWidth(), adjustDashArray(ellipse.getStrokeDashArray()), ellipse.getStroke(), ellipse.getFill());
+				var bounds = root.sceneToLocal(ellipse.localToScene(ellipse.getBoundsInLocal()));
+				var rx = (ellipse.getRadiusX());
+				var ry = (ellipse.getRadiusY());
+				var x = (bounds.getCenterX());
+				var y = (bounds.getCenterY());
+				appendEllipse(buf, x, y, rx, ry, strokeWidth, strokeDashArray, ellipse.getStroke(), ellipse.getFill());
 			} else if (node instanceof QuadCurve curve) {
-				var sX = px.apply(pane.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
-				var sY = py.apply(pane.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
-				var cX = px.apply(pane.sceneToLocal(curve.localToScene(curve.getControlX(), curve.getControlY())).getX());
-				var cY = py.apply(pane.sceneToLocal(curve.localToScene(curve.getControlX(), curve.getControlY())).getY());
-				var tX = px.apply(pane.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
-				var tY = py.apply(pane.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
-				appendQuadCurve(buf, sX, sY, cX, cY, tX, tY, curve.getStrokeWidth(), adjustDashArray(curve.getStrokeDashArray()), curve.getStroke());
+				var sX = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
+				var sY = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
+				var cX = (root.sceneToLocal(curve.localToScene(curve.getControlX(), curve.getControlY())).getX());
+				var cY = (root.sceneToLocal(curve.localToScene(curve.getControlX(), curve.getControlY())).getY());
+				var tX = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
+				var tY = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
+				appendQuadCurve(buf, sX, sY, cX, cY, tX, tY, strokeWidth, strokeDashArray, curve.getStroke());
 			} else if (node instanceof CubicCurve curve) {
-				var sX = px.apply(pane.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
-				var sY = py.apply(pane.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
-				var c1X = px.apply(pane.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getX());
-				var c1Y = py.apply(pane.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getY());
-				var c2X = px.apply(pane.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getX());
-				var c2Y = py.apply(pane.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getY());
-				var tX = px.apply(pane.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
-				var tY = py.apply(pane.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
-				appendCubicCurve(buf, sX, sY, c1X, c1Y, c2X, c2Y, tX, tY, curve.getStrokeWidth(), adjustDashArray(curve.getStrokeDashArray()), curve.getStroke());
+				var sX = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getX());
+				var sY = (root.sceneToLocal(curve.localToScene(curve.getStartX(), curve.getStartY())).getY());
+				var c1X = (root.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getX());
+				var c1Y = (root.sceneToLocal(curve.localToScene(curve.getControlX1(), curve.getControlY1())).getY());
+				var c2X = (root.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getX());
+				var c2Y = (root.sceneToLocal(curve.localToScene(curve.getControlX2(), curve.getControlY2())).getY());
+				var tX = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getX());
+				var tY = (root.sceneToLocal(curve.localToScene(curve.getEndX(), curve.getEndY())).getY());
+				appendCubicCurve(buf, sX, sY, c1X, c1Y, c2X, c2Y, tX, tY, strokeWidth, strokeDashArray, curve.getStroke());
 			} else if (node instanceof Path path) {
-				if (!containedInText(path))
-					appendPath(buf, path, pane, px, py, path.getStrokeWidth(), adjustDashArray(path.getStrokeDashArray()), path.getStroke());
+				if (!SaveToPDF.containedInText(path))
+					appendPath(buf, path, root, strokeWidth, strokeDashArray, path.getStroke());
 			} else if (node instanceof Polygon polygon) {
 				var points = new ArrayList<Point2D>();
 				for (var i = 0; i < polygon.getPoints().size(); i += 2) {
-					var x = px.apply(pane.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getX());
-					var y = py.apply(pane.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getY());
+					var x = (root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getX());
+					var y = (root.sceneToLocal(polygon.localToScene(polygon.getPoints().get(i), polygon.getPoints().get(i + 1))).getY());
 					points.add(new Point2D(x, y));
 				}
-				appendPolygon(buf, points, polygon.getStrokeWidth(), adjustDashArray(polygon.getStrokeDashArray()), polygon.getStroke(), polygon.getFill());
+				appendPolygon(buf, points, strokeWidth, strokeDashArray, polygon.getStroke(), polygon.getFill());
 			} else if (node instanceof Polyline polyline) {
 				var points = new ArrayList<Point2D>();
 				for (var i = 0; i < polyline.getPoints().size(); i += 2) {
-					var x = px.apply(pane.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getX());
-					var y = py.apply(pane.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getY());
+					var x = (root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getX());
+					var y = (root.sceneToLocal(polyline.localToScene(polyline.getPoints().get(i), polyline.getPoints().get(i + 1))).getY());
 					points.add(new Point2D(x, y));
 				}
-				appendPolyline(buf, points, polyline.getStrokeWidth(), adjustDashArray(polyline.getStrokeDashArray()), polyline.getStroke());
+				appendPolyline(buf, points, strokeWidth, strokeDashArray, polyline.getStroke());
 			} else if (node instanceof Text text) {
 				if (!text.getText().isBlank()) {
-					double screenAngle = getAngleOnScreen(text); // because y axis points upward in PDF
+					double screenAngle = SaveToPDF.getAngleOnScreen(text);
 					var localBounds = text.getBoundsInLocal();
 					var origX = localBounds.getMinX();
 					var origY = localBounds.getMinY() + 0.87f * localBounds.getHeight();
-					var rotateAnchorX = pane.sceneToLocal(text.localToScene(origX, origY)).getX();
-					var rotateAnchorY = pane.sceneToLocal(text.localToScene(origX, origY)).getY();
-					if (isMirrored(text)) // todo: this is untested:
+					var rotateAnchorX = root.sceneToLocal(text.localToScene(origX, origY)).getX();
+					var rotateAnchorY = root.sceneToLocal(text.localToScene(origX, origY)).getY();
+					if (SaveToPDF.isMirrored(text)) // todo: this is untested:
 						screenAngle = 360 - screenAngle;
-					var fontHeight = ps.apply(text.getFont().getSize());
-					var altFontHeight = ps.apply(0.87 * localBounds.getHeight());
+					var fontHeight = scaleFactor * text.getFont().getSize();
+					var altFontHeight =scaleFactor*0.87 * localBounds.getHeight();
 					if (!(text instanceof TextExt) && Math.abs(fontHeight - altFontHeight) > 2)
 						fontHeight = altFontHeight;
-					fontHeight *= (float) getScaleFactors(text).getY();
-					appendText(buf, px.apply(rotateAnchorX), py.apply(rotateAnchorY), screenAngle, text.getText(), text.getFont(), fontHeight, text.getFill());
+					appendText(buf, (rotateAnchorX), (rotateAnchorY), screenAngle, text.getText(), text.getFont(), fontHeight, text.getFill());
 				}
 			} else if (node instanceof ImageView imageView) {
-				var bounds = pane.sceneToLocal(imageView.localToScene(imageView.getBoundsInLocal()));
-				var x = px.apply(bounds.getMinX());
-				var width = ps.apply(bounds.getWidth());
-				var y = py.apply(bounds.getMinY());
-				var height = ps.apply(bounds.getHeight());
+				var bounds = root.sceneToLocal(imageView.localToScene(imageView.getBoundsInLocal()));
+				var x = (bounds.getMinX());
+				var width = (bounds.getWidth());
+				var y = (bounds.getMinY());
+				var height = (bounds.getHeight());
 				appendImage(buf, x, y, width, height, imageView.getImage());
 			} else if (node instanceof Shape3D || node instanceof Canvas || node instanceof Chart) {
 				var parameters = new SnapshotParameters();
 				parameters.setFill(Color.TRANSPARENT);
 				var snapShot = node.snapshot(parameters, null);
-				var bounds = pane.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
-				var x = px.apply(bounds.getMinX());
-				var width = ps.apply(bounds.getWidth());
-				var y = py.apply(bounds.getMinY());
-				var height = ps.apply(bounds.getHeight());
+				var bounds = root.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
+				var x = (bounds.getMinX());
+				var width = (bounds.getWidth());
+				var y = (bounds.getMinY());
+				var height = (bounds.getHeight());
 				appendImage(buf, x, y, width, height, snapShot);
 			}
 		} catch (Exception ex) {
@@ -327,8 +329,7 @@ public class SaveToSVG {
 		buf.append("/>\n");
 	}
 
-	private static void appendPath(StringBuilder buf, Path path, Node pane, Function<Double, Double> px, Function<Double, Double> py,
-								   double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
+	private static void appendPath(StringBuilder buf, Path path, Node pane, double strokeWidth, List<Double> strokeDashArray, Paint stroke) {
 		var local = new Point2D(0, 0);
 		buf.append("<path d=\"");
 		try {
@@ -337,19 +338,19 @@ public class SaveToSVG {
 				if (element instanceof MoveTo moveTo) {
 					local = new Point2D(moveTo.getX(), moveTo.getY());
 					var t = pane.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-					buf.append(" M%.2f,%.2f".formatted(px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" M%.2f,%.2f".formatted((t.getX()), (t.getY())));
 				} else if (element instanceof LineTo lineTo) {
 					local = new Point2D(lineTo.getX(), lineTo.getY());
 					var t = pane.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-					buf.append(" L%.2f,%.2f".formatted(px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" L%.2f,%.2f".formatted((t.getX()), (t.getY())));
 				} else if (element instanceof HLineTo lineTo) {
 					local = new Point2D(lineTo.getX(), local.getY());
 					var t = pane.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-					buf.append(" L%.2f,%.2f".formatted(px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" L%.2f,%.2f".formatted((t.getX()), (t.getY())));
 				} else if (element instanceof VLineTo lineTo) {
 					local = new Point2D(local.getX(), lineTo.getY());
 					var t = pane.sceneToLocal(path.localToScene(local.getX(), local.getY()));
-					buf.append(" L%.2f,%.2f".formatted(px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" L%.2f,%.2f".formatted((t.getX()), (t.getY())));
 				} else if (element instanceof ArcTo arcTo) {
 					local = new Point2D(arcTo.getX(), arcTo.getY());
 					var t = pane.sceneToLocal(path.localToScene(local.getX(), local.getY()));
@@ -358,16 +359,16 @@ public class SaveToSVG {
 					double xAxisRotation = arcTo.getXAxisRotation();
 					boolean largeArcFlag = arcTo.isLargeArcFlag();
 					boolean sweepFlag = arcTo.isSweepFlag();
-					buf.append(" A%.2f,%.2f %.2f %d,%d %.2f,%.2f".formatted(radiusX, radiusY, xAxisRotation, (largeArcFlag ? 1 : 0), (sweepFlag ? 1 : 0), px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" A%.2f,%.2f %.2f %d,%d %.2f,%.2f".formatted(radiusX, radiusY, xAxisRotation, (largeArcFlag ? 1 : 0), (sweepFlag ? 1 : 0), (t.getX()), (t.getY())));
 				} else if (element instanceof QuadCurveTo curveTo) {
 					var c = pane.sceneToLocal(path.localToScene(curveTo.getControlX(), curveTo.getControlY()));
 					var t = pane.sceneToLocal(path.localToScene(curveTo.getX(), curveTo.getY()));
-					buf.append(" Q%.2f,%.2f %.2f,%.2f".formatted(px.apply(c.getX()), py.apply(c.getY()), px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" Q%.2f,%.2f %.2f,%.2f".formatted((c.getX()), (c.getY()), (t.getX()), (t.getY())));
 				} else if (element instanceof CubicCurveTo curveTo) {
 					var c1 = pane.sceneToLocal(path.localToScene(curveTo.getControlX1(), curveTo.getControlY1()));
 					var c2 = pane.sceneToLocal(path.localToScene(curveTo.getControlX2(), curveTo.getControlY2()));
 					var t = pane.sceneToLocal(path.localToScene(curveTo.getX(), curveTo.getY()));
-					buf.append(" C%.2f,%.2f %.2f,%.2f %.2f,%.2f".formatted(px.apply(c1.getX()), py.apply(c1.getY()), px.apply(c2.getX()), py.apply(c2.getY()), px.apply(t.getX()), py.apply(t.getY())));
+					buf.append(" C%.2f,%.2f %.2f,%.2f %.2f,%.2f".formatted((c1.getX()), (c1.getY()), (c2.getX()), (c2.getY()), (t.getX()), (t.getY())));
 				}
 			}
 		} finally {
@@ -426,10 +427,6 @@ public class SaveToSVG {
 				else
 					buf.append(" stroke=\"none\"");
 				buf.append(" stroke-width=\"%.2f\"".formatted(strokeWidth));
-				if (stroke instanceof Color color && stroke != Color.TRANSPARENT)
-					buf.append(" stroke=\"%s\"".formatted(asSvgColor(color)));
-				else
-					buf.append(" stroke=\"none\"");
 				buf.append(" fill=\"none\"");
 				if (!strokeDashArray.isEmpty()) {
 					buf.append(" stroke-dasharray=\"").append(StringUtils.toString(strokeDashArray, ",")).append("\" />");
@@ -446,15 +443,15 @@ public class SaveToSVG {
 		if (font.getName().contains(" Italic"))
 			buf.append(" font-style=\"italic\"");
 		if (font.getName().contains(" Bold"))
-			buf.append(" font-style=\"bold\"");
+			buf.append(" font-weight=\"bold\"");
 		if (textFill instanceof Color color && color != Color.TRANSPARENT)
 			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-		if (angle != 0) {
+		if ((angle % 360.0)!=0) {
 			buf.append(" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(angle, x, y));
 		}
-		buf.append(">");
-		buf.append(text.replaceAll("&", " &amp;"));
-		buf.append("</text>\n");
+		buf.append("><![CDATA[");
+		buf.append(text);
+		buf.append("]]></text>\n");
 	}
 
 	public static void appendImage(StringBuilder buf, double x, double y, double width, double height, Image image) {
@@ -476,32 +473,6 @@ public class SaveToSVG {
 			return "Helvetica";
 	}
 
-	public static Rectangle2D computeBoundingBox(Node root) {
-		double minX = Double.MAX_VALUE;
-		double minY = Double.MAX_VALUE;
-		double maxX = Double.MIN_VALUE;
-		double maxY = Double.MIN_VALUE;
-
-		for (var node : BasicFX.getAllRecursively(root, n -> true)) {
-			if (node instanceof Shape) {
-				var bounds = node.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
-				minX = Math.min(minX, bounds.getMinX());
-				minY = Math.min(minY, bounds.getMinY());
-				maxX = Math.max(maxX, bounds.getMaxX());
-				maxY = Math.max(maxY, bounds.getMaxY());
-			}
-		}
-		{ // this restricts to the root bounding box
-			minX = Math.max(minX, root.getBoundsInLocal().getMinX());
-			minY = Math.max(minY, root.getBoundsInLocal().getMinY());
-
-			maxX = Math.min(maxX, (root.getBoundsInLocal().getMaxX()));
-			maxY = Math.min(maxY, (root.getBoundsInLocal().getMaxY()));
-		}
-
-		return new Rectangle2D(minX, minY, maxX - minX, maxY - minY);
-	}
-
 	public static String asSvgColor(Color color) {
 		var r = (int) (color.getRed() * 255);
 		var g = (int) (color.getGreen() * 255);
@@ -519,7 +490,4 @@ public class SaveToSVG {
 		return hexColor;
 	}
 
-	private static List<Double> adjustDashArray(Collection<Double> dashArray) {
-		return dashArray.stream().map(v -> 0.27 * v).toList();
-	}
 }
