@@ -79,12 +79,14 @@ public class TestSVGPDF extends Application {
 		text2.setScaleY(2);
 		group.getChildren().add(text2);
 
-		var text3 = new RichTextLabel("<group Test & go>");
-		text3.setTranslateX(150);
-		text3.setTranslateY(150);
-		text3.setBackgroundColor(Color.YELLOW);
-		text3.setRotate(30);
-		group.getChildren().add(text3);
+		for(var i=0;i<=5;i++) {
+			var text3 = new RichTextLabel("<group Test & go>");
+			text3.setTranslateX(150);
+			text3.setTranslateY(150);
+			text3.setBackgroundColor(Color.YELLOW);
+			text3.setRotate(i*30);
+			group.getChildren().add(text3);
+		}
 
 		var line1 = new Line(-50, 0, -50, 100);
 		group.getChildren().add(line1);

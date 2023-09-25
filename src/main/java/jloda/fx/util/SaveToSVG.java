@@ -133,10 +133,9 @@ public class SaveToSVG {
 				if (pane.getBackground() != null && pane.getBackground().getFills().size() == 1) {
 					var fill = pane.getBackground().getFills().get(0);
 					if (fill.getFill() instanceof Color color) {
-						var widthInScreenCoordinates = pane.localToScreen(new Point2D(pane.getWidth(), 0)).subtract(pane.localToScreen(new Point2D(0, 0))).magnitude();
-						var heightInScreenCoordinates = pane.localToScreen(new Point2D(0, pane.getHeight())).subtract(pane.localToScreen(new Point2D(0, 0))).magnitude();
-						var width = root.sceneToLocal(new Point2D(widthInScreenCoordinates, 0)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
-						var height = root.sceneToLocal(new Point2D(0, heightInScreenCoordinates)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
+						var mirrored=BasicFX.isMirrored(pane);
+						var width = Math.abs(computeFinalWidth(root, pane, pane.getWidth()));
+						var height = Math.abs(computeFinalHeight(root, pane, pane.getHeight()));
 						var screenBounds = pane.localToScreen(pane.getBoundsInLocal());
 						var location = root.screenToLocal(new Point2D(screenBounds.getMinX(), screenBounds.getMinY()));
 						var format = createFormattingString(root, node, scaleFactor) + " fill=\"%s\"".formatted(asSvgColor(color));
@@ -150,11 +149,8 @@ public class SaveToSVG {
 				var y2 = (root.sceneToLocal(line.localToScene(line.getEndX(), line.getEndY())).getY());
 				buf.append(createLine(x1, y1, x2, y2, formatting));
 			} else if (node instanceof Rectangle rectangle) {
-				var widthInScreenCoordinates = rectangle.localToScreen(new Point2D(rectangle.getWidth(), 0)).subtract(rectangle.localToScreen(new Point2D(0, 0))).magnitude();
-				var heightInScreenCoordinates = rectangle.localToScreen(new Point2D(0, rectangle.getHeight())).subtract(rectangle.localToScreen(new Point2D(0, 0))).magnitude();
-				var width = root.sceneToLocal(new Point2D(widthInScreenCoordinates, 0)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
-				var height = root.sceneToLocal(new Point2D(0, heightInScreenCoordinates)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
-
+				var width = computeFinalWidth(root, rectangle, rectangle.getWidth());
+				var height = computeFinalHeight(root, rectangle, rectangle.getHeight());
 				var screenBounds = rectangle.localToScreen(rectangle.getBoundsInLocal());
 				var location = root.screenToLocal(new Point2D(screenBounds.getMinX(), screenBounds.getMinY()));
 				buf.append(createRect(location.getX(), location.getY(), width, height, formatting));
@@ -218,9 +214,9 @@ public class SaveToSVG {
 					var rotateAnchorY = root.sceneToLocal(text.localToScene(origX, origY)).getY();
 					if (SaveToPDF.isMirrored(text)) // todo: this is untested:
 						screenAngle = 360 - screenAngle;
-					var fontHeight = scaleFactor * text.getFont().getSize();
-					var altFontHeight =scaleFactor*0.87 * localBounds.getHeight();
-					if (!(text instanceof TextExt) && Math.abs(fontHeight - altFontHeight) > 2)
+					var fontHeight = computeFinalHeight(root, text, text.getFont().getSize());
+					var altFontHeight = scaleFactor * 0.87 * localBounds.getHeight();
+					if (false && !(text instanceof TextExt) && Math.abs(fontHeight - altFontHeight) > 2)
 						fontHeight = altFontHeight;
 					buf.append(createText((rotateAnchorX), (rotateAnchorY), screenAngle, text.getText(), text.getFont(), fontHeight, text.getFill()));
 				}
@@ -360,7 +356,7 @@ public class SaveToSVG {
 			buf.append(" font-weight=\"bold\"");
 		if (textFill instanceof Color color && color != Color.TRANSPARENT)
 			buf.append(" fill=\"%s\"".formatted(asSvgColor(color)));
-		if ((angle % 360.0)!=0) {
+		if ((angle % 360.0) != 0) {
 			buf.append(" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(angle, x, y));
 		}
 		buf.append("><![CDATA[");
@@ -432,12 +428,22 @@ public class SaveToSVG {
 			var localBounds = node.getBoundsInLocal();
 			var origX = localBounds.getMinX();
 			var origY = localBounds.getMinY() + localBounds.getHeight();
-			var rotateAnchorX = root.sceneToLocal(node.localToScene(origX, origY)).getX();
-			var rotateAnchorY = root.sceneToLocal(node.localToScene(origX, origY)).getY();
-			if ((screenAngle % 360.0) != 0)
-				buf.append(" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(screenAngle, rotateAnchorX, rotateAnchorY));
+			if ((screenAngle % 360.0) != 0) {
+					var rotateAnchorX = root.sceneToLocal(node.localToScene(origX, origY)).getX();
+					var rotateAnchorY = root.sceneToLocal(node.localToScene(origX, origY)).getY();
+					buf.append(" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(screenAngle, rotateAnchorX, rotateAnchorY));
+			}
 		}
 		return buf.toString();
+	}
 
+	public static double computeFinalWidth(Node root, Node pane, double originalWidth) {
+		var widthInScreenCoordinates = pane.localToScreen(new Point2D(originalWidth, 0)).subtract(pane.localToScreen(new Point2D(0, 0))).magnitude();
+		return root.sceneToLocal(new Point2D(widthInScreenCoordinates, 0)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
+	}
+
+	public static double computeFinalHeight(Node root, Node pane, double originalHeight) {
+		var heightInScreenCoordinates = pane.localToScreen(new Point2D(0, originalHeight)).subtract(pane.localToScreen(new Point2D(0, 0))).magnitude();
+		return root.sceneToLocal(new Point2D(0, heightInScreenCoordinates)).subtract(root.sceneToLocal(new Point2D(0, 0))).magnitude();
 	}
 }
