@@ -167,7 +167,7 @@ public class SaveToPDF {
 						contentStream.setLineDashPattern(strokeDashArray, 0);
 						var bounds = root.sceneToLocal(circle.localToScene(circle.getBoundsInLocal()));
 						var r = (float) (0.5 * Math.min(bounds.getHeight(), bounds.getWidth()));
-						var x = (float)(bounds.getCenterX()-r);
+						var x = (float) (bounds.getCenterX());
 						var y = py.apply(bounds.getCenterY());
 						addCircle(contentStream, x, y, r);
 						doFillStroke(contentStream, circle.getStroke(), circle.getFill());

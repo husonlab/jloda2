@@ -62,11 +62,13 @@ public class TestSVGPDF extends Application {
 
 		var group = new Group(path, arrowHead);
 
-		var rectangle = new Rectangle(100, 10, 100, 30);
-		rectangle.setRotate(45);
-		rectangle.setFill(Color.LIGHTBLUE);
-		rectangle.setStroke(Color.GOLD);
-		group.getChildren().add(rectangle);
+		{
+			var rectangle = new Rectangle(100, 10, 100, 30);
+			rectangle.setRotate(45);
+			rectangle.setFill(Color.LIGHTBLUE);
+			rectangle.setStroke(Color.GOLD);
+			group.getChildren().add(rectangle);
+		}
 
 		var text1 = new Text(20, 20, "<group Test & go>");
 		//text1.setFont(Font.font("Arial", FontWeight.BOLD, 24));
@@ -91,20 +93,39 @@ public class TestSVGPDF extends Application {
 		var line1 = new Line(-50, 0, -50, 100);
 		group.getChildren().add(line1);
 
-		var line2 = new Line(-40, 0, -40, 100);
-		line2.setScaleX(2);
-		line2.setScaleY(2);
-		group.getChildren().add(line2);
+		{
+			var line2 = new Line(-40, 0, -40, 100);
+			line2.setScaleX(2);
+			line2.setScaleY(2);
+			group.getChildren().add(line2);
+		}
 
-		var circle = new Circle(50, 50, 8);
-		circle.setFill(Color.LIGHTGREEN);
-		circle.setStroke(Color.DARKGREEN);
-		group.getChildren().add(circle);
+		{
+			var circle = new Circle(50, 250, 8);
+			circle.setFill(Color.LIGHTBLUE);
+			circle.setStroke(Color.DARKRED);
+			group.getChildren().add(circle);
 
-		var box = new Rectangle(50 - 8, 50 - 8, 16, 16);
-		box.setFill(Color.TRANSPARENT);
-		box.setStroke(Color.DARKGOLDENROD);
-		group.getChildren().add(box);
+			var line = new Line(circle.getCenterX() - 20, circle.getCenterY(), circle.getCenterX() + 20, circle.getCenterY());
+			line.setFill(Color.DARKGREEN);
+			group.getChildren().add(line);
+
+			var line2 = new Line(circle.getCenterX(), circle.getCenterY() - 20, circle.getCenterX(), circle.getCenterY() + 20);
+			line2.setFill(Color.DARKGREEN);
+			group.getChildren().add(line2);
+
+		}
+
+		{
+			var circle = new Circle(50, 50, 8);
+			circle.setFill(Color.LIGHTBLUE);
+			circle.setStroke(Color.DARKRED);
+			group.getChildren().add(circle);
+			var box = new Rectangle(50 - 8, 50 - 8, 16, 16);
+			box.setFill(Color.TRANSPARENT);
+			box.setStroke(Color.DARKGOLDENROD);
+			group.getChildren().add(box);
+		}
 
 		var pane = new StackPane(group);
 
