@@ -81,13 +81,14 @@ public class TestSVGPDF extends Application {
 		text2.setScaleY(2);
 		group.getChildren().add(text2);
 
-		for(var i=0;i<=5;i++) {
+		for (var i = 0; i <= 5; i += 2) {
 			var text3 = new RichTextLabel("<group Test & go>");
 			text3.setTranslateX(150);
 			text3.setTranslateY(150);
 			text3.setBackgroundColor(Color.YELLOW);
 			text3.setRotate(i*30);
 			group.getChildren().add(text3);
+			text3.ensureUpright();
 		}
 
 		var line1 = new Line(-50, 0, -50, 100);
@@ -117,6 +118,25 @@ public class TestSVGPDF extends Application {
 		}
 
 		{
+			var rectangle = new Rectangle(250, 250, 10, 10);
+			rectangle.setFill(Color.LIGHTBLUE);
+			rectangle.setStroke(Color.DARKRED);
+			group.getChildren().add(rectangle);
+
+			var midX = rectangle.getX() + 0.5 * rectangle.getWidth();
+			var midY = rectangle.getY() + 0.5 * rectangle.getHeight();
+
+			var line = new Line(midX - 20, midY, midX + 20, midY);
+			line.setFill(Color.DARKGREEN);
+			group.getChildren().add(line);
+
+			var line2 = new Line(midX, midY - 20, midX, midY + 20);
+			line2.setFill(Color.DARKGREEN);
+			group.getChildren().add(line2);
+
+		}
+
+		{
 			var circle = new Circle(50, 50, 8);
 			circle.setFill(Color.LIGHTBLUE);
 			circle.setStroke(Color.DARKRED);
@@ -133,6 +153,7 @@ public class TestSVGPDF extends Application {
 		exportButtonSVG.setOnAction(e -> {
 			try {
 				ExportImageDialog.saveNodeAsImage(pane, "svg", new File("stdout"));
+				ExportImageDialog.saveNodeAsImage(pane, "svg", new File("/Users/huson/Desktop/test.svg"));
 			} catch (IOException ex) {
 				Basic.caught(ex);
 			}

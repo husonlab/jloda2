@@ -38,7 +38,6 @@ import jloda.thirdparty.PngEncoderFX;
 import jloda.util.Basic;
 import jloda.util.FileUtils;
 import jloda.util.StringUtils;
-import org.fxmisc.richtext.TextExt;
 
 import java.io.File;
 import java.io.IOException;
@@ -125,7 +124,7 @@ public class SaveToSVG {
 	public static String getSVG(Node root, Node node) {
 		var scaleFactor = SaveToPDF.computeScaleFactor(root, node);
 
-		var formatting = createFormattingString(root, node, scaleFactor);
+		var formatting = createFormattingAndTransformString(root, node, scaleFactor);
 
 		var buf = new StringBuilder();
 		try {
@@ -133,12 +132,17 @@ public class SaveToSVG {
 				if (pane.getBackground() != null && pane.getBackground().getFills().size() == 1) {
 					var fill = pane.getBackground().getFills().get(0);
 					if (fill.getFill() instanceof Color color) {
-						var mirrored=BasicFX.isMirrored(pane);
-						var width = Math.abs(computeFinalWidth(root, pane, pane.getWidth()));
-						var height = Math.abs(computeFinalHeight(root, pane, pane.getHeight()));
-						var screenBounds = pane.localToScreen(pane.getBoundsInLocal());
-						var location = root.screenToLocal(new Point2D(screenBounds.getMinX(), screenBounds.getMinY()));
-						var format = createFormattingString(root, node, scaleFactor) + " fill=\"%s\"".formatted(asSvgColor(color));
+						var width = computeFinalWidth(root, pane, pane.getWidth());
+						var height = computeFinalHeight(root, pane, pane.getHeight());
+						var location = root.screenToLocal(pane.localToScreen(0, 0));
+						var format = " fill=\"%s\"".formatted(asSvgColor(color));
+						{
+							double screenAngle = SaveToPDF.getAngleOnScreen(node);
+							var localBounds = node.getBoundsInLocal();
+							if ((screenAngle % 360.0) != 0) {
+								format += (" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(screenAngle, location.getX(), location.getY()));
+							}
+						}
 						buf.append(createRect(location.getX(), location.getY(), width, height, format));
 					}
 				}
@@ -215,9 +219,6 @@ public class SaveToSVG {
 					if (SaveToPDF.isMirrored(text)) // todo: this is untested:
 						screenAngle = 360 - screenAngle;
 					var fontHeight = computeFinalHeight(root, text, text.getFont().getSize());
-					var altFontHeight = scaleFactor * 0.87 * localBounds.getHeight();
-					if (false && !(text instanceof TextExt) && Math.abs(fontHeight - altFontHeight) > 2)
-						fontHeight = altFontHeight;
 					buf.append(createText((rotateAnchorX), (rotateAnchorY), screenAngle, text.getText(), text.getFont(), fontHeight, text.getFill()));
 				}
 			} else if (node instanceof ImageView imageView) {
@@ -403,7 +404,7 @@ public class SaveToSVG {
 		return hexColor;
 	}
 
-	public static String createFormattingString(Node root, Node node, double scaleFactor) {
+	public static String createFormattingAndTransformString(Node root, Node node, double scaleFactor) {
 		var buf = new StringBuilder();
 		if (node instanceof Shape shape) {
 			var stroke = shape.getStroke();
@@ -426,10 +427,10 @@ public class SaveToSVG {
 		{
 			double screenAngle = SaveToPDF.getAngleOnScreen(node);
 			var localBounds = node.getBoundsInLocal();
-			var origX = localBounds.getMinX();
-			var origY = localBounds.getMinY() + localBounds.getHeight();
 			if ((screenAngle % 360.0) != 0) {
-					var rotateAnchorX = root.sceneToLocal(node.localToScene(origX, origY)).getX();
+				var origX = localBounds.getMinX();
+				var origY = localBounds.getMaxY();
+				var rotateAnchorX = root.sceneToLocal(node.localToScene(origX, origY)).getX();
 					var rotateAnchorY = root.sceneToLocal(node.localToScene(origX, origY)).getY();
 					buf.append(" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(screenAngle, rotateAnchorX, rotateAnchorY));
 			}
