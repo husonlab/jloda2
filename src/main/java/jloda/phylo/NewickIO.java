@@ -41,6 +41,8 @@ public class NewickIO {
 	public static boolean WARN_HAS_MULTILABELS = true;
 	public static final String COLLAPSED_NODE_SUFFIX = "{+}";
 
+	public static boolean NUMBERS_ON_INTERNAL_NODES_ARE_CONFIDENCE_VALUES = true;
+
 	public boolean allowMultiLabeledNodes = true;
 
 	private final boolean cleanLabelsOnWrite;
@@ -494,7 +496,7 @@ public class NewickIO {
 					label = buf.toString().trim();
 
 					if (!label.isEmpty()) {
-						if (NumberUtils.isDouble(label)) {
+						if (NUMBERS_ON_INTERNAL_NODES_ARE_CONFIDENCE_VALUES && NumberUtils.isDouble(label)) {
 							confidenceValue.set(NumberUtils.parseDouble(label));
 						} else {
 							if (!isAllowMultiLabeledNodes() && seen.containsKey(label) && PhyloTreeNetworkIOUtils.findReticulateLabel(label) == null)
