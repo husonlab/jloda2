@@ -128,14 +128,15 @@ public class SaveToPDF {
 
 				boolean hasRotation = false;
 
-				if (!(node instanceof Text) && node instanceof Shape shape) {
+				if (node instanceof Shape shape) {
 					var strokeWidth = (float) (scaleFactor * shape.getStrokeWidth());
 					var strokeDashArray = strokeDashArray(scaleFactor, shape);
 					contents.setLineWidth(strokeWidth);
 					contents.setLineDashPattern(strokeDashArray, 0);
+				}
 
-					{
-						var screenAngle = SaveToPDF.getAngleOnScreen(shape);
+				if (node instanceof Circle || node instanceof Ellipse || node instanceof Rectangle || node instanceof Pane || node instanceof ImageView || node instanceof Chart) {
+					var screenAngle = SaveToPDF.getAngleOnScreen(node);
 						if ((screenAngle % 360.0) != 0) {
 							var localBounds = node.getBoundsInLocal();
 							var origX = localBounds.getMinX();
@@ -147,7 +148,6 @@ public class SaveToPDF {
 							contents.transform(Matrix.getTranslateInstance(-rotateAnchorX, -rotateAnchorY));
 							hasRotation = true;
 						}
-					}
 				}
 
 				try {
@@ -158,20 +158,6 @@ public class SaveToPDF {
 								var width = computeFinalWidth(root, pane, pane.getWidth());
 								var height = computeFinalHeight(root, pane, pane.getHeight());
 								var location = root.screenToLocal(pane.localToScreen(0, pane.getHeight()));
-								{
-									var screenAngle = SaveToPDF.getAngleOnScreen(pane);
-									if ((screenAngle % 360.0) != 0) {
-										var localBounds = node.getBoundsInLocal();
-										var origX = localBounds.getMinX();
-										var origY = localBounds.getMaxY();
-										var rotateAnchorX = (float) root.sceneToLocal(node.localToScene(origX, origY)).getX();
-										var rotateAnchorY = py.apply(root.sceneToLocal(node.localToScene(origX, origY)).getY());
-										contents.transform(Matrix.getTranslateInstance(rotateAnchorX, rotateAnchorY));
-										contents.transform(Matrix.getRotateInstance(Math.toRadians(-screenAngle), 0, 0));
-										contents.transform(Matrix.getTranslateInstance(-rotateAnchorX, -rotateAnchorY));
-										hasRotation = true;
-									}
-								}
 								contents.addRect((float) (location.getX()), py.apply(location.getY()), (float) (width), (float) (height));
 								doFillStroke(contents, null, fill.getFill());
 							}
@@ -300,6 +286,7 @@ public class SaveToPDF {
 							contents.endText();
 						}
 					} else if (node instanceof ImageView imageView) {
+						// todo: need to rotate
 						var encoder = new PngEncoderFX(imageView.getImage());
 						var image = PDImageXObject.createFromByteArray(document, encoder.pngEncode(true), "image/png");
 						var bounds = root.sceneToLocal(imageView.localToScene(imageView.getBoundsInLocal()));

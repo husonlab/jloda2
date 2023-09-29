@@ -46,21 +46,27 @@ import java.io.IOException;
 public class TestSVGPDF extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
-		var moveToA = new MoveTo(10, 10);
-		var lineToB = new LineTo(100, 10);
-		var quadCurveToD = new QuadCurveTo(100, 100, 200, 100);
-		var lineToE = new LineTo(300, 100);
-		var path = new Path(moveToA, lineToB, quadCurveToD, lineToE);
-		path.getStrokeDashArray().setAll(4.0, 6.0);
-		path.getStyleClass().add("graph-edge");
+		var group = new Group();
 
-		var arrowHead = new Polyline(-17, -15, 17, 0, -17, 15);
-		arrowHead.getStyleClass().add("graph-edge");
+		{
+			var moveToA = new MoveTo(10, 10);
+			var lineToB = new LineTo(100, 10);
+			var quadCurveToD = new QuadCurveTo(100, 100, 200, 100);
+			var lineToE = new LineTo(300, 100);
+			var path = new Path(moveToA, lineToB, quadCurveToD, lineToE);
+			path.getStrokeDashArray().setAll(4.0, 6.0);
+			path.getStyleClass().add("graph-edge");
+			group.getChildren().add(path);
+		}
 
-		arrowHead.setTranslateX(320);
-		arrowHead.setTranslateY(100);
+		{
+			var arrowHead = new Polyline(-17, -15, 17, 0, -17, 15);
+			arrowHead.getStyleClass().add("graph-edge");
 
-		var group = new Group(path, arrowHead);
+			arrowHead.setTranslateX(320);
+			arrowHead.setTranslateY(100);
+			group.getChildren().add(arrowHead);
+		}
 
 		{
 			var rectangle = new Rectangle(100, 10, 100, 30);
@@ -91,14 +97,27 @@ public class TestSVGPDF extends Application {
 			text3.ensureUpright();
 		}
 
-		var line1 = new Line(-50, 0, -50, 100);
-		group.getChildren().add(line1);
+		{
+			var line1 = new Line(-50, 0, -50, 100);
+			group.getChildren().add(line1);
+		}
 
 		{
 			var line2 = new Line(-40, 0, -40, 100);
 			line2.setScaleX(2);
 			line2.setScaleY(2);
 			group.getChildren().add(line2);
+		}
+
+		{
+			var arrowHead = new Polyline(-17, -15, 17, 0, -17, 15);
+			arrowHead.getStyleClass().add("graph-edge");
+			arrowHead.setStrokeWidth(10);
+
+			arrowHead.setTranslateX(-40);
+			arrowHead.setTranslateY(175);
+			arrowHead.setRotate(85);
+			group.getChildren().add(arrowHead);
 		}
 
 		{

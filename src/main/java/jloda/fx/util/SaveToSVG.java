@@ -138,7 +138,6 @@ public class SaveToSVG {
 						var format = " fill=\"%s\"".formatted(asSvgColor(color));
 						{
 							double screenAngle = SaveToPDF.getAngleOnScreen(node);
-							var localBounds = node.getBoundsInLocal();
 							if ((screenAngle % 360.0) != 0) {
 								format += (" transform=\"rotate(%.1f %.2f %.2f)\"".formatted(screenAngle, location.getX(), location.getY()));
 							}
@@ -424,7 +423,7 @@ public class SaveToSVG {
 			}
 		}
 
-		{
+		if (node instanceof Circle || node instanceof Ellipse || node instanceof Rectangle || node instanceof Pane || node instanceof ImageView || node instanceof Chart) {
 			double screenAngle = SaveToPDF.getAngleOnScreen(node);
 			var localBounds = node.getBoundsInLocal();
 			if ((screenAngle % 360.0) != 0) {
