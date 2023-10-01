@@ -173,7 +173,7 @@ public class ArgsOptions {
             result.append("VERSION\n\t").append(version.trim()).append(".\n");
 
         if (license != null)
-            result.append("jloda2-LICENSE.txt\n\t").append(license.trim().replaceAll("\\n", "\n\t")).append(".\n");
+            result.append("LICENSE.txt\n\t").append(license.trim().replaceAll("\\n", "\n\t")).append(".\n");
 
         return result.toString();
     }
