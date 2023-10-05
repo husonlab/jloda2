@@ -1675,18 +1675,24 @@ public class Graph extends GraphBase implements INamed {
         return new EdgeDoubleArray(this);
     }
 
-    public int computeConnectedComponents(NodeIntArray components) {
-        components.clear();
+    /**
+     * assigns a number to each node indicating which connected component it is in (0-based)
+     *
+     * @param nodeComponentMap mapping of nodes to components
+     * @return the number of connected components found
+     */
+    public int computeConnectedComponents(NodeIntArray nodeComponentMap) {
+        nodeComponentMap.clear();
         var count=0;
         for(var v:nodes()) {
-            if(components.get(v)==null) {
+            if (nodeComponentMap.get(v) ==null) {
                 final Stack<Node> stack=new Stack<>();
                 stack.push(v);
-                while(stack.size()>0) {
+                while (!stack.isEmpty()) {
                     v=stack.pop();
-                    components.put(v,count);
+                    nodeComponentMap.put(v,count);
                     for(var u:v.adjacentNodes()) {
-                        if(components.get(u)==null)
+                        if (nodeComponentMap.get(u)==null)
                             stack.add(u);
                     }
                 }

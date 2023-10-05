@@ -22,14 +22,14 @@ package jloda.phylo.algorithms;
 
 import jloda.graph.Node;
 import jloda.graph.NodeArray;
+import jloda.phylo.NewickIO;
 import jloda.phylo.PhyloTree;
 import jloda.util.BitSetUtils;
 import jloda.util.IteratorUtils;
-import jloda.util.Pair;
+import jloda.util.StringUtils;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * runs the cluster popping algorithm to create a rooted tree or network from a set of clusters
@@ -68,15 +68,22 @@ public class ClusterPoppingAlgorithm {
 	public static void apply(Collection<BitSet> clusters0, Function<BitSet, Double> weightFunction, Function<BitSet, Double> confidenceFunction, PhyloTree network) {
 		network.clear();
 
-		if (clusters0.size() > 0) {
+		if (!clusters0.isEmpty()) {
 			var clusters = new ArrayList<>(clusters0);
-			clusters.sort((a, b) -> -Integer.compare(a.cardinality(), b.cardinality()));
+			clusters.sort((a, b) -> -Integer.compare(a.cardinality(), b.cardinality())); // sorted by decreasing size
 
 			var taxa = BitSetUtils.union(clusters);
 
 			try (NodeArray<BitSet> nodeClusterMap = network.newNodeArray(); var visited = network.newNodeSet()) {
 				network.setRoot(network.newNode());
 				nodeClusterMap.put(network.getRoot(), taxa);
+
+				if (clusters.get(0).cardinality() == taxa.cardinality()) {
+					var missingTaxa = BitSetUtils.minus(taxa, BitSetUtils.union(clusters.subList(1, clusters.size())));
+					for (var t : BitSetUtils.members(missingTaxa)) {
+						clusters.add(BitSetUtils.asBitSet(t));
+					}
+				}
 
 				for (var cluster : clusters) {
 					var clusterNode = network.newNode();
@@ -86,7 +93,7 @@ public class ClusterPoppingAlgorithm {
 					if (network.getNumberOfNodes() > 1 || cluster.cardinality() < taxa.cardinality()) { // skip first cluster if it contains all taxa
 						var stack = new Stack<Node>();
 						stack.push(network.getRoot());
-						while (stack.size() > 0) {
+						while (!stack.isEmpty()) {
 							var v = stack.pop();
 							var isBelowAChild = false;
 							for (var w : v.children()) {
@@ -104,7 +111,7 @@ public class ClusterPoppingAlgorithm {
 				}
 
 				// make sure no node has indegree>1 and outdegree>1
-				for (var v : network.nodeStream().filter(v -> v.getInDegree() > 1 && v.getOutDegree() > 1).collect(Collectors.toList())) {
+				for (var v : network.nodeStream().filter(v -> v.getInDegree() > 1 && v.getOutDegree() > 1).toList()) {
 					var above = network.newNode();
 					for (var inEdge : IteratorUtils.asList(v.inEdges())) {
 						network.newEdge(inEdge.getSource(), above);
@@ -151,6 +158,21 @@ public class ClusterPoppingAlgorithm {
 
 				network.edgeStream().filter(e -> e.getTarget().getInDegree() > 1).forEach(e -> network.setReticulate(e, true));
 			}
+		}
+	}
+
+	public static void main(String[] args) {
+		var clusters = List.of(BitSetUtils.asBitSet(13, 14, 15), BitSetUtils.asBitSet(14, 15));
+		var tree = new PhyloTree();
+		apply(clusters, tree);
+		tree.nodeStream().filter(v -> tree.getNumberOfTaxa(v) > 0).forEach(v -> tree.setLabel(v, "t" + tree.getTaxon(v)));
+
+		{
+			System.err.println("Clusters:");
+			for (var cluster : clusters) {
+				System.err.println(StringUtils.toString(cluster, ","));
+			}
+			System.err.println("Resulting tree: " + NewickIO.toString(tree, false));
 		}
 	}
 }

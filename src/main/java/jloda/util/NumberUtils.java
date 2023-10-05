@@ -547,4 +547,8 @@ public class NumberUtils {
 			return Double.parseDouble(buf.toString());
 		}
 	}
+
+	public static String toString(String format, double value) {
+		return StringUtils.removeTrailingZerosAfterDot(String.format(format, value));
+	}
 }
