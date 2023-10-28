@@ -62,7 +62,7 @@ public class ProgramProperties {
     public static final String MULTI_WINDOW_GEOMETRY = "MultiWindowGeometry";
     public static final String DEFAULT_FONT = "DefaultFont";
     public static final String SEARCH_URL = "SearchURL";
-    public static final String defaultSearchURL = "http://www.google.com/search?q=%s";
+    public static final String defaultSearchURL = "https://www.google.com/search?q=%s";
 
 
     /**
@@ -344,7 +344,7 @@ public class ProgramProperties {
      * sets the program version string, if not already set...
      */
     public static void setProgramVersion(String version) {
-        if (programVersion == null || programVersion.length() == 0)
+        if (programVersion == null || programVersion.isEmpty())
             ProgramProperties.programVersion = version;
     }
 

@@ -61,7 +61,7 @@ public class SetParameterDialog {
      * @return value or null
      */
     public static String apply(Stage parent, String message, String defaultValue) {
-        final var dialog = new TextInputDialog("" + defaultValue);
+        final var dialog = new TextInputDialog(defaultValue);
 
         if (MainWindowManager.isUseDarkTheme()) {
             dialog.getDialogPane().getScene().getWindow().getScene().getStylesheets().add("jloda/resources/css/dark.css");

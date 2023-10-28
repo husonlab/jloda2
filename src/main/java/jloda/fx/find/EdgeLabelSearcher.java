@@ -182,7 +182,7 @@ public class EdgeLabelSearcher implements IObjectSearcher<Edge> {
 	 */
     public void setCurrentLabel(String newLabel) {
         if (current != null && !Objects.equals(newLabel, graph.getLabel(current))) {
-            if (newLabel == null || newLabel.length() == 0) {
+            if (newLabel == null || newLabel.isEmpty()) {
                 graph.setLabel(current, null);
             } else {
                 graph.setLabel(current, newLabel);

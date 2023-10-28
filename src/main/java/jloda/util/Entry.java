@@ -31,7 +31,7 @@ import java.util.Objects;
  */
 public class Entry<K, V> implements Map.Entry<K, V> {
     private final K key;
-    private V value;
+    private final V value;
 
     public Entry(K key, V value) {
         this.key = key;

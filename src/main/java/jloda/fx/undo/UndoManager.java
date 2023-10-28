@@ -51,8 +51,8 @@ public class UndoManager {
      * default constructor
      */
     public UndoManager() {
-        undoStack.addListener((InvalidationListener) (e) -> undoName.set(undoStack.size() > 0 ? "Undo " + peek(undoStack).getName() : "Undo"));
-        redoStack.addListener((InvalidationListener) (e) -> redoName.set(redoStack.size() > 0 ? "Redo " + peek(redoStack).getName() : "Redo"));
+        undoStack.addListener((InvalidationListener) (e) -> undoName.set(!undoStack.isEmpty() ? "Undo " + peek(undoStack).getName() : "Undo"));
+        redoStack.addListener((InvalidationListener) (e) -> redoName.set(!redoStack.isEmpty() ? "Redo " + peek(redoStack).getName() : "Redo"));
 
         undoStackSize.bind(Bindings.size(undoStack));
 
@@ -151,7 +151,7 @@ public class UndoManager {
      */
     public void addUndoableApply(Runnable runnable) {
         if (isRecordChanges() && !isPerformingUndoOrRedo()) {
-            if (undoStack.size() == 0 || !(peek(undoStack) instanceof UndoableApply)) {
+            if (undoStack.isEmpty() || !(peek(undoStack) instanceof UndoableApply)) {
                 add(new UndoableApply(runnable));
             }
         }
@@ -161,7 +161,7 @@ public class UndoManager {
      * undo the current undoable command
      */
     public void undo() {
-        if (undoStack.size() == 0)
+        if (undoStack.isEmpty())
             throw new IllegalStateException("Undo stack empty");
         final UndoableRedoableCommand command = pop(undoStack);
         if (command.isRedoable())
@@ -180,7 +180,7 @@ public class UndoManager {
             isPerformingUndoOrRedo.set(false);
         }
         if (command instanceof ChangeValueCommand) {
-            if (undoStack.size() > 0 && undoStack.get(undoStack.size() - 1) instanceof ChangeValueCommand && ((ChangeValueCommand<?>) command).getEventId() == ((ChangeValueCommand<?>) undoStack.get(undoStack.size() - 1)).getEventId()) {
+            if (!undoStack.isEmpty() && undoStack.get(undoStack.size() - 1) instanceof ChangeValueCommand && ((ChangeValueCommand<?>) command).getEventId() == ((ChangeValueCommand<?>) undoStack.get(undoStack.size() - 1)).getEventId()) {
                 undo();
             }
         }
@@ -190,7 +190,7 @@ public class UndoManager {
      * redo the current redoable event
      */
     public void redo() {
-        if (redoStack.size() == 0)
+        if (redoStack.isEmpty())
             throw new IllegalStateException("Redo stack empty");
         final UndoableRedoableCommand command = pop(redoStack);
 
@@ -209,7 +209,7 @@ public class UndoManager {
         }
 
         if (command instanceof ChangeValueCommand) {
-            if (redoStack.size() > 0 && redoStack.get(redoStack.size() - 1) instanceof ChangeValueCommand && ((ChangeValueCommand<?>) command).getEventId() == ((ChangeValueCommand<?>) redoStack.get(redoStack.size() - 1)).getEventId()) {
+            if (!redoStack.isEmpty() && redoStack.get(redoStack.size() - 1) instanceof ChangeValueCommand && ((ChangeValueCommand<?>) command).getEventId() == ((ChangeValueCommand<?>) redoStack.get(redoStack.size() - 1)).getEventId()) {
                 redo();
             }
         }
@@ -295,7 +295,7 @@ public class UndoManager {
         @Override
         public void undo() {
             // this command has already been moved to the redo stack
-            while (undoStack.size() > 0 && !(peek(undoStack) instanceof UndoableApply)) {
+            while (!undoStack.isEmpty() && !(peek(undoStack) instanceof UndoableApply)) {
                 UndoManager.this.undo();
             }
             runnable.run(); // re-run apply

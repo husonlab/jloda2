@@ -60,7 +60,7 @@ public class MainWindowManager {
 
     private static WindowGeometry defaultGeometry;
 
-    private static Single<Point2D> previousLocation = new Single<>(null);
+    private static final Single<Point2D> previousLocation = new Single<>(null);
 
 
     /**
@@ -68,9 +68,7 @@ public class MainWindowManager {
      */
     private MainWindowManager() {
         if (false) {
-            previousSelection.addListener((InvalidationListener) e -> {
-                System.err.println("previousSelection: " + StringUtils.toString(previousSelection, " "));
-            });
+            previousSelection.addListener((InvalidationListener) e -> System.err.println("previousSelection: " + StringUtils.toString(previousSelection, " ")));
         }
 
         mainWindows = FXCollections.observableArrayList();
@@ -143,7 +141,7 @@ public class MainWindowManager {
         closeAndRemoveAuxiliaryWindows(mainWindow);
         fireChanged();
 
-        if (mainWindows.size() == 0) {
+        if (mainWindows.isEmpty()) {
             ProgramProperties.store();
             Platform.exit();
             System.exit(0);
@@ -238,7 +236,7 @@ public class MainWindowManager {
     public IMainWindow getLastFocusedMainWindow() {
         if (lastFocusedMainWindow != null)
             return lastFocusedMainWindow;
-        else if (mainWindows.size() > 0)
+        else if (!mainWindows.isEmpty())
             return mainWindows.get(0);
         else
             return null;

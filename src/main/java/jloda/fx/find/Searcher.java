@@ -84,7 +84,7 @@ public class Searcher<T> implements IObjectSearcher<T> {
 
     @Override
     public boolean gotoFirst() {
-        if (items.size() > 0) {
+        if (!items.isEmpty()) {
             current = 0;
             return true;
         } else {
@@ -106,7 +106,7 @@ public class Searcher<T> implements IObjectSearcher<T> {
 
     @Override
     public boolean gotoLast() {
-        if (items.size() > 0) {
+        if (!items.isEmpty()) {
             current = items.size() - 1;
             return true;
         } else {
@@ -117,7 +117,7 @@ public class Searcher<T> implements IObjectSearcher<T> {
 
     @Override
     public boolean gotoPrevious() {
-        if (items.size() > 0 && current > 0) {
+        if (!items.isEmpty() && current > 0) {
             current--;
             return true;
         } else {

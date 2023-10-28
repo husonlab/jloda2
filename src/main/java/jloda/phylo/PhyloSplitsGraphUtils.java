@@ -209,7 +209,7 @@ public class PhyloSplitsGraphUtils {
                     int xp = 0;
                     int xq = 0;
 
-                    if (split.size() > 0) {
+                    if (!split.isEmpty()) {
                         xp = orderingList.indexOf(split.get(0));
                         xq = orderingList.indexOf(split.get(split.size() - 1));
                     }

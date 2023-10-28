@@ -39,46 +39,30 @@ public class ShapeFactory {
      *
 	 */
     public static Shape3D makeShape(float size, Type type) {
-		Shape3D shape;
-		switch (type) {/* case Ball */
-			default:
-				shape = new Sphere(size);
-				break;
-			case Cube:
-				shape = new Cube(1.7f * size, 1.7f * size, 1.7f * size);
-				break;
-			case Octahedron:
-				shape = new Octahedron(1.4f * size);
-				break;
-			case Tetrahedron:
-				shape = new Tetrahedron(1.4f * size);
-				break;
-			case Dodecahedron:
-				shape = new Dodecahedron(1.4f * size);
-				break;
-			case Icosahedron:
-				shape = new Icosahedron(1.4f * size);
-				break;
-			case Random:
+		// length-1 so that we don't choose "Random"
+		Shape3D shape = switch (type) {/* case Ball */
+			default -> new Sphere(size);
+			case Cube -> new Cube(1.7f * size, 1.7f * size, 1.7f * size);
+			case Octahedron -> new Octahedron(1.4f * size);
+			case Tetrahedron -> new Tetrahedron(1.4f * size);
+			case Dodecahedron -> new Dodecahedron(1.4f * size);
+			case Icosahedron -> new Icosahedron(1.4f * size);
+			case Random -> {
 				if (random == null)
 					random = new Random();
-				shape = makeShape(size, Type.values()[random.nextInt(Type.values().length - 1)]); // length-1 so that we don't choose "Random"
-				break;
-		}
+				yield makeShape(size, Type.values()[random.nextInt(Type.values().length - 1)]);
+			}
+		};
 		return shape;
 	}
 
     public static Shape3D makeShape(float size, NodeShape nodeShape) {
-		switch (nodeShape) {
-			case Diamond:
-				return makeShape(size, Type.Octahedron);
-			case Triangle:
-				return makeShape(size, Type.Tetrahedron);
-			case Rectangle:
-				return makeShape(size, Type.Cube);
+		return switch (nodeShape) {
+			case Diamond -> makeShape(size, Type.Octahedron);
+			case Triangle -> makeShape(size, Type.Tetrahedron);
+			case Rectangle -> makeShape(size, Type.Cube);
 			/* case Oval */
-			default:
-				return makeShape(size, Type.Ball);
-		}
+			default -> makeShape(size, Type.Ball);
+		};
 	}
 }

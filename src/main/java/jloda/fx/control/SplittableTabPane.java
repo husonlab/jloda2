@@ -144,7 +144,7 @@ public class SplittableTabPane extends Pane {
         });
 
         rootSplitPane.getItems().addListener((InvalidationListener) e -> {
-            if (rootSplitPane.getItems().size() == 0) {
+            if (rootSplitPane.getItems().isEmpty()) {
                 Platform.runLater(() -> {
                     TabPane target = createTabPane();
                     target.prefWidthProperty().bind(widthProperty());
@@ -298,11 +298,11 @@ public class SplittableTabPane extends Pane {
             if (oldIndex >= 0) {
                 oldTabPane.getTabs().remove(tab);
                 if (oldSplitPane != null) {
-                    if (oldTabPane.getTabs().size() == 0) {
+                    if (oldTabPane.getTabs().isEmpty()) {
                         oldSplitPane.getItems().remove(oldTabPane);
                         if (getFocusedTabPane() == oldTabPane) {
                             Platform.runLater(() -> {
-                                if (tabPane2ParentSplitPane.size() > 0)
+                                if (!tabPane2ParentSplitPane.isEmpty())
                                     setFocusedTabPane(tabPane2ParentSplitPane.keySet().iterator().next());
                             });
                         }
@@ -311,7 +311,7 @@ public class SplittableTabPane extends Pane {
                 }
 
                 if (newTabPane == null) {
-                    if (oldTabPane.getTabs().size() > 0) {
+                    if (!oldTabPane.getTabs().isEmpty()) {
                         Platform.runLater(() -> {
                             final int i = Math.min(oldIndex, oldTabPane.getTabs().size() - 1);
                             if (i >= 0)
@@ -559,7 +559,7 @@ public class SplittableTabPane extends Pane {
             existingItems = null;
         tab.setContextMenu(new ContextMenu(menuItems.toArray(new MenuItem[0])));
 
-        if (existingItems != null && existingItems.size() > 0) {
+        if (existingItems != null && !existingItems.isEmpty()) {
             if (!(existingItems.get(0) instanceof SeparatorMenuItem)) {
                 tab.getContextMenu().getItems().add(new SeparatorMenuItem());
             }
@@ -635,19 +635,15 @@ public class SplittableTabPane extends Pane {
         tab.textProperty().addListener((c, o, n) -> {
             if (n != null && !n.isBlank()) {
                 label.setText(n);
-                Platform.runLater(() -> {
-                    tab.setText("");
-                });
+                Platform.runLater(() -> tab.setText(""));
             }
         });
-        tab.graphicProperty().addListener((c, o, n) -> {
-            Platform.runLater(() -> {
-                if (n != label) {
-                    label.setGraphic(n);
-                    tab.setGraphic(label);
-                }
-            });
-        });
+        tab.graphicProperty().addListener((c, o, n) -> Platform.runLater(() -> {
+            if (n != label) {
+                label.setGraphic(n);
+                tab.setGraphic(label);
+            }
+        }));
         label.setOnDragOver(event -> {
             final Dragboard dragboard = event.getDragboard();
             if (dragboard.hasString()
@@ -720,7 +716,7 @@ public class SplittableTabPane extends Pane {
 
         final var stage = new Stage();
 
-        if (tab.getText().length() > 0)
+        if (!tab.getText().isEmpty())
             stage.setTitle(tab.getText());
         else if (tab.getGraphic() instanceof Labeled)
             stage.setTitle(((Labeled) tab.getGraphic()).getText());

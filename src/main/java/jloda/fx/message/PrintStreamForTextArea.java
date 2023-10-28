@@ -41,10 +41,10 @@ public class PrintStreamForTextArea extends PrintStream {
 
 		// will queue lines and print out sparingly
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-			if (lines.size() > 0) {
+			if (!lines.isEmpty()) {
 				Platform.runLater(() -> {
 					final long start = System.currentTimeMillis();
-					while (lines.size() > 0) {
+					while (!lines.isEmpty()) {
 						final String line = lines.remove();
 						Platform.runLater(() -> {
 							textArea.setText(textArea.getText() + line);

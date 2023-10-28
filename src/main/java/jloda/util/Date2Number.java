@@ -41,10 +41,10 @@ public class Date2Number {
         while ((aLine = r.readLine()) != null) {
             if (aLine.equals("q"))
                 break;
-            if (aLine.length() > 0) {
+            if (!aLine.isEmpty()) {
                 try {
                     date = DateFormat.getDateInstance().parse(aLine);
-                    System.out.print("" + aLine + "=" + date + "=" + date.getTime() + "L");
+                    System.out.print(aLine + "=" + date + "=" + date.getTime() + "L");
                 } catch (Exception ex) {
                     Basic.caught(ex);
                 }

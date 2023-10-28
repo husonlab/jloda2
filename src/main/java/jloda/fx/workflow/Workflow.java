@@ -78,7 +78,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 
 		nodeValidChangeListener = (v, o, n) -> {
 			if (n)
-				valid.set(nodes.size() > 0 && nodes.stream().allMatch(WorkflowNode::isValid));
+				valid.set(!nodes.isEmpty() && nodes.stream().allMatch(WorkflowNode::isValid));
 			else
 				valid.set(true);
 		};
@@ -155,7 +155,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 	@Override
 	public boolean cancel() {
 		var canceled = 0;
-		for (var v : IteratorUtils.asStream(algorithmNodes()).filter(a -> a.getService().getState() == State.RUNNING).collect(Collectors.toList())) {
+		for (var v : IteratorUtils.asStream(algorithmNodes()).filter(a -> a.getService().getState() == State.RUNNING).toList()) {
 			if (v.getService().cancel())
 				canceled++;
 		}
@@ -235,7 +235,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 			nodes.remove(v);
 		}
 
-		if (isConnected() && nodes.size() > 0)
+		if (isConnected() && !nodes.isEmpty())
 			connected.set(determineIsConnected(nodes.get(0)));
 	}
 
@@ -301,13 +301,13 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 		var buf = new StringBuilder("Workflow (" + nodes.size() + " nodes):\n");
 		var seen = new HashSet<WorkflowNode>();
 		var queue = nodeStream().filter(n -> n.getInDegree() == 0).collect(Collectors.toCollection(LinkedList::new));
-		while (queue.size() > 0) {
+		while (!queue.isEmpty()) {
 			var node = queue.pop();
 			if (!seen.contains(node)) {
 				seen.add(node);
 				buf.append(node.toReportString(true));
 				buf.append("\n");
-				queue.addAll(node.getChildren().stream().filter(n -> !seen.contains(n)).collect(Collectors.toList()));
+				queue.addAll(node.getChildren().stream().filter(n -> !seen.contains(n)).toList());
 			}
 		}
 		return buf.toString();
@@ -367,7 +367,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 			var stack = new Stack<WorkflowNode>();
 			stack.push(start);
 			discovered.add(start);
-			while (stack.size() > 0) {
+			while (!stack.isEmpty()) {
 				var v = stack.pop();
 				for (var w : v.getParents()) {
 					if (!discovered.contains(w)) {
@@ -392,7 +392,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 		if (includeGivenNode)
 			result.add(node);
 		var queue = new LinkedList<>(node.getChildren());
-		while (queue.size() > 0) {
+		while (!queue.isEmpty()) {
 			node = queue.pop();
 			if (!seen.contains(node)) {
 				seen.add(node);
@@ -409,7 +409,7 @@ public class Workflow extends WorkerBase implements Worker<Boolean> {
 		if (includeGivenNode)
 			result.add(node);
 		var queue = new LinkedList<>(node.getParents());
-		while (queue.size() > 0) {
+		while (!queue.isEmpty()) {
 			node = queue.pop();
 			if (!seen.contains(node)) {
 				seen.add(node);

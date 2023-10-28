@@ -29,128 +29,130 @@ import java.util.TreeSet;
  * Daniel Huson, 3.2022
  */
 public class HTMLConvert {
-	private final static String nameHtmlUnicode = "lceil	8968\n" +
-												  "rceil	8969\n" +
-												  "lfloor	8970\n" +
-												  "rfloor	8971\n" +
-												  "lang	9001\n" +
-												  "rang	9002\n" +
-												  "spades	9824\n" +
-												  "clubs	9827\n" +
-												  "hearts	9829\n" +
-												  "diams	9830\n" +
-												  "ndash	8211\n" +
-												  "mdash	8212\n" +
-												  "dagger	8224\n" +
-												  "ddagger	8225\n" +
-												  "permil	8240\n" +
-												  "lsaquo	8249\n" +
-												  "rsaquo	8250\n" +
-												  "BlackSquare	9632\n" +
-												  "WhiteSquare	9633\n" +
-												  "WhiteSquareWithRoundedCorners	9634\n" +
-												  "WhiteSquareContainingBlackSmallSquare	9635\n" +
-												  "SquareWithHorizontalFill	9636\n" +
-												  "SquareWithVerticalFill	9637\n" +
-												  "SquareWithOrthogonalCrosshatch	9638\n" +
-												  "SquareWithUpperLeftToLowerRightFill	9639\n" +
-												  "SquareWithUpperRightToLowerLeftFill	9640\n" +
-												  "SquareWithDiagonalCrosshatchFill	9641\n" +
-												  "BlackSmallSquare	9642\n" +
-												  "WhiteSmallSquare	9643\n" +
-												  "BlackRectangle	9644\n" +
-												  "WhiteRectangle	9645\n" +
-												  "BlackVerticalRectangle	9646\n" +
-												  "WhiteVerticalRectangle	9647\n" +
-												  "BlackParallelogram	9648\n" +
-												  "WhiteParallelogram	9649\n" +
-												  "BlackUpPointingTriangle	9650\n" +
-												  "WhiteUpPointingTriangle	9651\n" +
-												  "BlackUpPointingSmallTriangle	9652\n" +
-												  "WhiteUpPointingSmallTriangle	9653\n" +
-												  "BlackRightPointingTriangle	9654\n" +
-												  "WhiteRightPointingTriangle	9655\n" +
-												  "BlackRightPointingSmallTriangle	9656\n" +
-												  "WhiteRightPointingSmallTriangle	9657\n" +
-												  "BlackRightPointingPointer	9658\n" +
-												  "WhiteRightPointingPointer	9659\n" +
-												  "BlackDownPointingTriangle	9660\n" +
-												  "WhiteDownPointingTriangle	9661\n" +
-												  "BlackDownPointingSmallTriangle	9662\n" +
-												  "WhiteDownPointingSmallTriangle	9663\n" +
-												  "BlackLeftPointingTriangle	9664\n" +
-												  "WhiteLeftPointingTriangle	9665\n" +
-												  "BlackLeftPointingSmallTriangle	9666\n" +
-												  "WhiteLeftPointingSmallTriangle	9667\n" +
-												  "BlackLeftPointingPointer	9668\n" +
-												  "WhiteLeftPointingPointer	9669\n" +
-												  "BlackDiamond	9670\n" +
-												  "WhiteDiamond	9671\n" +
-												  "WhiteDiamondContainingBlackSmallDiamond	9672\n" +
-												  "Fisheye	9673\n" +
-												  "Lozenge	9674\n" +
-												  "WhiteCircle	9675\n" +
-												  "DottedCircle	9676\n" +
-												  "CircleWithVerticalFill	9677\n" +
-												  "Bullseye	9678\n" +
-												  "BlackCircle	9679\n" +
-												  "CircleWithLeftHalfBlack	9680\n" +
-												  "CircleWithRightHalfBlack	9681\n" +
-												  "CircleWithLowerHalfBlack	9682\n" +
-												  "CircleWithUpperHalfBlack	9683\n" +
-												  "CircleWithUpperRightQuadrantBlack	9684\n" +
-												  "CircleWithAllButUpperLeftQuadrantBlack	9685\n" +
-												  "LeftHalfBlackCircle	9686\n" +
-												  "RightHalfBlackCircle	9687\n" +
-												  "InverseBullet	9688\n" +
-												  "InverseWhiteCircle	9689\n" +
-												  "BlackLowerRightTriangle	9698\n" +
-												  "BlackLowerLeftTriangle	9699\n" +
-												  "BlackUpperLeftTriangle	9700\n" +
-												  "BlackUpperRightTriangle	9701\n" +
-												  "WhiteBullet	9702\n" +
-												  "SquareWithLeftHalfBlack	9703\n" +
-												  "SquareWithRightHalfBlack	9704\n" +
-												  "SquareWithUpperLeftDiagonalHalfBlack	9705\n" +
-												  "SquareWithLowerRightDiagonalHalfBlack	9706\n" +
-												  "WhiteUpPointingTriangleWithDot	9708\n" +
-												  "UpPointingTriangleWithLeftHalfBlack	9709\n" +
-												  "UpPointingTriangleWithRightHalfBlack	9710\n" +
-												  "LargeCircle	9711\n" +
-												  "UpperLeftTriangle	9720\n" +
-												  "UpperRightTriangle	9721\n" +
-												  "LowerLeftTriangle	9722\n" +
-												  "WhiteMediumSquare	9723\n" +
-												  "BlackMediumSquare	9724\n" +
-												  "WhiteMediumSmallSquare	9725\n" +
-												  "BlackMediumSmallSquare	9726\n" +
-												  "LowerRightTriangle	9727\n" +
-												  "CIRCLE_DONE	10112\n" +
-												  "CIRCLED_TWO	10113\n" +
-												  "CIRCLED_THREE	10114\n" +
-												  "CIRCLED_FOUR	10115\n" +
-												  "CIRCLED_FIVE	10116\n" +
-												  "CIRCLED_SIX	10117\n" +
-												  "CIRCLED_SEVEN	10118\n" +
-												  "CIRCLED_EIGHT	10119\n" +
-												  "CIRCLED_NINE	10120\n" +
-												  "CIRCLED_TEN	10121\n" +
-												  "BLACK_STAR	9733\n" +
-												  "WHITE_STAR	9734\n" +
-												  "CHECK_BOX	9745\n" +
-												  "CHECKED_BOX	9746\n" +
-												  "PEACE_SIGN	9774\n" +
-												  "YIN_YANG	9775\n" +
-												  "FROWNING_FACE	9785\n" +
-												  "SMILING_FACE	9786\n" +
-												  "WARNING_SIGN	9888\n" +
-												  "HIGH_VOLTAGE	9889\n" +
-												  "CHECK_MARK	10003\n" +
-												  "HEAVY_CHECKMARK	10004\n" +
-												  "MULTIPLICATION_X	10005\n" +
-												  "HEAVY_MULTIPLICATION_X	10006\n" +
-												  "BALLOT_	10007\n" +
-												  "HEAVY_BALLOT	10008\n";
+	private final static String nameHtmlUnicode = """
+			lceil	8968
+			rceil	8969
+			lfloor	8970
+			rfloor	8971
+			lang	9001
+			rang	9002
+			spades	9824
+			clubs	9827
+			hearts	9829
+			diams	9830
+			ndash	8211
+			mdash	8212
+			dagger	8224
+			ddagger	8225
+			permil	8240
+			lsaquo	8249
+			rsaquo	8250
+			BlackSquare	9632
+			WhiteSquare	9633
+			WhiteSquareWithRoundedCorners	9634
+			WhiteSquareContainingBlackSmallSquare	9635
+			SquareWithHorizontalFill	9636
+			SquareWithVerticalFill	9637
+			SquareWithOrthogonalCrosshatch	9638
+			SquareWithUpperLeftToLowerRightFill	9639
+			SquareWithUpperRightToLowerLeftFill	9640
+			SquareWithDiagonalCrosshatchFill	9641
+			BlackSmallSquare	9642
+			WhiteSmallSquare	9643
+			BlackRectangle	9644
+			WhiteRectangle	9645
+			BlackVerticalRectangle	9646
+			WhiteVerticalRectangle	9647
+			BlackParallelogram	9648
+			WhiteParallelogram	9649
+			BlackUpPointingTriangle	9650
+			WhiteUpPointingTriangle	9651
+			BlackUpPointingSmallTriangle	9652
+			WhiteUpPointingSmallTriangle	9653
+			BlackRightPointingTriangle	9654
+			WhiteRightPointingTriangle	9655
+			BlackRightPointingSmallTriangle	9656
+			WhiteRightPointingSmallTriangle	9657
+			BlackRightPointingPointer	9658
+			WhiteRightPointingPointer	9659
+			BlackDownPointingTriangle	9660
+			WhiteDownPointingTriangle	9661
+			BlackDownPointingSmallTriangle	9662
+			WhiteDownPointingSmallTriangle	9663
+			BlackLeftPointingTriangle	9664
+			WhiteLeftPointingTriangle	9665
+			BlackLeftPointingSmallTriangle	9666
+			WhiteLeftPointingSmallTriangle	9667
+			BlackLeftPointingPointer	9668
+			WhiteLeftPointingPointer	9669
+			BlackDiamond	9670
+			WhiteDiamond	9671
+			WhiteDiamondContainingBlackSmallDiamond	9672
+			Fisheye	9673
+			Lozenge	9674
+			WhiteCircle	9675
+			DottedCircle	9676
+			CircleWithVerticalFill	9677
+			Bullseye	9678
+			BlackCircle	9679
+			CircleWithLeftHalfBlack	9680
+			CircleWithRightHalfBlack	9681
+			CircleWithLowerHalfBlack	9682
+			CircleWithUpperHalfBlack	9683
+			CircleWithUpperRightQuadrantBlack	9684
+			CircleWithAllButUpperLeftQuadrantBlack	9685
+			LeftHalfBlackCircle	9686
+			RightHalfBlackCircle	9687
+			InverseBullet	9688
+			InverseWhiteCircle	9689
+			BlackLowerRightTriangle	9698
+			BlackLowerLeftTriangle	9699
+			BlackUpperLeftTriangle	9700
+			BlackUpperRightTriangle	9701
+			WhiteBullet	9702
+			SquareWithLeftHalfBlack	9703
+			SquareWithRightHalfBlack	9704
+			SquareWithUpperLeftDiagonalHalfBlack	9705
+			SquareWithLowerRightDiagonalHalfBlack	9706
+			WhiteUpPointingTriangleWithDot	9708
+			UpPointingTriangleWithLeftHalfBlack	9709
+			UpPointingTriangleWithRightHalfBlack	9710
+			LargeCircle	9711
+			UpperLeftTriangle	9720
+			UpperRightTriangle	9721
+			LowerLeftTriangle	9722
+			WhiteMediumSquare	9723
+			BlackMediumSquare	9724
+			WhiteMediumSmallSquare	9725
+			BlackMediumSmallSquare	9726
+			LowerRightTriangle	9727
+			CIRCLE_DONE	10112
+			CIRCLED_TWO	10113
+			CIRCLED_THREE	10114
+			CIRCLED_FOUR	10115
+			CIRCLED_FIVE	10116
+			CIRCLED_SIX	10117
+			CIRCLED_SEVEN	10118
+			CIRCLED_EIGHT	10119
+			CIRCLED_NINE	10120
+			CIRCLED_TEN	10121
+			BLACK_STAR	9733
+			WHITE_STAR	9734
+			CHECK_BOX	9745
+			CHECKED_BOX	9746
+			PEACE_SIGN	9774
+			YIN_YANG	9775
+			FROWNING_FACE	9785
+			SMILING_FACE	9786
+			WARNING_SIGN	9888
+			HIGH_VOLTAGE	9889
+			CHECK_MARK	10003
+			HEAVY_CHECKMARK	10004
+			MULTIPLICATION_X	10005
+			HEAVY_MULTIPLICATION_X	10006
+			BALLOT_	10007
+			HEAVY_BALLOT	10008
+			""";
 
 	public final static Map<String, Character> htmlCharacterMap = new HashMap<>();
 	public final static Map<Character, String> characterHtmlMap = new HashMap<>();

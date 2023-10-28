@@ -121,7 +121,7 @@ abstract public class WorkflowNode extends NamedBase {
 	}
 
 	public WorkflowNode getPreferredParent() {
-		return parents.size() > 0 ? parents.get(0) : null;
+		return !parents.isEmpty() ? parents.get(0) : null;
 	}
 
 	public int getInDegree() {
@@ -133,7 +133,7 @@ abstract public class WorkflowNode extends NamedBase {
 	}
 
 	public WorkflowNode getPreferredChild() {
-		return children.size() > 0 ? children.get(0) : null;
+		return !children.isEmpty() ? children.get(0) : null;
 	}
 
 	public void addParent(WorkflowNode v) {

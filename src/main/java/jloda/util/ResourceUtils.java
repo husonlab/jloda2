@@ -29,7 +29,6 @@ import java.util.Enumeration;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
@@ -68,12 +67,11 @@ public class ResourceUtils {
                     urlString = urlString.substring("file:".length());
 
                 //recurse through the jar
-                try {
-                    ZipFile archive = (urlString.endsWith(".jar") ? new JarFile(urlString) : new ZipFile(urlString));
-                    Enumeration entries = archive.entries();
+                try (var archive = (urlString.endsWith(".jar") ? new JarFile(urlString) : new ZipFile(urlString))) {
+                    var entries = archive.entries();
                     while (entries.hasMoreElements()) {
-                        ZipEntry ze = (ZipEntry) entries.nextElement();
-                        String name = ze.getName();
+                        var ze = entries.nextElement();
+                        var name = ze.getName();
                         if (name.startsWith(packageName)) {
                             if (!ze.isDirectory() && name.indexOf('/', packageName.length()) < 0) {
                                 resources.add(name.substring(packageName.length()));

@@ -80,7 +80,7 @@ public class UndoableRedoableCommandList extends UndoableRedoableCommand {
     public void undo() {
         for (var command : list) {
             if(command.isUndoable())
-            command.undo();
+                command.undo();
         }
     }
 

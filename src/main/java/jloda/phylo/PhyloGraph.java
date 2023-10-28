@@ -368,7 +368,7 @@ public class PhyloGraph extends Graph {
     }
 
     public int getTaxon(Node v) {
-        if (node2taxa == null || node2taxa.get(v) == null || node2taxa.get(v).size() == 0)
+        if (node2taxa == null || node2taxa.get(v) == null || node2taxa.get(v).isEmpty())
             return -1;
         else
             return node2taxa.get(v).get(0);
@@ -396,7 +396,7 @@ public class PhyloGraph extends Graph {
                     var list = node2taxa.get(v);
                     if (list != null && list.contains(taxonId)) {
                         list.remove((Integer) taxonId);
-                        if (list.size() == 0)
+                        if (list.isEmpty())
                             node2taxa.put(v, null);
                         return;
                     }

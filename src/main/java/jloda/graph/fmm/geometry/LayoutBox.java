@@ -87,7 +87,7 @@ public class LayoutBox {
     }
 
     public void update(Graph graph, NodeArray<NodeAttributes> nodeAttributes) {
-        if (nodeAttributes.size() > 0) {
+        if (!nodeAttributes.isEmpty()) {
             var xMin = Double.MAX_VALUE;
             var xMax = Double.MIN_VALUE;
             var yMin = Double.MAX_VALUE;

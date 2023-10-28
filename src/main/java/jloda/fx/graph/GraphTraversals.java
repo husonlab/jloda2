@@ -45,7 +45,7 @@ public class GraphTraversals {
 			var stack=new Stack<Node>();
 			stack.add(start);
 			scheduled.add(start);
-			while(stack.size()>0) {
+			while (!stack.isEmpty()) {
 				var v=stack.pop();
 				nodeFunction.accept(v);
 				for(var e:v.adjacentEdges()) {

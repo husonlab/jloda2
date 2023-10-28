@@ -224,7 +224,7 @@ public class FileLineIterator implements ICloseableIterator<String> {
 
             if (nextLine != null) {
                 numberOfBytes = nextLine.length();
-                if ((skipEmptyLines && nextLine.length() == 0) || (skipCommentLines && nextLine.startsWith("#"))) {
+				if ((skipEmptyLines && nextLine.isEmpty()) || (skipCommentLines && nextLine.startsWith("#"))) {
                     nextLine = null;
                     return hasNext();
                 }

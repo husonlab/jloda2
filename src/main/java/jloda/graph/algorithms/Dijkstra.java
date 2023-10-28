@@ -43,51 +43,51 @@ public class Dijkstra {
      * @return shortest path from source to sink
      */
     public static List<Node> compute(final Graph graph, Node source, Node sink, Function<Edge, Number> weights) {
-        NodeArray<Node> predecessor = graph.newNodeArray();
+        try (NodeArray<Node> predecessor = graph.newNodeArray()) {
+            var dist = graph.newNodeDoubleArray();
+            var priorityQueue = newFullQueue(graph, dist);
 
-        var dist = graph.newNodeDoubleArray();
-        var priorityQueue = newFullQueue(graph, dist);
+            // init:
+            for (var v : graph.nodes()) {
+                dist.put(v, 1000000.0);
+                predecessor.put(v, null);
+            }
+            dist.put(source, 0.0);
 
-        // init:
-        for (var v : graph.nodes()) {
-            dist.put(v, 1000000.0);
-            predecessor.put(v, null);
-        }
-        dist.put(source, 0.0);
+            // main loop:
+            while (!priorityQueue.isEmpty()) {
+                var size = priorityQueue.size();
+                var u = priorityQueue.first();
+                priorityQueue.remove(u);
+                if (priorityQueue.size() != size - 1)
+                    throw new RuntimeException("remove u=" + u + " failed: size=" + size);
 
-        // main loop:
-        while (!priorityQueue.isEmpty()) {
-            var size = priorityQueue.size();
-            var u = priorityQueue.first();
-            priorityQueue.remove(u);
-            if (priorityQueue.size() != size - 1)
-                throw new RuntimeException("remove u=" + u + " failed: size=" + size);
-
-            for (var e : u.outEdges()) {
-                var weight = weights.apply(e).doubleValue();
-                var v = e.getOpposite(u);
-                if (dist.get(v) > dist.get(u) + weight) {
-                    // priorty of v changes, so must re-and to queue:
-                    priorityQueue.remove(v);
-                    dist.put(v, dist.get(u) + weight);
-                    priorityQueue.add(v);
-                    predecessor.put(v, u);
+                for (var e : u.outEdges()) {
+                    var weight = weights.apply(e).doubleValue();
+                    var v = e.getOpposite(u);
+                    if (dist.get(v) > dist.get(u) + weight) {
+                        // priorty of v changes, so must re-and to queue:
+                        priorityQueue.remove(v);
+                        dist.put(v, dist.get(u) + weight);
+                        priorityQueue.add(v);
+                        predecessor.put(v, u);
+                    }
                 }
             }
+            System.err.println("done main loop");
+            var result = new ArrayList<Node>();
+            var v = sink;
+            while (v != source) {
+                if (v == null)
+                    throw new RuntimeException("No path from sink back to source");
+                System.err.println("v: " + v);
+                if (v != sink)
+                    result.add(0, v);
+                v = predecessor.get(v);
+            }
+            System.err.println("# Dijkstra: " + result.size());
+            return result;
         }
-        System.err.println("done main loop");
-        var result = new ArrayList<Node>();
-        var v = sink;
-        while (v != source) {
-            if (v == null)
-                throw new RuntimeException("No path from sink back to source");
-            System.err.println("v: " + v);
-            if (v != sink)
-                result.add(0, v);
-            v = predecessor.get(v);
-        }
-        System.err.println("# Dijkstra: " + result.size());
-        return result;
     }
 
     /**

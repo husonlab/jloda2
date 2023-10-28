@@ -5,7 +5,6 @@ module jloda2 {
 
 	requires transitive java.desktop;
 
-	requires org.fxmisc.richtext;
 	requires org.apache.pdfbox;
 	requires org.apache.fontbox;
 

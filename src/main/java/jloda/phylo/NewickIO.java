@@ -271,7 +271,7 @@ public class NewickIO {
 		}
 		if (getNewickNodeCommentSupplier() != null) {
 			var comment = getNewickNodeCommentSupplier().apply(v);
-			if (comment != null && comment.trim().length() > 0) {
+			if (comment != null && !comment.trim().isEmpty()) {
 				writer.write("[" + comment.trim() + "]");
 			}
 		}
@@ -600,22 +600,22 @@ public class NewickIO {
 					pos = pos0 + numberStr.length();
 					var value = Math.max(0, Double.parseDouble(numberStr));
 					switch (which) {
-						case 0:
+						case 0 -> {
 							if (e != null) {
 								tree.setWeight(e, value);
 								didReadWeight = true;
 							}
-							break;
-						case 1:
+						}
+						case 1 -> {
 							if (e != null) {
 								tree.setConfidence(e, value);
 							}
-							break;
-						case 2:
+						}
+						case 2 -> {
 							if (e != null) {
 								tree.setProbability(e, value);
 							}
-							break;
+						}
 					}
 				}
 				if (!PhyloTree.SUPPORT_RICH_NEWICK)
@@ -689,7 +689,7 @@ public class NewickIO {
 
 		for (var v : tree.nodes()) {
 			var label = tree.getLabel(v);
-			if (label != null && label.length() > 0) {
+			if (label != null && !label.isEmpty()) {
 				var reticulateLabel = PhyloTreeNetworkIOUtils.findReticulateLabel(label);
 				if (reticulateLabel != null) {
 					tree.setLabel(v, PhyloTreeNetworkIOUtils.removeReticulateNodeSuffix(label));

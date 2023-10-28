@@ -59,7 +59,7 @@ public class BipartiteMatching {
                 uncovered.add(v);
         }
 
-        while (uncovered.size() > 0) {
+        while (!uncovered.isEmpty()) {
             final ArrayList<Edge> path = findAlternatingPath(matching, uncovered);
             // augment:
             for (Edge e : path) {
@@ -85,25 +85,26 @@ public class BipartiteMatching {
         uncovered.remove(v);
         Edge e = null;
 
-        final NodeSet visited = new NodeSet(matching.getOwner());
-        boolean extended;
-        do {
-            extended = false;
-            for (Edge f : v.adjacentEdges()) {
-                Node w = f.getOpposite(v);
-                if (!visited.contains(w)) {
-                    visited.add(w);
-                    if (matching.contains(f) != (e == null || matching.contains(e))) {
-                        path.add(f);
-                        e = f;
-                        v = w;
-                        extended = true;
-                        break;
+        try (var visited = new NodeSet(matching.getOwner())) {
+            boolean extended;
+            do {
+                extended = false;
+                for (Edge f : v.adjacentEdges()) {
+                    Node w = f.getOpposite(v);
+                    if (!visited.contains(w)) {
+                        visited.add(w);
+                        if (matching.contains(f) != (e == null || matching.contains(e))) {
+                            path.add(f);
+                            e = f;
+                            v = w;
+                            extended = true;
+                            break;
+                        }
                     }
                 }
             }
+            while (extended);
         }
-        while (extended);
 
         uncovered.remove(v); // last node in path will become covered (if not already)
 

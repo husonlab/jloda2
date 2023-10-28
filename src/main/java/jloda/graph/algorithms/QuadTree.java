@@ -106,7 +106,7 @@ private int size;
                     this.points.add(point);
                     return true;
                 } else {
-                    if (nodes.size() == 0) {
+                    if (nodes.isEmpty()) {
                         createQuadrants();
                     }
                     return addPointToOneQuadrant(point);
@@ -122,7 +122,7 @@ private int size;
                         matches.add(point);
                     }
                 }
-                if (nodes.size() > 0) {
+                if (!nodes.isEmpty()) {
                     for (int i = 0; i < 4; i++) {
                        nodes.get(i).search(searchRegion, matches);
                     }
@@ -180,18 +180,13 @@ private int size;
 		   float quadrantHeight = (this.ymax - this.ymin) / 2;
 
 		   // 0=SW, 1=NW, 2=NE, 3=SE
-		   switch (quadrantIndex) {
-			   case SW:
-				   return new Region(xmin, ymin, xmin + quadrantWidth, ymin + quadrantHeight);
-			   case NW:
-				   return new Region(xmin, ymin + quadrantHeight, xmin + quadrantWidth, ymax);
-			   case NE:
-				   return new Region(xmin + quadrantWidth, ymin + quadrantHeight, xmax, ymax);
-			   case SE:
-				   return new Region(xmin + quadrantWidth, ymin, xmax, ymin + quadrantHeight);
-			   default:
-				   throw new IllegalArgumentException();
-		   }
+           return switch (quadrantIndex) {
+               case SW -> new Region(xmin, ymin, xmin + quadrantWidth, ymin + quadrantHeight);
+               case NW -> new Region(xmin, ymin + quadrantHeight, xmin + quadrantWidth, ymax);
+               case NE -> new Region(xmin + quadrantWidth, ymin + quadrantHeight, xmax, ymax);
+               case SE -> new Region(xmin + quadrantWidth, ymin, xmax, ymin + quadrantHeight);
+               default -> throw new IllegalArgumentException();
+           };
 	   }
 
        public float getMinX() {

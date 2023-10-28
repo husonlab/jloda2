@@ -216,7 +216,7 @@ public class TextAreaSearcher implements ITextSearcher {
         if (textArea == null) return false;
 
         //Do nothing if there is no text.
-        if (regularExpression.length() == 0)
+		if (regularExpression.isEmpty())
             return false;
 
         //Search begins at the end of the currently selected portion of text.

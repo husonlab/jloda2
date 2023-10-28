@@ -57,17 +57,18 @@ public class MultiLevel {
 
 		while (activeGraph.getNumberOfNodes() > options.getMinGraphSize() && edgeNumberSumOfAllLevelsIsLinear(multiLevelGraph, activeLevel, badEdgeNrCounter)) {
 			var newGraph = new Graph();
-			NodeArray<NodeAttributes> newNodeAttributes = newGraph.newNodeArray();
-			EdgeArray<EdgeAttributes> newEdgeAttributes = newGraph.newEdgeArray();
-			multiLevelGraph[activeLevel + 1] = newGraph;
-			multiLevelNodeAttributes[activeLevel + 1] = newNodeAttributes;
-			multiLevelEdgeAttributes[activeLevel + 1] = newEdgeAttributes;
+			try (NodeArray<NodeAttributes> newNodeAttributes = newGraph.newNodeArray();
+				 EdgeArray<EdgeAttributes> newEdgeAttributes = newGraph.newEdgeArray()) {
+				multiLevelGraph[activeLevel + 1] = newGraph;
+				multiLevelNodeAttributes[activeLevel + 1] = newNodeAttributes;
+				multiLevelEdgeAttributes[activeLevel + 1] = newEdgeAttributes;
 
-			partitionGalaxyIntoSolarSystems(options, multiLevelGraph, multiLevelNodeAttributes, multiLevelEdgeAttributes, activeLevel);
-			collapseSolarSystems(multiLevelGraph, multiLevelNodeAttributes, multiLevelEdgeAttributes, activeLevel);
+				partitionGalaxyIntoSolarSystems(options, multiLevelGraph, multiLevelNodeAttributes, multiLevelEdgeAttributes, activeLevel);
+				collapseSolarSystems(multiLevelGraph, multiLevelNodeAttributes, multiLevelEdgeAttributes, activeLevel);
 
-			activeLevel++;
-			activeGraph = multiLevelGraph[activeLevel];
+				activeLevel++;
+				activeGraph = multiLevelGraph[activeLevel];
+			}
 		}
 		return activeLevel;
 	}
@@ -114,18 +115,12 @@ public class MultiLevel {
 		var sunNodes = new ArrayList<Node>();
 
 		while (!nodeSet.isEmpty()) { // randomly select a sun node
-			Node sunNode;
-			switch (options.getGalaxyChoice()) {
-				default:
-					sunNode = nodeSet.getRandomNode();
-					break;
-				case NonUniformProbLowerMass:
-					sunNode = nodeSet.getRandomNodeWithLowestStarMass(options.getNumberRandomTries());
-					break;
-				case NonUniformProbHigherMass:
-					sunNode = nodeSet.getRandomNodeWithHighestStarMass(options.getNumberRandomTries());
-					break;
-			}
+			Node sunNode = switch (options.getGalaxyChoice()) {
+				default -> nodeSet.getRandomNode();
+				case NonUniformProbLowerMass -> nodeSet.getRandomNodeWithLowestStarMass(options.getNumberRandomTries());
+				case NonUniformProbHigherMass ->
+						nodeSet.getRandomNodeWithHighestStarMass(options.getNumberRandomTries());
+			};
 			sunNodes.add(sunNode);
 
 			//create new node at higher level that represents the collapsed solar_system
@@ -380,8 +375,8 @@ public class MultiLevel {
 						}
 					}
 				}
-				if (va.getLambdas().size() == 0) {
-					if (list.size() == 0) {
+				if (va.getLambdas().isEmpty()) {
+					if (list.isEmpty()) {
 						var newPosition = createRandomPosition(dedicatedSunPosition, va.getDedicatedSunDistance(), va.getAngle1(), va.getAngle2());
 						list.add(newPosition);
 					}
@@ -420,7 +415,7 @@ public class MultiLevel {
 			}
 			double angle_1;
 			double angle_2;
-			if (adjPositions.size() == 0) {
+			if (adjPositions.isEmpty()) {
 				angle_1 = 0;
 				angle_2 = 6.2831853;
 			} else if (adjPositions.size() == 1) //special case
@@ -542,7 +537,7 @@ public class MultiLevel {
 				list.add(newPosition);
 			}
 
-			if (va.getLambdas().size() > 0) {
+			if (!va.getLambdas().isEmpty()) {
 				int i = 0;
 				for (var adjSun : va.getNeighborSunNodes()) {
 					var lambda = va.getLambdas().get(i);

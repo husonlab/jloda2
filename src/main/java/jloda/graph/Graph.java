@@ -26,7 +26,6 @@ import jloda.util.IteratorUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -461,7 +460,6 @@ public class Graph extends GraphBase implements INamed {
             if (e.next != null)
                 e.next.prev = e.prev;
             Edge f = lastEdge;
-            lastEdge = f;
             e.prev = f;
             if (f != null)
                 f.next = e;
@@ -1575,7 +1573,7 @@ public class Graph extends GraphBase implements INamed {
             }
         }
 
-        if (toMove.size() > 0) {
+        if (!toMove.isEmpty()) {
             for (var it = nodeIteratorIncludingHidden(); it.hasNext(); ) {
                 var v = it.next();
                 if (!toMove.contains(v))
@@ -1806,7 +1804,7 @@ public class Graph extends GraphBase implements INamed {
 		try (var visited = newNodeSet()) {
 			var stack = new Stack<Node>();
 			stack.push(getFirstNode());
-			while (stack.size() > 0) {
+            while (!stack.isEmpty()) {
 				var v = stack.pop();
 				visited.add(v);
 				for (var w : v.adjacentNodes()) {
@@ -1829,7 +1827,7 @@ public class Graph extends GraphBase implements INamed {
         var t = e.getTarget();
 
         // all edges adjacent to s are made adjacent to t:
-        for (var f : s.adjacentEdgesStream(false).filter(f -> f != e).collect(Collectors.toList())) {
+        for (var f : s.adjacentEdgesStream(false).filter(f -> f != e).toList()) {
             if (f.getSource().equals(s))
                 f.changeSource(t);
             else if (f.getTarget().equals(s))

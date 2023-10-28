@@ -100,7 +100,7 @@ public class AnotherMultipleSelectionModel<T> extends MultipleSelectionModel<T> 
                     selectedIndex.set(-1);
                 inSelectItems.set(false);
             }
-            empty.set(selectedIndicesSet.size() == 0);
+            empty.set(selectedIndicesSet.isEmpty());
 
         });
 
@@ -277,7 +277,7 @@ public class AnotherMultipleSelectionModel<T> extends MultipleSelectionModel<T> 
 
     @Override
     public boolean isEmpty() {
-        return selectedIndicesSet.size() == 0;
+        return selectedIndicesSet.isEmpty();
     }
 
     @Override
@@ -296,13 +296,13 @@ public class AnotherMultipleSelectionModel<T> extends MultipleSelectionModel<T> 
 
     @Override
     public void selectFirst() {
-        if (items.size() > 0)
+        if (!items.isEmpty())
             clearAndSelect(0);
     }
 
     @Override
     public void selectLast() {
-        if (items.size() > 0)
+        if (!items.isEmpty())
             clearAndSelect(items.size() - 1);
     }
 

@@ -43,30 +43,30 @@ public class OffspringGraphMatching {
 
         progress.setSubtask("Offspring graph matching");
 
-        NodeArray<Node> tree2a = tree.newNodeArray();
-        NodeArray<Node> tree2b = tree.newNodeArray();
+        try (NodeArray<Node> tree2a = tree.newNodeArray(); NodeArray<Node> tree2b = tree.newNodeArray()) {
 
-        progress.setMaximum(tree.getNumberOfNodes() + tree.getNumberOfEdges() + 1);
-        progress.setProgress(0);
-        for (var v : tree.nodes()) {
-            tree2a.put(v, graph.newNode());
-            tree2b.put(v, graph.newNode());
-            progress.incrementProgress();
-        }
+            progress.setMaximum(tree.getNumberOfNodes() + tree.getNumberOfEdges() + 1);
+            progress.setProgress(0);
+            for (var v : tree.nodes()) {
+                tree2a.put(v, graph.newNode());
+                tree2b.put(v, graph.newNode());
+                progress.incrementProgress();
+            }
 
-        progress.setProgress(0);
-        for (var e : tree.edges()) {
-            graph.newEdge(tree2a.get(e.getSource()), tree2b.get(e.getTarget()));
-            progress.incrementProgress();
-        }
+            progress.setProgress(0);
+            for (var e : tree.edges()) {
+                graph.newEdge(tree2a.get(e.getSource()), tree2b.get(e.getTarget()));
+                progress.incrementProgress();
+            }
 
-        var oneSide = graph.newNodeSet();
-        oneSide.addAll(tree2a.values());
+            var oneSide = graph.newNodeSet();
+            oneSide.addAll(tree2a.values());
 
-        try {
-            return BipartiteMatching.computeBipartiteMatching(graph, oneSide);
-        } finally {
-            progress.reportTaskCompleted();
+            try {
+                return BipartiteMatching.computeBipartiteMatching(graph, oneSide);
+            } finally {
+                progress.reportTaskCompleted();
+            }
         }
     }
 

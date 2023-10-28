@@ -101,7 +101,7 @@ public class DirectedCycleDetector {
      * @return true, if has cycle
      */
     public boolean hasCycle() {
-        return cycle.size() > 0;
+		return !cycle.isEmpty();
     }
 
     /**

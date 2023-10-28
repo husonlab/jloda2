@@ -647,7 +647,7 @@ public class MyTableView extends Pane {
     }
 
     public int getASelectedColIndex() {
-        if (tableView.getSelectionModel().getSelectedCells().size() > 0)
+        if (!tableView.getSelectionModel().getSelectedCells().isEmpty())
             return tableView.getSelectionModel().getSelectedCells().get(0).getColumn();
         else
             return -1;
@@ -1014,7 +1014,7 @@ public class MyTableView extends Pane {
                 buf.append("\n");
         }
 
-        if (buf.length() > 0) {
+        if (!buf.isEmpty()) {
             final ClipboardContent contents = new ClipboardContent();
 
             contents.put(DataFormat.PLAIN_TEXT, buf.toString());

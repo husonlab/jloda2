@@ -114,7 +114,7 @@ public class DRect implements FastMultiLayerMethodLayout.Point, FastMultiLayerMe
      * @return bounding box
      */
     public static DRect computeBBox(Collection<? extends FastMultiLayerMethodLayout.Point> points) {
-        if (points.size() > 0) {
+        if (!points.isEmpty()) {
             double minX = Double.MAX_VALUE;
             double maxX = Double.MIN_VALUE;
             double minY = Double.MAX_VALUE;

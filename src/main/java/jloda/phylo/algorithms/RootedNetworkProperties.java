@@ -48,7 +48,7 @@ public class RootedNetworkProperties {
             return false;
         try (var visited = new NodeSet(graph)) {
             var queue = new LinkedList<>(findRoots(graph));
-            while (queue.size() > 0) {
+            while (!queue.isEmpty()) {
                 var w = queue.remove();
                 if (visited.contains(w))
                     return false;
@@ -328,7 +328,7 @@ public class RootedNetworkProperties {
      * recursively determines all stable nodes
      */
     private static void computeAllStableAncestorsRec(Node v, Set<Node> remainingQuery, NodeArray<Set<Node>> below, NodeSet result) {
-        if (remainingQuery.size() > 0) {
+        if (!remainingQuery.isEmpty()) {
             var count = new HashMap<Node, Integer>();
             for (var w : v.children()) {
                 var belowW = below.get(w);
@@ -363,7 +363,7 @@ public class RootedNetworkProperties {
 
             var reticulateEdges = contractedGraph.edgeStream().filter(e -> e.getTarget().getInDegree() > 1).collect(Collectors.toSet());
 
-            if (reticulateEdges.size() == 0)
+            if (reticulateEdges.isEmpty())
                 return true;
             else {
                 var selfEdgeEncountered = new Single<>(false);
@@ -429,9 +429,9 @@ public class RootedNetworkProperties {
      * @return true, if anything contracted
      */
     public static boolean contractEdges(PhyloTree tree, Set<Edge> edgesToContract, Single<Boolean> selfEdgeEncountered) {
-        boolean hasContractedOne = edgesToContract.size() > 0;
+        boolean hasContractedOne = !edgesToContract.isEmpty();
 
-        while (edgesToContract.size() > 0) {
+        while (!edgesToContract.isEmpty()) {
             final var e = edgesToContract.iterator().next();
             edgesToContract.remove(e);
 

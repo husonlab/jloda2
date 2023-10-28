@@ -288,7 +288,7 @@ public class EdgeSet extends GraphBase implements Iterable<Edge>, Set<Edge>, Aut
 	public Edge getLastElement() {
 		for (Edge e = getOwner().getLastEdge(); e != null; e = e.getPrev()) {
 			if (contains(e))
-				return null;
+                return e;
 		}
 		return null;
 	}

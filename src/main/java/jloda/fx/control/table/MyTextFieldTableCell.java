@@ -94,8 +94,10 @@ public class MyTextFieldTableCell<S, T> extends TableCell<S, T> {
 			var0.setGraphic(var4);
 		}
 
-		var4.selectAll();
-		var4.requestFocus();
+		if (var4 != null) {
+			var4.selectAll();
+			var4.requestFocus();
+		}
 	}
 
 	public void cancelEdit() {

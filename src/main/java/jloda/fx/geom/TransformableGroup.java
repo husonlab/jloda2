@@ -77,25 +77,13 @@ public class TransformableGroup extends Group {
         super();
         // choose the order of rotations based on the rotateOrder
 		// For Camera
-        switch (rotateOrder) {
-			case XYZ:
-				getTransforms().addAll(t, p, rz, ry, rx, s);
-				break;
-			case XZY:
-				getTransforms().addAll(t, p, ry, rz, rx, s);
-				break;
-			case YXZ:
-				getTransforms().addAll(t, p, rz, rx, ry, s);
-				break;
-			case YZX:
-				getTransforms().addAll(t, p, rx, rz, ry, s);
-				break;
-			case ZXY:
-				getTransforms().addAll(t, p, ry, rx, rz, s);
-				break;
-			case ZYX:
-				getTransforms().addAll(t, p, rx, ry, rz, s);
-				break;
+		switch (rotateOrder) {
+			case XYZ -> getTransforms().addAll(t, p, rz, ry, rx, s);
+			case XZY -> getTransforms().addAll(t, p, ry, rz, rx, s);
+			case YXZ -> getTransforms().addAll(t, p, rz, rx, ry, s);
+			case YZX -> getTransforms().addAll(t, p, rx, rz, ry, s);
+			case ZXY -> getTransforms().addAll(t, p, ry, rx, rz, s);
+			case ZYX -> getTransforms().addAll(t, p, rx, ry, rz, s);
 		}
     }
 

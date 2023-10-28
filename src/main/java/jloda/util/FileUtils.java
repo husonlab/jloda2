@@ -339,10 +339,11 @@ public class FileUtils {
 		if (fileName.toLowerCase().endsWith(".gz")) {
 			return new GZIPInputStream(new FileInputStream(file));
 		} else if (fileName.toLowerCase().endsWith(".zip")) {
-			var zf = new ZipFile(file);
-			var e = zf.entries();
-			var entry = (ZipEntry) e.nextElement(); // your only file
-			return zf.getInputStream(entry);
+			try (var zf = new ZipFile(file)) {
+				var e = zf.entries();
+				var entry = (ZipEntry) e.nextElement(); // your only file
+				return zf.getInputStream(entry);
+			}
 		} else
 			return new FileInputStream(file);
 	}
@@ -375,15 +376,19 @@ public class FileUtils {
 	public static OutputStream getOutputStreamPossiblyZIPorGZIP(String fileName) throws IOException {
 		final String fileNameLowerCase = fileName.toLowerCase();
 		switch (fileNameLowerCase) {
-			case "stdout":
+			case "stdout" -> {
 				return new PrintStreamNoClose(System.out);
-			case "stdout-gz":
+			}
+			case "stdout-gz" -> {
 				return new GZIPOutputStream(new PrintStreamNoClose(System.out));
-			case "stderr":
+			}
+			case "stderr" -> {
 				return new PrintStreamNoClose(System.err);
-			case "stderr-gz":
+			}
+			case "stderr-gz" -> {
 				return new GZIPOutputStream(new PrintStreamNoClose(System.err));
-			default:
+			}
+			default -> {
 				OutputStream outs = new FileOutputStream(fileName);
 				if (fileNameLowerCase.endsWith(".gz")) {
 					outs = new GZIPOutputStream(outs);
@@ -393,6 +398,7 @@ public class FileUtils {
 					out.putNextEntry(e);
 				}
 				return outs;
+			}
 		}
 	}
 
@@ -497,7 +503,7 @@ public class FileUtils {
 	 * gets the file path to the named file using the directory of the referenceFile
 	 */
 	public static String getFilePath(String referenceFile, String fileName) {
-		if (referenceFile == null || referenceFile.length() == 0)
+		if (referenceFile == null || referenceFile.isEmpty())
 			return fileName;
 		else {
 			return new File(((new File(referenceFile).getParent())), getFileNameWithoutPath(fileName)).getPath();
@@ -614,7 +620,7 @@ public class FileUtils {
 	public static boolean checkAllFilesDifferent(String... fileNames) {
 		final File[] files = new File[fileNames.length];
 		for (int i = 0; i < fileNames.length; i++) {
-			if (fileNames[i] != null && fileNames[i].length() > 0) {
+			if (fileNames[i] != null && !fileNames[i].isEmpty()) {
 				files[i] = new File(fileNames[i]);
 				for (int j = 0; j < i; j++) {
 					if (files[i] != null && files[i].equals(files[j]))
@@ -691,7 +697,7 @@ public class FileUtils {
 			Arrays.sort(array);
 			final var list = new ArrayList<File>();
 			Collections.addAll(list, array);
-			while (list.size() > 0) {
+			while (!list.isEmpty()) {
 				final File file = list.remove(0);
 				if (file.isDirectory()) {
 					if (recursively) {

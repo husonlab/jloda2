@@ -111,15 +111,17 @@ public class TestSplittableTabPane extends Application {
     }
 
     public String createText() {
-        return " final StackPane root=new StackPane();\n" +
-                "        root.setPrefWidth(600);\n" +
-                "        root.setPrefHeight(600);\n" +
-                "        root.getChildren().add(borderPane);\n" +
-                "        final Scene scene=new Scene(root,600,600);\n" +
-                "        primaryStage.setScene(scene);\n" +
-                "        primaryStage.sizeToScene();\n" +
-                "        primaryStage.setX(400);\n" +
-                "        primaryStage.setY(400);\n" +
-                "        primaryStage.show();\n";
+        return """
+                 final StackPane root=new StackPane();
+                        root.setPrefWidth(600);
+                        root.setPrefHeight(600);
+                        root.getChildren().add(borderPane);
+                        final Scene scene=new Scene(root,600,600);
+                        primaryStage.setScene(scene);
+                        primaryStage.sizeToScene();
+                        primaryStage.setX(400);
+                        primaryStage.setY(400);
+                        primaryStage.show();
+                """;
     }
 }

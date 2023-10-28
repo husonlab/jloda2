@@ -185,53 +185,54 @@ public class PhyloSplitsGraph extends PhyloGraph {
             getAllSeparators(splitId, one, null, seen, separators);
 
             // determine all nodes on opposite end of separating adjacentEdges
-            NodeSet opposites = new NodeSet(this);
-            for (var pair : separators) {
-                opposites.add(getOpposite(pair.getFirst(), pair.getSecond()));
-            }
+			try (var opposites = new NodeSet(this)) {
+				for (var pair : separators) {
+					opposites.add(getOpposite(pair.getFirst(), pair.getSecond()));
+				}
 
-            // reconnect adjacentEdges that are adjacent to opposite ends of separators:
+				// reconnect adjacentEdges that are adjacent to opposite ends of separators:
 
-            for (var pair : separators) {
-                Node v = pair.getFirst();
-                Edge e = pair.getSecond();
-                Node w = getOpposite(v, e);
+				for (var pair : separators) {
+					Node v = pair.getFirst();
+					Edge e = pair.getSecond();
+					Node w = getOpposite(v, e);
 
-                for (Edge f : w.adjacentEdges()) {
-                    if (f != e) {
-                        Node u = getOpposite(w, f);
-                        if (u != v && !opposites.contains(u)) {
-                            Edge g = null;
-                            try {
-                                g = newEdge(u, v);
-                            } catch (IllegalSelfEdgeException e1) {
-                                Basic.caught(e1);
-                            }
-                            setSplit(g, getSplit(f));
-                            setWeight(g, getWeight(f));
-                            setAngle(g, getAngle(f));
-                        }
-                    }
-                }
+					for (Edge f : w.adjacentEdges()) {
+						if (f != e) {
+							Node u = getOpposite(w, f);
+							if (u != v && !opposites.contains(u)) {
+								Edge g = null;
+								try {
+									g = newEdge(u, v);
+								} catch (IllegalSelfEdgeException e1) {
+									Basic.caught(e1);
+								}
+								setSplit(g, getSplit(f));
+								setWeight(g, getWeight(f));
+								setAngle(g, getAngle(f));
+							}
+						}
+					}
 
-                if (getLabel(w) != null && getLabel(w).length() > 0) {
-                    if (getLabel(v) == null)
-                        setLabel(v, getLabel(w));
-                    else
-                        setLabel(v, getLabel(v) + ", " + getLabel(w));
-                }
+					if (getLabel(w) != null && !getLabel(w).isEmpty()) {
+						if (getLabel(v) == null)
+							setLabel(v, getLabel(w));
+						else
+							setLabel(v, getLabel(v) + ", " + getLabel(w));
+					}
 
-                if (getTaxa(w) != null) // node is labeled by taxa, move labels to v
-                {
-                    for (Integer t : getTaxa(w)) {
-                        addTaxon(v, t);
-                        addTaxon(v, t);
-                    }
-                    clearTaxa(w);
-                }
-                // delete old node w.
-                deleteNode(w);
-            }
+					if (getTaxa(w) != null) // node is labeled by taxa, move labels to v
+					{
+						for (Integer t : getTaxa(w)) {
+							addTaxon(v, t);
+							addTaxon(v, t);
+						}
+						clearTaxa(w);
+					}
+					// delete old node w.
+					deleteNode(w);
+				}
+			}
         }
     }
 

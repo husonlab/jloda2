@@ -174,7 +174,7 @@ public class NotificationManager {
         if (isShowNotifications() && ProgramProperties.isUseGUI()) {
             final Window window = getWindow(owner);
             if (window != null) {
-                if (title == null || title.length() == 0) {
+                if (title == null || title.isEmpty()) {
                     title = ProgramProperties.getProgramName();
                 }
                 {
@@ -251,23 +251,13 @@ public class NotificationManager {
                 }
 
                 {
-					ImageView icon;
-					switch (mode) {
-						case confirmation:
-							icon = ResourceManagerFX.getIconAsImageView("dialog/dialog-confirmation.png", 32);
-							break;
-						case warning:
-							icon = ResourceManagerFX.getIconAsImageView("dialog/dialog-warning.png", 32);
-							break;
-						case information:
-							icon = ResourceManagerFX.getIconAsImageView("dialog/dialog-information.png", 32);
-							break;
-						case error:
-							icon = ResourceManagerFX.getIconAsImageView("dialog/dialog-error.png", 32);
-							break;
-						default:
-							throw new IllegalArgumentException();
-					}
+                    ImageView icon = switch (mode) {
+                        case confirmation -> ResourceManagerFX.getIconAsImageView("dialog/dialog-confirmation.png", 32);
+                        case warning -> ResourceManagerFX.getIconAsImageView("dialog/dialog-warning.png", 32);
+                        case information -> ResourceManagerFX.getIconAsImageView("dialog/dialog-information.png", 32);
+                        case error -> ResourceManagerFX.getIconAsImageView("dialog/dialog-error.png", 32);
+                        default -> throw new IllegalArgumentException();
+                    };
 					mainPanel.setPadding(new Insets(1, 5, 1, 5));
 					mainPanel.setLeft(new StackPane(icon));
 				}
@@ -299,18 +289,10 @@ public class NotificationManager {
 
         if (!isShowNotifications() || isEchoToConsole()) {
             switch (mode) {
-				case information:
-					System.err.print("Info: ");
-					break;
-				case error:
-					System.err.print("Error: ");
-					break;
-				case warning:
-					System.err.print("Warning: ");
-					break;
-				case confirmation:
-					System.err.print("Confirmed: ");
-					break;
+                case information -> System.err.print("Info: ");
+                case error -> System.err.print("Error: ");
+                case warning -> System.err.print("Warning: ");
+                case confirmation -> System.err.print("Confirmed: ");
 			}
             System.err.println(message);
         }

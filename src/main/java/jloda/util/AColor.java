@@ -737,7 +737,7 @@ public class AColor {
 	 * @return color or null
 	 */
 	public static AColor parseColor(String name) {
-		if (table.size() == 0)
+		if (table.isEmpty())
 			init();
 		return table.get(name.toLowerCase());
 	}

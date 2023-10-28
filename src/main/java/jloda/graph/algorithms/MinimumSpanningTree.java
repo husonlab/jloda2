@@ -47,26 +47,27 @@ public class MinimumSpanningTree {
         }
         edges.sort(Comparator.comparingDouble(Pair::getFirst));
 
-        var component = graph.newNodeIntArray();
-        int count = 0;
-        for (var v : graph.nodes()) {
-            component.put(v, ++count);
-        }
+        try (var component = graph.newNodeIntArray()) {
+            int count = 0;
+            for (var v : graph.nodes()) {
+                component.put(v, ++count);
+            }
 
-        var result = graph.newEdgeSet();
-        for (Pair<Double, Edge> pair : edges) {
-            var e = pair.getSecond();
-            final int oldComponent = component.get(e.getSource());
-            final int newComponent = component.get(e.getTarget());
+            var result = graph.newEdgeSet();
+            for (Pair<Double, Edge> pair : edges) {
+                var e = pair.getSecond();
+                final int oldComponent = component.get(e.getSource());
+                final int newComponent = component.get(e.getTarget());
 
-            if (oldComponent != newComponent) {
-                result.add(e);
-                for (var v : graph.nodes()) {
-                    if (component.get(v) == oldComponent)
-                        component.put(v, newComponent);
+                if (oldComponent != newComponent) {
+                    result.add(e);
+                    for (var v : graph.nodes()) {
+                        if (component.get(v) == oldComponent)
+                            component.put(v, newComponent);
+                    }
                 }
             }
+            return result;
         }
-        return result;
     }
 }

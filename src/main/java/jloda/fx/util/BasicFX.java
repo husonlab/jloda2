@@ -101,7 +101,7 @@ public class BasicFX {
         final var all = new ArrayList<T>();
         final var queue = new LinkedList<Node>();
         queue.add(node);
-        while (queue.size() > 0) {
+        while (!queue.isEmpty()) {
             node = queue.pop();
             if (clazz.isAssignableFrom(node.getClass()))
                 all.add((T) node);
@@ -119,7 +119,7 @@ public class BasicFX {
     public static <T extends Node> T findOneRecursively(Node node, Class<T> clazz) {
         final var queue = new LinkedList<Node>();
         queue.add(node);
-        while (queue.size() > 0) {
+        while (!queue.isEmpty()) {
             node = queue.pop();
             if (clazz.isAssignableFrom(node.getClass()))
                 return (T) node;
@@ -158,7 +158,7 @@ public class BasicFX {
     public static Collection<? extends Node> getAllChildrenRecursively(Collection<Node> children) {
         final var all = new ArrayList<Node>();
         final var list = new LinkedList<>(children);
-        while (list.size() > 0) {
+        while (!list.isEmpty()) {
             final var node = list.remove();
             all.add(node);
             if (node instanceof Parent) {
@@ -173,7 +173,7 @@ public class BasicFX {
         var all = new ArrayList<Node>();
         var queue = new LinkedList<Node>();
         queue.add(root);
-        while (queue.size() > 0) {
+        while (!queue.isEmpty()) {
             var node = queue.pop();
             if (condition.apply(node))
                 all.add(node);
@@ -434,7 +434,7 @@ public class BasicFX {
     public static void preorderTraversal(Node node, Consumer<Node> apply) {
         final var queue = new LinkedList<Node>();
         queue.add(node);
-        while (queue.size() > 0) {
+        while (!queue.isEmpty()) {
             node = queue.pop();
             apply.accept(node);
             if (node instanceof Parent) {
@@ -489,7 +489,7 @@ public class BasicFX {
 
     public static void applyToAllMenus(MenuBar menuBar, Function<Menu, Boolean> accept, Consumer<Menu> callback) {
         var queue = new LinkedList<>(menuBar.getMenus());
-        while (queue.size() > 0) {
+        while (!queue.isEmpty()) {
             var menu = queue.pop();
             if (accept.apply(menu))
                 callback.accept(menu);

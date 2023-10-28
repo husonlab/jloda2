@@ -70,7 +70,7 @@ public class DPoint implements FastMultiLayerMethodLayout.Point {
     public static DPoint computeBarycenter(Collection<DPoint> list) {
         var x = 0.0;
         var y = 0.0;
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             for (var p : list) {
                 x += p.getX();
                 y += p.getY();

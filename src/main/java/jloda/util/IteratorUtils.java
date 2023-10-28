@@ -202,7 +202,7 @@ public class IteratorUtils {
 	}
 
 	public static <T> Iterable<T> reverseIterator(ArrayList<T> list) {
-		return () -> new Iterator<T>() {
+		return () -> new Iterator<>() {
 			private int pos = list.size();
 
 			@Override
@@ -359,7 +359,7 @@ public class IteratorUtils {
 	}
 
 	public static <T> Iterable<T> withAdditionalItems(Iterable<T> iterable, T... additional) {
-		return () -> new Iterator<T>() {
+		return () -> new Iterator<>() {
 			private final Iterator<T> it = iterable.iterator();
 			private int pos = 0;
 

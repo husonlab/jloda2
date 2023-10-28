@@ -97,10 +97,10 @@ public class AMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
                     }
                     if (!getListenersSuspended()) {
                         canSelectAll.set(AMultipleSelectionModel.this.items.length > 0 && selectedItems.size() < AMultipleSelectionModel.this.items.length);
-                        canSelectNone.set(AMultipleSelectionModel.this.items.length > 0 && selectedItems.size() > 0);
+                        canSelectNone.set(AMultipleSelectionModel.this.items.length > 0 && !selectedItems.isEmpty());
                     }
                 }
-                setSelectedItem(selectedItems.size() == 0 ? null : selectedItems.get(0));
+                setSelectedItem(selectedItems.isEmpty() ? null : selectedItems.get(0));
             } catch (Exception ex) {
                 Basic.caught(ex);
             }
@@ -150,7 +150,7 @@ public class AMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
                             if (selection.get(i) && selectedIndicesBits.get(i))
                                 set.add(i);
                         }
-                        if (set.size() > 0) {
+                        if (!set.isEmpty()) {
                             selectedIndicesBits.andNot(selection);
                             for (Integer item : set)
                                 selectedIndicesList.remove(item);
@@ -166,7 +166,7 @@ public class AMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
                             if (selection.get(i) && !selectedIndicesBits.get(i))
                                 set.add(i);
                         }
-                        if (set.size() > 0) {
+                        if (!set.isEmpty()) {
                             selectedIndicesBits.or(selection);
                             selectedIndicesList.addAll(set);
                         }

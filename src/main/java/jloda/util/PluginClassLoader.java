@@ -67,7 +67,7 @@ public class PluginClassLoader {
 
         final var plugins = new LinkedList<C>();
         final var packageNameQueue = new LinkedList<>(Arrays.asList(packageNames));
-        while (packageNameQueue.size() > 0) {
+		while (!packageNameQueue.isEmpty()) {
             try {
                 final var packageName = packageNameQueue.removeFirst();
                 final var resources = ResourceUtils.fetchResources(clazz1, packageName);

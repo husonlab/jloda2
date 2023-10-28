@@ -471,7 +471,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 	 * @return true, if leaf in LSA tree
 	 */
 	public boolean isLsaLeaf(Node v) {
-		return v.isLeaf() || lsaChildrenMap != null && lsaChildrenMap.get(v) != null && lsaChildrenMap.get(v).size() == 0;
+		return v.isLeaf() || lsaChildrenMap != null && lsaChildrenMap.get(v) != null && lsaChildrenMap.get(v).isEmpty();
 	}
 
 	/**
@@ -663,7 +663,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 	}
 
 	public boolean hasReticulateEdges() {
-		return reticulateEdges != null && reticulateEdges.size() > 0;
+		return reticulateEdges != null && !reticulateEdges.isEmpty();
 	}
 
 	/**
@@ -699,7 +699,7 @@ public class PhyloTree extends PhyloSplitsGraph {
 	}
 
 	public boolean hasTransferAcceptorEdges() {
-		return transferAcceptorEdges != null && transferAcceptorEdges.size() > 0;
+		return transferAcceptorEdges != null && !transferAcceptorEdges.isEmpty();
 	}
 
 	/**

@@ -63,7 +63,7 @@ public class ColorScalePane extends Pane {
      * set the color scale for an ordinal scale
      */
     public void setColorScale(String title, double leftValue, double rightValue, boolean reverse, ObservableList<Color> colors) {
-        if (colors.size() > 0) {
+        if (!colors.isEmpty()) {
 			getChildren().setAll(root);
 			setTitleText(title != null ? title + ":" : "");
 			setLeftText(StringUtils.removeTrailingZerosAfterDot(String.format("%,.2f", leftValue)));
@@ -90,7 +90,7 @@ public class ColorScalePane extends Pane {
      * set the color scale for a nominal scale
      */
     public void setColorScale(String title, ObservableList<Color> colors, double opacity) {
-        if (colors.size() > 0) {
+        if (!colors.isEmpty()) {
             getChildren().setAll(root);
             setTitleText(title != null ? title + ":" : "");
             setLeftText("");

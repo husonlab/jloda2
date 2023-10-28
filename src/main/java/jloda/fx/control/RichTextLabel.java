@@ -359,7 +359,7 @@ public class RichTextLabel extends TextFlow {
         if (getGraphic() != null && (getContentDisplay() != ContentDisplay.TOP || getContentDisplay() != ContentDisplay.LEFT))
             getChildren().add(getGraphic());
 
-        if (workingText.length() > 0 && getContentDisplay() != ContentDisplay.GRAPHIC_ONLY) {
+        if (!workingText.isEmpty() && getContentDisplay() != ContentDisplay.GRAPHIC_ONLY) {
             final ArrayList<Event> events = new ArrayList<>();
             {
                 final var event = Event.getEventAtPos(workingText, 0);
@@ -460,7 +460,7 @@ public class RichTextLabel extends TextFlow {
                             currentFont = Font.font(family, currentFont.getSize());
                         }
                     } else {
-                        if (fontStack.size() > 0)
+                        if (!fontStack.isEmpty())
                             currentFont = fontStack.pop();
                     }
                 }
@@ -471,7 +471,7 @@ public class RichTextLabel extends TextFlow {
                             fontSizeStack.push(currentFont.getSize());
                             fontSize = NumberUtils.parseDouble(argument);
                         }
-                    } else if (fontSizeStack.size() > 0) {
+                    } else if (!fontSizeStack.isEmpty()) {
                         fontSize = fontSizeStack.pop();
                     }
                 }
@@ -487,7 +487,7 @@ public class RichTextLabel extends TextFlow {
                             }
                         }
                     } else {
-                        if (colorStack.size() > 0)
+                        if (!colorStack.isEmpty())
                             textFill = colorStack.pop();
                     }
                 }
@@ -552,7 +552,7 @@ public class RichTextLabel extends TextFlow {
         if (getGraphic() != null && (getContentDisplay() != ContentDisplay.BOTTOM || getContentDisplay() != ContentDisplay.RIGHT))
             getChildren().add(getGraphic());
 
-        if (getChildren().size() == 0)
+        if (getChildren().isEmpty())
             getChildren().add(new Text(" ")); // don't want this to be empty
         if (false)
             Platform.runLater(this::requestLayout);
@@ -639,7 +639,7 @@ public class RichTextLabel extends TextFlow {
                     value = value.substring(0, value.length() - 3);
                 if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2)
                     value = value.substring(1, value.length() - 1);
-                if (key.length() > 0)
+                if (!key.isEmpty())
                     map.put(key, value);
             }
         }

@@ -58,7 +58,7 @@ public class CompositeCommand extends UndoableRedoableCommand {
         if (notUndoable.isPresent())
             return false;
         else
-            return commands.size() > 0;
+            return !commands.isEmpty();
     }
 
     @Override
@@ -67,6 +67,6 @@ public class CompositeCommand extends UndoableRedoableCommand {
         if (notRedoable.isPresent())
             return false;
         else
-            return commands.size() > 0;
+            return !commands.isEmpty();
     }
 }

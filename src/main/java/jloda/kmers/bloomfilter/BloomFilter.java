@@ -81,7 +81,7 @@ public class BloomFilter {
         if (useMaxNumberOfBytes(expectedNumberOfItems, falsePositiveProbability, maxNumberOfBytes)) {
             this.bitsPerItem = Math.min(128, (int) Math.ceil((8d * maxNumberOfBytes) / expectedNumberOfItems));
             this.numberOfHashFunctions = (int) Math.ceil(bitsPerItem * Math.log(2));
-            this.totalBits = ceilingPowerOf2((long) Math.ceil(expectedNumberOfItems * bitsPerItem));
+            this.totalBits = ceilingPowerOf2((long) expectedNumberOfItems * bitsPerItem);
             this.hashBits = totalBits - 1;
             this.bitSet = new LongBitSet(totalBits);
         } else {
@@ -90,7 +90,7 @@ public class BloomFilter {
                 falsePositiveProbability = 0.0001;
             }
             this.bitsPerItem = (int) Math.ceil(-Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2))); // m/n = -(log_2(p)/ln(2)) = -(ln(p)/(ln(2)*ln(2))
-            this.totalBits = ceilingPowerOf2((long) Math.ceil(expectedNumberOfItems * bitsPerItem));
+            this.totalBits = ceilingPowerOf2((long) expectedNumberOfItems * bitsPerItem);
             this.numberOfHashFunctions = (int) (Math.ceil(-Math.log(falsePositiveProbability) / Math.log(2))); //  k = -ln(p)/(ln(2)
             this.hashBits = totalBits - 1;
             this.bitSet = new LongBitSet(totalBits);

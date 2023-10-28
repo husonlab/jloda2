@@ -297,7 +297,7 @@ public class ResourceManagerFX {
      * does the named file exist as a resource or file?
      */
     public static boolean fileExists(String name) {
-        if (name == null || name.length() == 0)
+        if (name == null || name.isEmpty())
             return false;
 
         try (var ins = getFileAsStream(name)) {
@@ -311,7 +311,7 @@ public class ResourceManagerFX {
      * does the named file exist as a resource ?
      */
     public static boolean fileResourceExists(Class<?> clazz, String packageName, String name) {
-        if (name == null || name.length() == 0)
+        if (name == null || name.isEmpty())
             return false;
 
         try (var ins = getFileResourceAsStream(clazz, packageName, name)) {

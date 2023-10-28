@@ -141,7 +141,7 @@ public class FastMultiLayerMethodLayout {
 
             if (options.getNumberOfChainSmoothingRounds() > 0)
                 smooth(options, multiLevelGraph[level], multiLevelNodeAttributes[level]);
-            if (true && options.getStepsForRotatingComponents() > 0)
+            if (options.getStepsForRotatingComponents() > 0)
                 RotateLayout.apply(options, graph, nodeAttributes);
         }
     }
@@ -339,27 +339,28 @@ public class FastMultiLayerMethodLayout {
     private static void smooth(FastMultiLayerMethodOptions options, Graph graph, NodeArray<NodeAttributes> nodeAttributes) {
         var diNodes = new ArrayList<Node>();
         graph.nodeStream().filter(v -> v.getDegree() == 2).forEach(diNodes::add);
-        if (diNodes.size() > 0) {
+        if (!diNodes.isEmpty()) {
             var bbox = DRect.computeBBox(nodeAttributes.values());
             for (var i = 0; i < options.getNumberRandomTries(); i++) {
-                var angles = graph.newNodeDoubleArray();
-                for (var v : diNodes) {
-                    var u = v.getFirstAdjacentEdge().getOpposite(v);
-                    var w = v.getLastAdjacentEdge().getOpposite(v);
-                    angles.put(v, DPoint.angle(nodeAttributes.get(u).getPosition(), nodeAttributes.get(v).getPosition(), nodeAttributes.get(w).getPosition()));
-                }
-                diNodes.sort((v, w) -> Double.compare(Math.abs(Math.PI - angles.get(w)), Math.abs(Math.PI - angles.get(v))));
-                if (Math.abs(Math.PI - angles.get(diNodes.get(0))) < 0.1)
-                    break;
-                for (var v : diNodes) {
+                try (var angles = graph.newNodeDoubleArray()) {
+                    for (var v : diNodes) {
+                        var u = v.getFirstAdjacentEdge().getOpposite(v);
+                        var w = v.getLastAdjacentEdge().getOpposite(v);
+                        angles.put(v, DPoint.angle(nodeAttributes.get(u).getPosition(), nodeAttributes.get(v).getPosition(), nodeAttributes.get(w).getPosition()));
+                    }
+                    diNodes.sort((v, w) -> Double.compare(Math.abs(Math.PI - angles.get(w)), Math.abs(Math.PI - angles.get(v))));
                     if (Math.abs(Math.PI - angles.get(diNodes.get(0))) < 0.1)
                         break;
-                    var u = v.getFirstAdjacentEdge().getOpposite(v);
-                    var w = v.getLastAdjacentEdge().getOpposite(v);
-                    // set to midpoint between (midpoint between u and w), and v
-                    nodeAttributes.get(v).setPosition(nodeAttributes.get(u).getPosition().add(nodeAttributes.get(w).getPosition()).scaleBy(0.5).add(nodeAttributes.get(v).getPosition()).scaleBy(0.5));
+                    for (var v : diNodes) {
+                        if (Math.abs(Math.PI - angles.get(diNodes.get(0))) < 0.1)
+                            break;
+                        var u = v.getFirstAdjacentEdge().getOpposite(v);
+                        var w = v.getLastAdjacentEdge().getOpposite(v);
+                        // set to midpoint between (midpoint between u and w), and v
+                        nodeAttributes.get(v).setPosition(nodeAttributes.get(u).getPosition().add(nodeAttributes.get(w).getPosition()).scaleBy(0.5).add(nodeAttributes.get(v).getPosition()).scaleBy(0.5));
+                    }
+                    DRect.fitToBox(nodeAttributes.values(), bbox);
                 }
-                DRect.fitToBox(nodeAttributes.values(), bbox);
             }
         }
     }
@@ -501,12 +502,9 @@ public class FastMultiLayerMethodLayout {
                 break;
              */
         switch (options.getRepulsiveForcesCalculation()) {
-            case Exact:
-                FruchtermanReingold.calculateExactRepulsiveForces(graph, nodeAttributes, force);
-                break;
-            case GridApproximation:
-                FruchtermanReingold.calculateApproxRepulsiveForces(options, graph, layoutBox, nodeAttributes, force);
-                break;
+            case Exact -> FruchtermanReingold.calculateExactRepulsiveForces(graph, nodeAttributes, force);
+            case GridApproximation ->
+                    FruchtermanReingold.calculateApproxRepulsiveForces(options, graph, layoutBox, nodeAttributes, force);
         }
     }
 
@@ -682,25 +680,22 @@ public class FastMultiLayerMethodLayout {
     private static double attractionScalar(FastMultiLayerMethodOptions options, double d, double ind_ideal_edge_length) {
         double s;
         switch (options.getForceModel()) {/* includes  FruchtermanReingold */
-            default: {
+            default -> {
                 s = d * d / (ind_ideal_edge_length * ind_ideal_edge_length * ind_ideal_edge_length);
-                break;
             }
-            case Eades: {
+            case Eades -> {
                 double c = 10;
                 if (d == 0)
                     s = -1e10;
                 else
                     s = c * Math.log(d / ind_ideal_edge_length) / (Math.log(2) * ind_ideal_edge_length);
-                break;
             }
-            case New: {
+            case New -> {
                 double c = Math.log(d / ind_ideal_edge_length) / Math.log(2);
                 if (d > 0)
                     s = c * d * d / (ind_ideal_edge_length * ind_ideal_edge_length * ind_ideal_edge_length);
                 else
                     s = -1e10;
-                break;
             }
         }
         return s;

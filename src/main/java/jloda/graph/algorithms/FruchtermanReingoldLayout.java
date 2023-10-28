@@ -111,58 +111,59 @@ public class FruchtermanReingoldLayout {
      * initialize
      */
     private void initialize(NodeSet fixedNodes, NodeArray<APoint2D<?>> node2start) {
-        var node2id = graph.newNodeIntArray();
-        for (int v = 0; v < nodes.length; v++) {
-            node2id.put(nodes[v], v);
-            if (fixedNodes != null && fixedNodes.contains(nodes[v]))
-                fixed.set(v);
-        }
-        {
-            int eId = 0;
-            for (var e : graph.edges()) {
-                edges[0][eId] = node2id.get(e.getSource());
-                edges[1][eId] = node2id.get(e.getTarget());
-                eId++;
+        try (var node2id = graph.newNodeIntArray()) {
+            for (int v = 0; v < nodes.length; v++) {
+                node2id.put(nodes[v], v);
+                if (fixedNodes != null && fixedNodes.contains(nodes[v]))
+                    fixed.set(v);
             }
-        }
-
-        if (graph.getNumberOfNodes() > 0) {
-            if (node2start != null) {
-                for (var v : graph.nodes()) {
-                    final int id = node2id.get(v);
-                    coordinates[0][id] = (float) node2start.get(v).getX();
-                    coordinates[1][id] = (float) node2start.get(v).getY();
+            {
+                int eId = 0;
+                for (var e : graph.edges()) {
+                    edges[0][eId] = node2id.get(e.getSource());
+                    edges[1][eId] = node2id.get(e.getTarget());
+                    eId++;
                 }
-            } else {
-                final NodeSet seen = graph.newNodeSet();
-                final Stack<Node> stack = new Stack<>();
-                int count = 0;
-                for (var v : graph.nodes()) {
-                    if (!seen.contains(v)) {
-                        seen.add(v);
-                        stack.push(v);
-                        while (stack.size() > 0) {
-                            final Node w = stack.pop();
-                            final int id = node2id.get(w);
-                            coordinates[0][id] = (float) (100 * Math.sin(2 * Math.PI * count / nodes.length));
-                            coordinates[1][id] = (float) (100 * Math.cos(2 * Math.PI * count / nodes.length));
-                            count++;
-                            for (var e : w.adjacentEdges()) {
-                                Node u = e.getOpposite(w);
-                                if (!seen.contains(u)) {
-                                    seen.add(u);
-                                    stack.push(u);
+            }
+
+            if (graph.getNumberOfNodes() > 0) {
+                if (node2start != null) {
+                    for (var v : graph.nodes()) {
+                        final int id = node2id.get(v);
+                        coordinates[0][id] = (float) node2start.get(v).getX();
+                        coordinates[1][id] = (float) node2start.get(v).getY();
+                    }
+                } else {
+                    final NodeSet seen = graph.newNodeSet();
+                    final Stack<Node> stack = new Stack<>();
+                    int count = 0;
+                    for (var v : graph.nodes()) {
+                        if (!seen.contains(v)) {
+                            seen.add(v);
+                            stack.push(v);
+                            while (!stack.isEmpty()) {
+                                final Node w = stack.pop();
+                                final int id = node2id.get(w);
+                                coordinates[0][id] = (float) (100 * Math.sin(2 * Math.PI * count / nodes.length));
+                                coordinates[1][id] = (float) (100 * Math.cos(2 * Math.PI * count / nodes.length));
+                                count++;
+                                for (var e : w.adjacentEdges()) {
+                                    Node u = e.getOpposite(w);
+                                    if (!seen.contains(u)) {
+                                        seen.add(u);
+                                        stack.push(u);
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
 
-        speed = 1;
-        area = 600;
-        gravity = 5;
+            speed = 1;
+            area = 600;
+            gravity = 5;
+        }
     }
 
     /**
@@ -357,13 +358,13 @@ public class FruchtermanReingoldLayout {
                 service.submit(() -> {
                     try {
                         for (int v = thread; v < nodes.length; v += threads) {
-                            double xDist = forceDelta[0][v]* speed / SPEED_DIVISOR;
-                            double yDist = forceDelta[1][v]* speed / SPEED_DIVISOR;
-                            float dist = (float) Math.sqrt(xDist * xDist + yDist * yDist);
+                            var xDist = forceDelta[0][v] * speed / SPEED_DIVISOR;
+                            var yDist = forceDelta[1][v] * speed / SPEED_DIVISOR;
+                            var dist = Math.sqrt(xDist * xDist + yDist * yDist);
                             if (dist > 0 && !fixed.get(v)) {
-                                float limitedDist = Math.min(maxDisplace * ((float) speed / SPEED_DIVISOR), dist);
-                                coordinates[0][v] += xDist / dist * limitedDist;
-                                coordinates[1][v] += yDist / dist * limitedDist;
+                                var limitedDist = Math.min(maxDisplace * ((float) speed / SPEED_DIVISOR), dist);
+                                coordinates[0][v] += (float) (xDist / dist * limitedDist);
+                                coordinates[1][v] += (float) (yDist / dist * limitedDist);
                             }
                         }
                     } finally {

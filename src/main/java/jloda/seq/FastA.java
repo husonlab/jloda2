@@ -162,11 +162,11 @@ public class FastA {
 
         while (aLine != null) {
             aLine = aLine.trim();
-            if (aLine.length() > 0) {
+			if (!aLine.isEmpty()) {
 
                 if (aLine.charAt(0) == '>') // new fasta header
                 {
-                    if (header.length() > 0) {
+					if (!header.isEmpty()) {
                         add(header, sequence.toString());
                     }
                     header = aLine.substring(1).trim();
@@ -176,7 +176,7 @@ public class FastA {
             }
             aLine = br.readLine();
         }
-        if (header.length() > 0) {
+		if (!header.isEmpty()) {
             add(header, sequence.toString());
         }
     }

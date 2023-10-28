@@ -131,7 +131,7 @@ public class CollectionUtils {
 	 */
 	public static <T> List<T> rotateList(Collection<T> list) {
 		final var result = new LinkedList<T>();
-		if (list.size() > 0) {
+		if (!list.isEmpty()) {
 			result.addAll(list);
 			result.add(result.remove(0));
 		}
@@ -171,7 +171,7 @@ public class CollectionUtils {
 	 * @return sum
 	 */
 	public static float getSum(float[] values) {
-		var sum = 0;
+		var sum = 0f;
 		for (var value : values) {
 			sum += value;
 		}
@@ -226,7 +226,7 @@ public class CollectionUtils {
 	}
 
 	public static <T> boolean intersects(Collection<T> a, Collection<T> b) {
-		if (a.size() == 0 || b.size() == 0)
+		if (a.isEmpty() || b.isEmpty())
 			return false;
 		for (T element : a) {
 			if (b.contains(element))

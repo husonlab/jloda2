@@ -142,7 +142,7 @@ public class FlowView<T> extends Pane {
 			for (T item : items) {
 				var itemWidth = widthSupplier.apply(item);
 				if (itemWidth == -1.0) { // item to be placed on line of its own
-					if (row.size() > 0) {
+					if (!row.isEmpty()) {
 						var rowRef = row;
 						Platform.runLater(() -> listView.getItems().add(rowRef));
 						row = new ArrayList<>();
@@ -153,7 +153,7 @@ public class FlowView<T> extends Pane {
 					});
 					width = 5d;
 				} else {
-					if (row.size() > 0 && width + getHgap() + 5 + itemWidth >= listView.getWidth() - 20) {
+					if (!row.isEmpty() && width + getHgap() + 5 + itemWidth >= listView.getWidth() - 20) {
 						var rowRef = row;
 						Platform.runLater(() -> listView.getItems().add(rowRef));
 						row = new ArrayList<>();
@@ -163,7 +163,7 @@ public class FlowView<T> extends Pane {
 					width += getHgap() + 5 + itemWidth;
 				}
 			}
-			if (row.size() > 0) {
+			if (!row.isEmpty()) {
 				var rowRef = row;
 				Platform.runLater(() -> listView.getItems().add(rowRef));
 			}

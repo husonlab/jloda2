@@ -31,55 +31,56 @@ import jloda.graph.fmm.algorithm.NodeAttributes;
  */
 public class RotateLayout {
     public static void apply(FastMultiLayerMethodOptions options, Graph graph, NodeArray<NodeAttributes> nodeAttributes) {
-        NodeArray<DPoint> bestCoordinates = graph.newNodeArray();
-        NodeArray<DPoint> originalCoordinates = graph.newNodeArray();
+        try (NodeArray<DPoint> bestCoordinates = graph.newNodeArray();
+             NodeArray<DPoint> originalCoordinates = graph.newNodeArray()) {
 
-        for (var v : graph.nodes()) {
-            var pos = nodeAttributes.get(v).getPosition();
-            originalCoordinates.put(v, pos);
-            bestCoordinates.put(v, pos);
-        }
-
-        // find the best
-        var r_best = DRect.computeBBox(nodeAttributes.values());
-        var best_area = r_best.getArea();
-
-        for (var j = 0; j <= options.getStepsForRotatingComponents(); j++) {
-            //calculate new positions for the nodes, the new rectangle and area
-            var angle = 0.5 * Math.PI * (double) j / (double) (options.getStepsForRotatingComponents() + 1) - 0.25 * Math.PI;
-            var sin_j = Math.sin(angle);
-            var cos_j = Math.cos(angle);
             for (var v : graph.nodes()) {
-                var old = originalCoordinates.get(v);
-                var newPos = new DPoint(cos_j * old.getX() - sin_j * old.getY(), sin_j * old.getX() + cos_j * old.getY());
-                nodeAttributes.get(v).setPosition(newPos);
+                var pos = nodeAttributes.get(v).getPosition();
+                originalCoordinates.put(v, pos);
+                bestCoordinates.put(v, pos);
             }
 
-            var r_act = DRect.computeBBox(nodeAttributes.values());
-            var act_area = r_act.getArea();
+            // find the best
+            var r_best = DRect.computeBBox(nodeAttributes.values());
+            var best_area = r_best.getArea();
 
-            //store placement of the nodes with minimal area
-            if (act_area < best_area) {
-                r_best = r_act;
-                best_area = act_area;
+            for (var j = 0; j <= options.getStepsForRotatingComponents(); j++) {
+                //calculate new positions for the nodes, the new rectangle and area
+                var angle = 0.5 * Math.PI * (double) j / (double) (options.getStepsForRotatingComponents() + 1) - 0.25 * Math.PI;
+                var sin_j = Math.sin(angle);
+                var cos_j = Math.cos(angle);
                 for (var v : graph.nodes()) {
-                    bestCoordinates.put(v, nodeAttributes.get(v).getPosition());
+                    var old = originalCoordinates.get(v);
+                    var newPos = new DPoint(cos_j * old.getX() - sin_j * old.getY(), sin_j * old.getX() + cos_j * old.getY());
+                    nodeAttributes.get(v).setPosition(newPos);
+                }
+
+                var r_act = DRect.computeBBox(nodeAttributes.values());
+                var act_area = r_act.getArea();
+
+                //store placement of the nodes with minimal area
+                if (act_area < best_area) {
+                    r_best = r_act;
+                    best_area = act_area;
+                    for (var v : graph.nodes()) {
+                        bestCoordinates.put(v, nodeAttributes.get(v).getPosition());
+                    }
                 }
             }
-        }
 
-        // If a component is taller than it is wide, rotate it 90 degrees.
-        var ratio = r_best.getWidth() / r_best.getHeight();
-        if (ratio < 1) {
-            for (var v : graph.nodes()) {
-                var best = bestCoordinates.get(v);
-                bestCoordinates.put(v, new DPoint(-best.getY(), best.getX()));
+            // If a component is taller than it is wide, rotate it 90 degrees.
+            var ratio = r_best.getWidth() / r_best.getHeight();
+            if (ratio < 1) {
+                for (var v : graph.nodes()) {
+                    var best = bestCoordinates.get(v);
+                    bestCoordinates.put(v, new DPoint(-best.getY(), best.getX()));
+                }
             }
-        }
 
-        //save the computed information
-        for (var v : graph.nodes()) {
-            nodeAttributes.get(v).setPosition(bestCoordinates.get(v));
+            //save the computed information
+            for (var v : graph.nodes()) {
+                nodeAttributes.get(v).setPosition(bestCoordinates.get(v));
+            }
         }
     }
 }

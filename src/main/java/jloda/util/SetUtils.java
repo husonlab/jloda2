@@ -77,49 +77,49 @@ public class SetUtils {
      * @return intersection
      */
     public static <T> Iterable<T> union(final Collection<T>... sets) {
-        return () -> new Iterator<T>() {
-            int which = 0;
-            Iterator<T> it = sets.length == 0 ? null : sets[0].iterator();
-            final Set<T> seen = new HashSet<T>();
-            T next = null;
+		return () -> new Iterator<>() {
+			int which = 0;
+			Iterator<T> it = sets.length == 0 ? null : sets[0].iterator();
+			final Set<T> seen = new HashSet<>();
+			T next = null;
 
-            {
-                if (it != null) {
-                    while (which < sets.length && !it.hasNext()) {
-                        it = sets[which++].iterator();
-                    }
-                    if (it.hasNext())
-                        next = it.next();
-                }
-            }
+			{
+				if (it != null) {
+					while (which < sets.length && !it.hasNext()) {
+						it = sets[which++].iterator();
+					}
+					if (it.hasNext())
+						next = it.next();
+				}
+			}
 
-            @Override
-            public boolean hasNext() {
-                return next != null;
-            }
+			@Override
+			public boolean hasNext() {
+				return next != null;
+			}
 
-            @Override
-            public T next() {
-                var result = next;
+			@Override
+			public T next() {
+				var result = next;
 
-                if (result != null) {
-                    next = null;
-                    while (next == null) {
-                        if (it.hasNext()) {
-                            var another = it.next();
-                            if (!seen.contains(another)) {
-                                seen.add(another);
-                                next = another;
-                            }
-                        } else if (which < sets.length) {
-                            it = sets[which++].iterator();
-                        } else
-                            break;
-                    }
-                }
-                return result;
-            }
-        };
+				if (result != null) {
+					next = null;
+					while (next == null) {
+						if (it.hasNext()) {
+							var another = it.next();
+							if (!seen.contains(another)) {
+								seen.add(another);
+								next = another;
+							}
+						} else if (which < sets.length) {
+							it = sets[which++].iterator();
+						} else
+							break;
+					}
+				}
+				return result;
+			}
+		};
     }
 
     /**

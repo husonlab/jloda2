@@ -122,7 +122,7 @@ public class Table<R, C, V> {
      *
 	 */
     public boolean equals(Object obj) {
-        return (obj instanceof Table) && dataMap.equals(obj);
+		return (obj instanceof Table) && dataMap.equals(((Table) obj).dataMap);
     }
 
     /**
@@ -261,16 +261,17 @@ public class Table<R, C, V> {
     /**
      * remove a given column
      */
-    public void removeColumn(C columnKey) {
+	public boolean removeColumn(C columnKey) {
         var changed = false;
         for (var rowKey : column(columnKey).keySet()) {
             remove(rowKey, columnKey);
             changed = true;
 		}
+		return changed;
     }
 
 	public boolean removeRow(R rowKey) {
-		var changed = row(rowKey).size() > 0;
+		var changed = !row(rowKey).isEmpty();
 		dataMap.remove(rowKey);
 		return changed;
 	}

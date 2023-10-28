@@ -42,7 +42,7 @@ public class SliderHistogramPresenter {
 					var barChart = controller.getValuesBarChart();
 					barChart.getData().clear();
 
-					if (values.size() > 0) {
+					if (!values.isEmpty()) {
 						var currentThreshold = controller.getThresholdSlider().getValue();
 
 						var series = new XYChart.Series<String, Number>();
@@ -70,7 +70,7 @@ public class SliderHistogramPresenter {
 								barChart.lookup(String.format(".data%d.chart-bar", i)).setStyle("-fx-bar-fill: gray;");
 							else {
 								firstActive = Math.min(firstActive, bucketMinValue);
-								countActive += count;
+								countActive += (int) Math.round(count);
 								barChart.lookup(String.format(".data%d.chart-bar", i)).setStyle("-fx-bar-fill: green;");
 							}
 						}

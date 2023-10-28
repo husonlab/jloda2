@@ -95,7 +95,7 @@ public class ConvexHull {
      *
 	 */
     private void hullSet(final APoint2D a, final APoint2D b, final ArrayList<APoint2D> set, final ArrayList<APoint2D> hull) {
-        if (set.size() == 0) return;
+        if (set.isEmpty()) return;
 
         if (set.size() == 1) {
             APoint2D p = set.get(0);

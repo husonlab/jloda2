@@ -59,10 +59,10 @@ public class EchoPrintStreamForTextArea extends PrintStream {
 
 		// will queue lines and print out sparingly
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-			if (lines.size() > 0) {
+			if (!lines.isEmpty()) {
 				Platform.runLater(() -> {
 					final long start = System.currentTimeMillis();
-					while (lines.size() > 0) {
+					while (!lines.isEmpty()) {
 						final var line = lines.remove();
 						ps.print(line);
 						Platform.runLater(() -> {

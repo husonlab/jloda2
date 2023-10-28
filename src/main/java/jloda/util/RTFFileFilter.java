@@ -82,7 +82,7 @@ public class RTFFileFilter implements FilenameFilter {
 						String aLine = it.next().replaceAll("\\{\\*?\\\\[^{}]+}|[{}]|\\\\\\n?[A-Za-z]+\\n?(?:-?\\d+)?[ ]?", "").replaceAll("\\\\", "").trim();
 						if (aLine.contains("Email:") && aLine.contains("mailto:"))
 							aLine = aLine.replaceAll(".*mailto:", "Email: ").replaceAll("\"", "").trim();
-						if (aLine.length() > 0)
+						if (!aLine.isEmpty())
 							lines.add(aLine);
 					}
 					return lines.toArray(new String[0]);

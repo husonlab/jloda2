@@ -139,17 +139,17 @@ public class FindToolBar extends VBox {
 
         // add entered stuff to list
         controller.getSearchComboBox().valueProperty().addListener((c, o, n) -> {
-            if (n != null && n.length() > 0) {
+            if (n != null && !n.isEmpty()) {
                 ArrayList<String> toDelete = new ArrayList<>();
                 for (String item : controller.getSearchComboBox().getItems()) {
-                    if (item != null && item.length() > 0) {
+                    if (item != null && !item.isEmpty()) {
                         if (n.equals(item))
                             return; // already present
                         if (n.startsWith(item))
                             toDelete.add(item);
                     }
                 }
-                if (toDelete.size() > 0)
+                if (!toDelete.isEmpty())
                     controller.getSearchComboBox().getItems().removeAll(toDelete);
                 controller.getSearchComboBox().getItems().add(0, n);
                 controller.getSearchComboBox().getSelectionModel().select(0);
@@ -158,17 +158,17 @@ public class FindToolBar extends VBox {
 
         // add entered stuff to list
         controller.getReplaceComboBox().valueProperty().addListener((c, o, n) -> {
-            if (n != null && n.length() > 0) {
+            if (n != null && !n.isEmpty()) {
                 ArrayList<String> toDelete = new ArrayList<>();
                 for (String item : controller.getReplaceComboBox().getItems()) {
-                    if (item != null && item.length() > 0) {
+                    if (item != null && !item.isEmpty()) {
                         if (n.equals(item))
                             return; // already present
                         if (n.startsWith(item))
                             toDelete.add(item);
                     }
                 }
-                if (toDelete.size() > 0)
+                if (!toDelete.isEmpty())
                     controller.getReplaceComboBox().getItems().removeAll(toDelete);
                 controller.getReplaceComboBox().getItems().add(0, n);
                 controller.getReplaceComboBox().getSelectionModel().select(0);
@@ -188,7 +188,7 @@ public class FindToolBar extends VBox {
 
         controller.getSearchComboBox().setOnAction(e -> {
             if (!inSearch.get()) {
-                if (searchManager.getSearchText().length() > 0) {
+                if (!searchManager.getSearchText().isEmpty()) {
                     try {
                         inSearch.set(true);
                         controller.getSearchComboBox().setValue(searchManager.getSearchText());
@@ -255,7 +255,7 @@ public class FindToolBar extends VBox {
                     try {
 						final List<String> terms = FileUtils.getLinesFromFile(selectedFile.getPath());
 						controller.getSearchComboBox().setValue(StringUtils.toString(terms.stream().map(String::trim)
-								.filter(line -> line.length() > 0 && !line.startsWith("#")).collect(Collectors.toSet()), "|"));
+                                .filter(line -> !line.isEmpty() && !line.startsWith("#")).collect(Collectors.toSet()), "|"));
 						controller.getRegExCheckBox().setSelected(true);
 					} catch (IOException e) {
                         NotificationManager.showWarning("File from file failed: " + e);
@@ -364,7 +364,7 @@ public class FindToolBar extends VBox {
      *
 	 */
     public void addSearcher(ISearcher other) {
-        if (searchers.size() == 0) {
+        if (searchers.isEmpty()) {
             final ISearcher searcher = searchManager.getSearcher();
             // make sure the current searcher is present:
             final ToggleButton searcherButton = new ToggleButton(searcher.getName());

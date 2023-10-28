@@ -54,10 +54,10 @@ public class ListViewTypeSearcher<T> {
 			}
 		};
 		listView.setOnKeyPressed(e -> {
-			if (e.getText().length() > 0) {
+			if (!e.getText().isEmpty()) {
 				clearService.restart();
 				searchString += e.getText().toLowerCase();
-				if (listView.getItems().size() > 0 && searchString.length() > 0) {
+				if (!listView.getItems().isEmpty() && !searchString.isEmpty()) {
 					if (index >= listView.getItems().size())
 						index = 0;
 
@@ -72,7 +72,7 @@ public class ListViewTypeSearcher<T> {
 					}
 				}
 			} else if (e.getCode() == KeyCode.BACK_SPACE) {
-				if (searchString.length() > 0) {
+				if (!searchString.isEmpty()) {
 					searchString = "";
 				} else {
 					listView.getSelectionModel().clearSelection();

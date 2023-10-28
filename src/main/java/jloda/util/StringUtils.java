@@ -465,7 +465,7 @@ public class StringUtils {
 		final var buf = new StringBuilder();
 
 		while (iterator.hasNext()) {
-			if (buf.length() > 0)
+			if (!buf.isEmpty())
 				buf.append(separator);
 			T next = iterator.next();
 			buf.append(next);
@@ -625,7 +625,7 @@ public class StringUtils {
 			String aLine;
 			while ((aLine = r.readLine()) != null) {
 				aLine = aLine.trim();
-				if (aLine.length() > 0) {
+				if (!aLine.isEmpty()) {
 					result.add(aLine);
 					if (result.size() >= maxCount)
 						break;
@@ -646,7 +646,7 @@ public class StringUtils {
 		for (T obj : list) {
 			if (obj instanceof String) {
 				String str = ((String) obj).trim();
-				if (str.length() > 0 && !str.startsWith("#"))
+				if (!str.isEmpty() && !str.startsWith("#"))
 					result.add((T) str);
 			} else
 				result.add(obj);
@@ -743,7 +743,7 @@ public class StringUtils {
 	 * @return capitalized word
 	 */
 	public static String capitalizeFirstLetter(String s) {
-		if (s.length() > 0 && Character.isLetter(s.charAt(0)) && Character.isLowerCase(s.charAt(0))) {
+		if (!s.isEmpty() && Character.isLetter(s.charAt(0)) && Character.isLowerCase(s.charAt(0))) {
 			return Character.toUpperCase(s.charAt(0)) + s.substring(1);
 		} else
 			return s;
@@ -874,7 +874,7 @@ public class StringUtils {
 	 * @return word (delimited by a white space) or empty string, if the last character is a white space
 	 */
 	public static String getLastWord(String text) {
-		if (text.length() == 0 || Character.isWhitespace(text.charAt(text.length() - 1)))
+		if (text.isEmpty() || Character.isWhitespace(text.charAt(text.length() - 1)))
 			return "";
 		for (var i = text.length() - 2; i >= 0; i--) {
 			if (Character.isWhitespace(text.charAt(i)))
@@ -991,7 +991,7 @@ public class StringUtils {
 	 * @return prefix
 	 */
 	public static String getCommonPrefix(List<String> names, String defaultPrefix) {
-		if (names.size() == 0)
+		if (names.isEmpty())
 			return "";
 		else if (names.size() == 1)
 			return FileUtils.getFileBaseName(names.get(0));
@@ -1161,7 +1161,7 @@ public class StringUtils {
 	 * @return word (delimited by a space)
 	 */
 	public static String getReadName(String aLine) {
-		if (aLine.length() == 0)
+		if (aLine.isEmpty())
 			return "";
 		int start;
 		if (aLine.charAt(0) == '@' || aLine.charAt(0) == '>')
@@ -1215,7 +1215,7 @@ public class StringUtils {
 	 */
 	public static String[] split(String aLine, char splitChar, int maxTokens, boolean skipEmptyTokens) {
 		aLine = aLine.trim();
-		if (aLine.length() == 0 || maxTokens <= 0)
+		if (aLine.isEmpty() || maxTokens <= 0)
 			return new String[0];
 
 		// need to ignore last position if it is the split character
@@ -1292,7 +1292,7 @@ public class StringUtils {
 	 * @return split string, trimmed
 	 */
 	public static String[] split(String aLine, char splitChar, char... splitChars) {
-		if (aLine.length() == 0)
+		if (aLine.isEmpty())
 			return new String[0];
 
 		int count = (aLine.charAt(aLine.length() - 1) == splitChar || contains(splitChars, aLine.charAt(aLine.length() - 1)) ? 0 : 1);
@@ -1319,7 +1319,7 @@ public class StringUtils {
 	}
 
 	public static boolean notBlank(String s) {
-		return s != null && s.trim().length() > 0;
+		return s != null && !s.trim().isEmpty();
 	}
 
 	public static boolean intersects(String a, String b) {
@@ -2032,7 +2032,7 @@ public class StringUtils {
 
 	public static boolean hasPositiveLengthValue(Map<?, String> map) {
 		for (String value : map.values()) {
-			if (value != null && value.length() > 0)
+			if (value != null && !value.isEmpty())
 				return true;
 		}
 		return false;
