@@ -328,7 +328,7 @@ public class ArgsOptions {
             command = arguments.remove(0);
             if (!CollectionUtils.contains(legalValues, command)) {
                 if (command.startsWith("-"))
-                    throw new UsageException("Command: " + (command.startsWith("-") ? "" : command + ": ") + "+must be one of: " + StringUtils.toString(legalValues, ", "));
+                    throw new UsageException("Command: " + (command.startsWith("-") ? "" : command + ": ") + "must be one of: " + StringUtils.toString(legalValues, ", "));
             }
 
             if (verbose)
