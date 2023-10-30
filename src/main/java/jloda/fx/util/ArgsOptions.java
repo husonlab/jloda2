@@ -606,7 +606,7 @@ public class ArgsOptions {
 
         if (!hide)
 			usage.add("\t" + shortKey + ", " + longKey + " [string]: " + description + ". " + (mandatory ? "Mandatory option." : defaultValueString)
-                      + (legalValues != null ? " Legal values: '" + StringUtils.toString(legalValues, "' ") + "'" : ""));
+                      + (legalValues != null ? " Legal values: '" + StringUtils.toString(legalValues, "' '") + "'" : ""));
 
         String result = defaultValue;
 
@@ -661,7 +661,7 @@ public class ArgsOptions {
 
         if (!hide)
 			usage.add("\t" + shortKey + ", " + longKey + " [string(s)]: " + description + ". " + (mandatory ? "Mandatory option." : defaultValueString)
-					  + (legalValues != null ? " Legal values: " + StringUtils.toString(legalValues, ", ") : ""));
+					  + (legalValues != null ? " Legal values: '" + StringUtils.toString(legalValues, "' '")+"'" : ""));
 
         List<String> result = new LinkedList<>();
         boolean inArguments = false; // once in arguments, will continue until argument starts with -
