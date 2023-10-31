@@ -137,6 +137,18 @@ public class BitSetUtils {
         return bitSet;
     }
 
+    public static BitSet asBitSet(Collection<String> integers) throws IOException {
+        final var bitSet = new BitSet();
+        for (var str : integers) {
+            if (!NumberUtils.isInteger(str))
+                throw new IOException("Not an integer: " + str);
+            var i = NumberUtils.parseInt(str);
+            if (i >= 0)
+                bitSet.set(i);
+        }
+        return bitSet;
+    }
+
     /**
      * compare two bit sets
      *

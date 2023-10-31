@@ -459,8 +459,7 @@ public class FileUtils {
 		}
 		final var suffix = getFileSuffix(name);
 		name = getFileBaseName(name);
-		final var number = (int) (System.currentTimeMillis() & ((1 << 20) - 1));
-		return String.format("%s-tmp%d.%s%s", name, number, suffix, zipSuffix != null ? "." + zipSuffix : "");
+		return "%s.tmp%08d%s%s".formatted(name, System.currentTimeMillis(), suffix, zipSuffix != null ? "." + zipSuffix : "");
 	}
 
 	/**

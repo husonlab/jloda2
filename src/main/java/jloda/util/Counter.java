@@ -31,7 +31,7 @@ public class Counter {
      * constructor
      */
     public Counter() {
-        this.value = 0;
+        this.value = 0L;
     }
 
     /**
@@ -48,6 +48,18 @@ public class Counter {
     public long get() {
         synchronized (this) {
             return value;
+        }
+    }
+
+    public long longValue() {
+        synchronized (this) {
+            return value;
+        }
+    }
+
+    public int intValue() {
+        synchronized (this) {
+            return (int) value;
         }
     }
 
