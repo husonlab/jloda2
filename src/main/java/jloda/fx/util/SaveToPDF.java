@@ -541,8 +541,11 @@ public class SaveToPDF {
 	}
 
 	public static double computeScaleFactor(Node root, Node node) {
+		root.applyCss();
+		node.applyCss();
 		var scaleX = root.sceneToLocal(node.localToScene(1.0, 0.0)).getX() - root.sceneToLocal(node.localToScene(0.0, 0.0)).getX();
 		var scaleY = root.sceneToLocal(node.localToScene(0.0, 1.0)).getY() - root.sceneToLocal(node.localToScene(0.0, 0.0)).getY();
-		return Math.min(scaleX, scaleY); // todo: could also try average here?
+		var value = Math.min(scaleX, scaleY); // todo: could also try average here?
+		return value <= 0 ? 1.0 : value;
 	}
 }
