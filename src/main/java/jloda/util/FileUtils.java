@@ -421,7 +421,7 @@ public class FileUtils {
 	 * @return approximate umcompressed size of file
 	 */
 	public static long guessUncompressedSizeOfFile(String fileName) {
-		return (isZIPorGZIPFile(fileName) ? 10 : 1) * (new File(fileName)).length();
+		return (isZIPorGZIPFile(fileName) ? 5 : 1) * (new File(fileName)).length();
 	}
 
 	/**
