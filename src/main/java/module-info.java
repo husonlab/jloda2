@@ -17,6 +17,7 @@ module jloda2 {
 	exports jloda.fx.find;
 	exports jloda.fx.graph;
 	exports jloda.fx.label;
+	exports jloda.fx.icons;
 	exports jloda.fx.message;
 	exports jloda.fx.selection;
 	exports jloda.fx.shapes;
@@ -40,6 +41,7 @@ module jloda2 {
 
 	opens jloda.fx.colorscale;
 	opens jloda.fx.label;
+	opens jloda.fx.icons;
 	opens jloda.fx.control.table;
 	opens jloda.fx.control.sliderhistogram;
 	opens jloda.fx.find;
@@ -49,6 +51,7 @@ module jloda2 {
 	opens jloda.resources.icons;
 	opens jloda.resources.icons.dialog;
 	opens jloda.resources.icons.sun;
+
 
 	exports jloda.fx.geom;
 	exports jloda.kmers;
