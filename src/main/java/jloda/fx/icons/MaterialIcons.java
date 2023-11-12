@@ -35,6 +35,8 @@ import java.util.TreeMap;
 
 /**
  * gives access to Google's material icons
+ * https://developers.google.com/fonts/docs/material_icons
+ * see also https://mui.com/material-ui/material-icons/
  * Daniel Huson, 7.2023
  */
 public class MaterialIcons {
