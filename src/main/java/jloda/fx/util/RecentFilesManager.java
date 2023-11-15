@@ -30,6 +30,7 @@ import javafx.scene.control.MenuItem;
 import jloda.util.FileUtils;
 import jloda.util.ProgramProperties;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +41,8 @@ import java.util.function.Consumer;
  * Daniel Huson, 2.2018
  */
 public class RecentFilesManager {
+    public static boolean SHOW_PATH = false;
+
     private static RecentFilesManager instance;
 
     private final int maxNumberRecentFiles;
@@ -68,15 +71,15 @@ public class RecentFilesManager {
             var deadRefs = new HashSet<WeakReference<Menu>>();
 
             while (c.next()) {
-                if (c.wasRemoved()) {
+                if (c.wasRemoved() && c.getRemoved() instanceof OpenFileMenuItem removed) {
                     for (var ref : menuReferences) {
                         var menu = ref.get();
                         if (menu != null) {
-                            var toDelete = new ArrayList<MenuItem>();
+                            var toDelete = new ArrayList<OpenFileMenuItem>();
                             for (var menuItem : menu.getItems()) {
-                                if (c.getRemoved().contains(menuItem.getText())) {
-                                    toDelete.add(menuItem);
-
+                                if (menuItem instanceof OpenFileMenuItem openFileMenuItem) {
+                                    if (removed.getFile().equals(openFileMenuItem.getFile()))
+                                        toDelete.add(openFileMenuItem);
                                 }
                             }
                             menu.getItems().removeAll(toDelete);
@@ -90,7 +93,7 @@ public class RecentFilesManager {
                         if (menu != null) {
                             try {
                                 for (var fileName : c.getAddedSubList()) {
-                                    var openMenuItem = new MenuItem(fileName);
+                                    var openMenuItem = new OpenFileMenuItem(fileName);
 									openMenuItem.setOnAction((e) -> fileOpener.get().accept(fileName));
 									openMenuItem.disableProperty().bind(disable);
 									menu.getItems().add(0, openMenuItem);
@@ -129,11 +132,27 @@ public class RecentFilesManager {
 
         if (fileOpener.get() != null) {
 			for (var fileName : recentFiles) {
-                var openMenuItem = new MenuItem(fileName);
+                var openMenuItem = new OpenFileMenuItem(fileName);
 				openMenuItem.setOnAction(e -> fileOpener.get().accept(fileName));
 				openMenuItem.disableProperty().bind(disable);
 				menu.getItems().add(openMenuItem);
 			}
+        }
+    }
+
+    private static class OpenFileMenuItem extends MenuItem {
+        private final File file;
+
+        public OpenFileMenuItem(String file) {
+            this.file = new File(file);
+            if (SHOW_PATH)
+                setText(file);
+            else
+                setText(FileUtils.getFileNameWithoutPath(file));
+        }
+
+        public File getFile() {
+            return file;
         }
     }
 
