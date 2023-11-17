@@ -27,6 +27,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tooltip;
 import jloda.util.FileUtils;
 import jloda.util.ProgramProperties;
 
@@ -145,12 +146,12 @@ public class RecentFilesManager {
     private static class OpenFileMenuItem extends MenuItem {
         private final File file;
 
-        public OpenFileMenuItem(String file) {
-            this.file = new File(file);
+        public OpenFileMenuItem(String fileName) {
+            this.file = new File(fileName);
             if (SHOW_PATH)
-                setText(file);
+                setText(fileName);
             else
-                setText(FileUtils.getFileNameWithoutPath(file));
+                setText(FileUtils.getFileNameWithoutPath(fileName));
         }
 
         public File getFile() {
