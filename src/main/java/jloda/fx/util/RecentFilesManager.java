@@ -93,8 +93,10 @@ public class RecentFilesManager {
                         if (menu != null) {
                             try {
                                 for (var fileName : c.getAddedSubList()) {
+                                    // make sure not present:
+                                    menu.getItems().removeAll(menu.getItems().stream().filter(item -> item instanceof OpenFileMenuItem openFileMenuItem && openFileMenuItem.getFile().getPath().equals(((new File(fileName).getPath())))).toList());
                                     var openMenuItem = new OpenFileMenuItem(fileName);
-									openMenuItem.setOnAction((e) -> fileOpener.get().accept(fileName));
+                                    openMenuItem.setOnAction(e -> fileOpener.get().accept(fileName));
 									openMenuItem.disableProperty().bind(disable);
 									menu.getItems().add(0, openMenuItem);
 								}
