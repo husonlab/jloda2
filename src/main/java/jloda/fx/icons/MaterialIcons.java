@@ -53,7 +53,7 @@ public class MaterialIcons {
 	private final String styleSheet;
 
 	private MaterialIcons() {
-		try (var ins = Objects.requireNonNull(MaterialIcons.class.getResource("MaterialIconsOutlined-Regular.otf")).openStream()) {
+		try (var ins = Objects.requireNonNull(MaterialIcons.class.getResource("MaterialIconsOutlined-Regular.otf.dat")).openStream()) {
 			Font.loadFont(ins, 10);
 			/*
 			for(int i=0;i<13278;i++) {
@@ -63,7 +63,7 @@ public class MaterialIcons {
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
-		try (var r = new BufferedReader(new InputStreamReader(Objects.requireNonNull(MaterialIcons.class.getResource("MaterialIconsOutlined-Regular.codepoints")).openStream()))) {
+		try (var r = new BufferedReader(new InputStreamReader(Objects.requireNonNull(MaterialIcons.class.getResource("MaterialIconsOutlined-Regular.codepoints.dat")).openStream()))) {
 			while (r.ready()) {
 				var tokens = r.readLine().split("\\s+");
 				if (tokens.length == 2) {
