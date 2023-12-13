@@ -87,7 +87,7 @@ public class MashSketch {
             final byte[] kMerReverseComplement = new byte[kMerSize]; // will reuse
 
             for (byte[] sequence : sequences) {
-                final int top = sequence.length - kMerSize;
+                final int top = sequence.length - kMerSize + 1;
                 for (int offset = 0; offset < top; offset++) {
                     if (isNucleotides) {
 						final int ambiguousPos = StringUtils.lastIndexOf(sequence, offset, kMerSize, 'N'); // don't use k-mers with ambiguity letters
