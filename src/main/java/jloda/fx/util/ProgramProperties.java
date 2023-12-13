@@ -26,6 +26,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 /**
@@ -38,8 +39,8 @@ public class ProgramProperties extends jloda.util.ProgramProperties {
 
 	static {
 		try {
-
 			defaultFontFX = javafx.scene.text.Font.font("Arial", 12);
+			Locale.setDefault(new Locale("en", "US"));
 		} catch (Exception ignored) {
 		}
 	}
