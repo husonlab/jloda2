@@ -269,7 +269,7 @@ public class MainWindowManager {
     }
 
     public static void ensureDarkTheme(IMainWindow window) {
-        if (window != null) {
+        if (window != null && window.getStage()!=null) {
             window.getStage().getScene().getStylesheets().remove("jloda/resources/css/dark.css");
             if (isUseDarkTheme())
                 window.getStage().getScene().getStylesheets().add("jloda/resources/css/dark.css");

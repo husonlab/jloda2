@@ -753,6 +753,15 @@ public class FileUtils {
 			return true;
 	}
 
+	public static boolean equals(String file1,String file2) {
+		if(file1==null && file2!=null || file1!=null && file2==null)
+			return false;
+		else if(file1==null && file2==null)
+			return true;
+		else
+			return (new File(file1).equals(new File(file2)));
+	}
+
 	public static long getNumberOfLinesInFile(String inputFile) {
 		try (BufferedReader r = new BufferedReader(new InputStreamReader(getInputStreamPossiblyZIPorGZIP(inputFile)))) {
 			return r.lines().count();
