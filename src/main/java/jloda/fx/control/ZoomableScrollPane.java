@@ -57,6 +57,8 @@ public class ZoomableScrollPane extends ScrollPane {
     private double zoomFactorX = 1;
     private double zoomFactorY = 1;
 
+    public static boolean zoomByScroll=true;
+
     private final ObjectProperty<Runnable> updateScaleMethod;
 
     /**
@@ -121,6 +123,8 @@ public class ZoomableScrollPane extends ScrollPane {
 
     private StackPane createOuterNode() {
         final StackPane outerNode = new StackPane();
+
+        if(zoomByScroll)
             outerNode.setOnScroll(e -> {
                 if (ZoomableScrollPane.this.isAllowZoom() && (!isRequireShiftOrControlToZoom() || e.isShiftDown() || e.isControlDown())) {
                     e.consume();
@@ -137,6 +141,13 @@ public class ZoomableScrollPane extends ScrollPane {
                     ZoomableScrollPane.this.doZoom(factorX, factorY, new Point2D(e.getX(), e.getY()));
                 }
             });
+        else { // zoom by zoom rather than by scroll
+            outerNode.setOnZoom(e -> {
+                if (ZoomableScrollPane.this.isAllowZoom())
+                    ZoomableScrollPane.this.doZoom(e.getZoomFactor(), e.getZoomFactor(), new Point2D(e.getX(), e.getY()));
+            });
+        }
+
         return outerNode;
     }
 
