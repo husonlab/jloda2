@@ -34,6 +34,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import jloda.util.Single;
 
 /**
  * zoomable scroll pane that zooms to point under mouse
@@ -42,7 +43,6 @@ import javafx.scene.layout.StackPane;
  */
 public class ZoomableScrollPane extends ScrollPane {
     private double mouseScrollZoomFactor = 1.01; // 1%
-
     private final BooleanProperty lockAspectRatio = new SimpleBooleanProperty(false);
     private final BooleanProperty allowZoom = new SimpleBooleanProperty(true);
 
@@ -121,22 +121,22 @@ public class ZoomableScrollPane extends ScrollPane {
 
     private StackPane createOuterNode() {
         final StackPane outerNode = new StackPane();
-        outerNode.setOnScroll(e -> {
-            if (ZoomableScrollPane.this.isAllowZoom() && (!isRequireShiftOrControlToZoom() || e.isShiftDown() || e.isControlDown())) {
-                e.consume();
-                final double factorX;
-                final double factorY;
+            outerNode.setOnScroll(e -> {
+                if (ZoomableScrollPane.this.isAllowZoom() && (!isRequireShiftOrControlToZoom() || e.isShiftDown() || e.isControlDown())) {
+                    e.consume();
+                    final double factorX;
+                    final double factorY;
 
-                if ((Math.abs(e.getDeltaX()) > Math.abs(e.getDeltaY()))) {
-                    factorX = (e.getDeltaX() > 0 ? mouseScrollZoomFactor : 1 / mouseScrollZoomFactor);
-                    factorY = 1;
-                } else {
-                    factorX = 1;
-                    factorY = (e.getDeltaY() > 0 ? mouseScrollZoomFactor : 1 / mouseScrollZoomFactor);
+                    if ((Math.abs(e.getDeltaX()) > Math.abs(e.getDeltaY()))) {
+                        factorX = (e.getDeltaX() > 0 ? mouseScrollZoomFactor : 1 / mouseScrollZoomFactor);
+                        factorY = 1;
+                    } else {
+                        factorX = 1;
+                        factorY = (e.getDeltaY() > 0 ? mouseScrollZoomFactor : 1 / mouseScrollZoomFactor);
+                    }
+                    ZoomableScrollPane.this.doZoom(factorX, factorY, new Point2D(e.getX(), e.getY()));
                 }
-                ZoomableScrollPane.this.doZoom(factorX, factorY, new Point2D(e.getX(), e.getY()));
-            }
-        });
+            });
         return outerNode;
     }
 
