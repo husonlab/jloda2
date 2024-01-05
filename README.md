@@ -8,4 +8,4 @@ This is in testing phase and will change substantially over the next couple of m
 
 To install in your local maven repository, run:
 
-``mvn clean install``
+    mvn clean install
