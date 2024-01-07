@@ -374,6 +374,9 @@ public class FileUtils {
 	 * gets an output stream. If file ends on gz or zip opens appropriate zipping stream. If file equals stdout or stderr, writes to standard out or err
 	 */
 	public static OutputStream getOutputStreamPossiblyZIPorGZIP(String fileName) throws IOException {
+		if(!fileName.contains(File.separator))
+			fileName=System.getProperty("user.dir")+File.separator+fileName;
+
 		final String fileNameLowerCase = fileName.toLowerCase();
 		switch (fileNameLowerCase) {
 			case "stdout" -> {
