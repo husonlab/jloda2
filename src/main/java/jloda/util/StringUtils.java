@@ -755,7 +755,7 @@ public class StringUtils {
 	 * @return first line1
 	 */
 	public static String getFirstLine(String text) {
-		return text.lines().findFirst().orElse("");
+		return getFirstLine(text,false);
 	}
 
 	/**
@@ -764,7 +764,7 @@ public class StringUtils {
 	 * @return first line1
 	 */
 	public static String getFirstLine(String text,boolean notBlank) {
-		return text.lines().filter(ln->!notBlank || !ln.isBlank()).findFirst().orElse("");
+		return text==null?"":text.lines().filter(ln->!notBlank || !ln.isBlank()).findFirst().orElse("");
 	}
 
 	/**
