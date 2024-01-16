@@ -42,3 +42,10 @@
     -fx-border-color: derive(-fx-base, -15%);
     -fx-border-width: 1px;
 }
+
+.button:armed,
+.button:armed .graphic,
+.toggle-button:armed,
+.toggle-button:armed .graphic {
+    -fx-background-color: lightgray;
+}
