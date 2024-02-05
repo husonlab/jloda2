@@ -27,7 +27,10 @@ import jloda.graph.NodeIntArray;
 import jloda.util.*;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -282,7 +285,7 @@ public class NewickIO {
 		var colons = 0;
 		if (format.weights() && tree.getWeight(e) != -1.0) {
 			if (tree.getEdgeWeights().containsKey(e)) {
-				buf.append(StringUtils.removeTrailingZerosAfterDot(String.format(":%.8f", tree.getWeight(e))));
+				buf.append(StringUtils.removeTrailingZerosAfterDot(String.format(format.weightFormat(), tree.getWeight(e))));
 				colons++;
 			}
 		}
@@ -291,14 +294,14 @@ public class NewickIO {
 				buf.append(":");
 				colons++;
 			}
-			buf.append(StringUtils.removeTrailingZerosAfterDot(String.format("%.8f", tree.getConfidence(e))));
+			buf.append(StringUtils.removeTrailingZerosAfterDot(String.format(format.confidenceFormat(), tree.getConfidence(e))));
 		}
 		if (format.probabilityUsingColon() && tree.hasEdgeProbabilities() && tree.getEdgeProbabilities().containsKey(e)) {
 			while (colons < 3) {
 				buf.append(":");
 				colons++;
 			}
-			buf.append(StringUtils.removeTrailingZerosAfterDot(String.format("%.8f", tree.getProbability(e))));
+			buf.append(StringUtils.removeTrailingZerosAfterDot(String.format(format.probabilityFormat(), tree.getProbability(e))));
 		}
 		if (format.edgeLabelsAsComments() && tree.getLabel(e) != null) {
 			buf.append("[").append(getLabelForWriting(e)).append("]");
@@ -833,11 +836,19 @@ public class NewickIO {
 	}
 
 	public static class OutputFormat {
-		private final boolean weights;
-		private final boolean confidenceAsNodeLabel;
-		private final boolean confidenceUsingColon;
-		private final boolean probabilityUsingColon;
-		private final boolean edgeLabelsAsComments;
+		private boolean weights;
+
+		private String weightFormat = "%.8f";
+		private boolean confidenceAsNodeLabel;
+		private boolean confidenceUsingColon;
+
+		private String confidenceFormat = "%.8f";
+
+		private boolean probabilityUsingColon;
+
+		private String probabilityFormat = "%.8f";
+
+		private boolean edgeLabelsAsComments;
 
 		public OutputFormat(boolean weights, boolean confidenceAsNodeLabel, boolean confidenceUsingColon,
 							boolean probabilityUsingColon, boolean edgeLabelsAsComments) {
@@ -868,31 +879,48 @@ public class NewickIO {
 			return edgeLabelsAsComments;
 		}
 
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) return true;
-			if (obj == null || obj.getClass() != this.getClass()) return false;
-			var that = (OutputFormat) obj;
-			return this.weights == that.weights &&
-				   this.confidenceAsNodeLabel == that.confidenceAsNodeLabel &&
-				   this.confidenceUsingColon == that.confidenceUsingColon &&
-				   this.probabilityUsingColon == that.probabilityUsingColon &&
-				   this.edgeLabelsAsComments == that.edgeLabelsAsComments;
+		public void setWeights(boolean weights) {
+			this.weights = weights;
 		}
 
-		@Override
-		public int hashCode() {
-			return Objects.hash(weights, confidenceAsNodeLabel, confidenceUsingColon, probabilityUsingColon, edgeLabelsAsComments);
+		public void setConfidenceAsNodeLabel(boolean confidenceAsNodeLabel) {
+			this.confidenceAsNodeLabel = confidenceAsNodeLabel;
 		}
 
-		@Override
-		public String toString() {
-			return "OutputFormat[" +
-				   "weights=" + weights + ", " +
-				   "confidenceAsNodeLabel=" + confidenceAsNodeLabel + ", " +
-				   "confidenceUsingColon=" + confidenceUsingColon + ", " +
-				   "probabilityUsingColon=" + probabilityUsingColon + ", " +
-				   "edgeLabelsAsComments=" + edgeLabelsAsComments + ']';
+		public void setConfidenceUsingColon(boolean confidenceUsingColon) {
+			this.confidenceUsingColon = confidenceUsingColon;
+		}
+
+		public void setProbabilityUsingColon(boolean probabilityUsingColon) {
+			this.probabilityUsingColon = probabilityUsingColon;
+		}
+
+		public void setEdgeLabelsAsComments(boolean edgeLabelsAsComments) {
+			this.edgeLabelsAsComments = edgeLabelsAsComments;
+		}
+
+		public String weightFormat() {
+			return weightFormat;
+		}
+
+		public void setWeightFormat(String weightFormat) {
+			this.weightFormat = weightFormat;
+		}
+
+		public String confidenceFormat() {
+			return confidenceFormat;
+		}
+
+		public void setConfidenceFormat(String confidenceFormat) {
+			this.confidenceFormat = confidenceFormat;
+		}
+
+		public String probabilityFormat() {
+			return probabilityFormat;
+		}
+
+		public void setProbabilityFormat(String probabilityFormat) {
+			this.probabilityFormat = probabilityFormat;
 		}
 	}
 
