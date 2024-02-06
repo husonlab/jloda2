@@ -285,7 +285,7 @@ public class NewickIO {
 		var colons = 0;
 		if (format.weights() && tree.getWeight(e) != -1.0) {
 			if (tree.getEdgeWeights().containsKey(e)) {
-				buf.append(StringUtils.removeTrailingZerosAfterDot(String.format(format.weightFormat(), tree.getWeight(e))));
+				buf.append(":").append(StringUtils.removeTrailingZerosAfterDot(String.format(format.weightFormat(), tree.getWeight(e))));
 				colons++;
 			}
 		}
