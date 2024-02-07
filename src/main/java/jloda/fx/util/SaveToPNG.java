@@ -39,17 +39,25 @@ import java.nio.file.Files;
  */
 public class SaveToPNG {
 	/**
-	 * draws given pane to a file in PNG format
+	 * draws a given pane to a file in PNG format
 	 *
 	 * @param root the pane
 	 * @param file the file
 	 */
 	public static void apply(Node root, File file) throws IOException {
-		if (file.exists())
-			Files.delete(file.toPath());
 		var bounds = root.getLayoutBounds();
 		var image = createImage(root, 2 * bounds.getWidth(), 2 * bounds.getHeight(), true);
+		apply(image,file);
+	}
 
+	/**
+	 * draws a given image to a file in PNG format
+	 * @param image the image
+	 * @param file the file
+	 */
+	public static void apply(Image image, File file) throws IOException {
+		if (file.exists())
+			Files.delete(file.toPath());
 		var bytes = new PngEncoderFX(image, true).pngEncode();
 		try (var outs = new FileOutputStream(file)) {
 			outs.write(bytes);
