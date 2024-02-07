@@ -45,10 +45,11 @@ public class NewickIO {
 	public static final String COLLAPSED_NODE_SUFFIX = "{+}";
 
 	public static boolean NUMBERS_ON_INTERNAL_NODES_ARE_CONFIDENCE_VALUES = true;
-
 	public boolean allowMultiLabeledNodes = true;
 
 	private final boolean cleanLabelsOnWrite;
+
+	private boolean numbersOnInternalNodesAreConfidenceValues = NUMBERS_ON_INTERNAL_NODES_ARE_CONFIDENCE_VALUES;
 
 	private boolean hideCollapsedSubTreeOnWrite = false;
 
@@ -499,7 +500,7 @@ public class NewickIO {
 					label = buf.toString().trim();
 
 					if (!label.isEmpty()) {
-						if (NUMBERS_ON_INTERNAL_NODES_ARE_CONFIDENCE_VALUES && NumberUtils.isDouble(label)) {
+						if (isNumbersOnInternalNodesAreConfidenceValues() && NumberUtils.isDouble(label)) {
 							confidenceValue.set(NumberUtils.parseDouble(label));
 						} else {
 							if (!isAllowMultiLabeledNodes() && seen.containsKey(label) && PhyloTreeNetworkIOUtils.findReticulateLabel(label) == null)
@@ -833,6 +834,14 @@ public class NewickIO {
 
 	public void setNewickNodeCommentSupplier(Function<Node, String> newickNodeCommentSupplier) {
 		this.newickNodeCommentSupplier = newickNodeCommentSupplier;
+	}
+
+	public boolean isNumbersOnInternalNodesAreConfidenceValues() {
+		return numbersOnInternalNodesAreConfidenceValues;
+	}
+
+	public void setNumbersOnInternalNodesAreConfidenceValues(boolean numbersOnInternalNodesAreConfidenceValues) {
+		this.numbersOnInternalNodesAreConfidenceValues = numbersOnInternalNodesAreConfidenceValues;
 	}
 
 	public static class OutputFormat {
