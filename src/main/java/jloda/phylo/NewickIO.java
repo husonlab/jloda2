@@ -27,10 +27,7 @@ import jloda.graph.NodeIntArray;
 import jloda.util.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -80,6 +77,14 @@ public class NewickIO {
 
 	public static String toString(PhyloTree tree, boolean showWeights) {
 		return toString(tree, showWeights, false, false);
+	}
+
+	public static String toString(Collection<PhyloTree> trees, boolean showWeights) {
+		var buf = new StringBuilder();
+		for (var tree : trees) {
+			buf.append(toString(tree, showWeights)).append(";\n");
+		}
+		return buf.toString();
 	}
 
 	public static String toString(PhyloTree tree, boolean showWeights, boolean showConfidences) {
