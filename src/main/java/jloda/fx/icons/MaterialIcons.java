@@ -39,6 +39,10 @@ import java.util.TreeMap;
  * Daniel Huson, 7.2023
  */
 public class MaterialIcons {
+	public static double FONT_SIZE = 18.0;
+
+	public static String ADDITIONAL_FORMATTING = "";
+
 	private static MaterialIcons instance;
 
 	public static MaterialIcons getInstance() {
@@ -92,7 +96,8 @@ public class MaterialIcons {
 		var label = new Label(ch);
 		label.getStyleClass().add("icon-text");
 		label.setAlignment(Pos.CENTER);
-		label.setStyle("-fx-font-family: 'Material Icons Outlined'; -fx-font-size: 18; -fx-background-color: transparent;" + (style != null ? style : ""));
+		label.setStyle("-fx-font-family: 'Material Icons Outlined'; -fx-font-size: " + FONT_SIZE + "; -fx-background-color: transparent;"
+					   + (ADDITIONAL_FORMATTING != null ? ADDITIONAL_FORMATTING : "") + (style != null ? style : ""));
 		return label;
 	}
 
