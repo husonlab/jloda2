@@ -374,10 +374,7 @@ public class FileUtils {
 	 * gets an output stream. If file ends on gz or zip opens appropriate zipping stream. If file equals stdout or stderr, writes to standard out or err
 	 */
 	public static OutputStream getOutputStreamPossiblyZIPorGZIP(String fileName) throws IOException {
-		if(!fileName.contains(File.separator))
-			fileName=System.getProperty("user.dir")+File.separator+fileName;
-
-		final String fileNameLowerCase = fileName.toLowerCase();
+		final var fileNameLowerCase = fileName.toLowerCase();
 		switch (fileNameLowerCase) {
 			case "stdout" -> {
 				return new PrintStreamNoClose(System.out);
@@ -392,12 +389,15 @@ public class FileUtils {
 				return new GZIPOutputStream(new PrintStreamNoClose(System.err));
 			}
 			default -> {
+				if (!fileName.contains(File.separator))
+					fileName = System.getProperty("user.dir") + File.separator + fileName;
+
 				OutputStream outs = new FileOutputStream(fileName);
 				if (fileNameLowerCase.endsWith(".gz")) {
 					outs = new GZIPOutputStream(outs);
 				} else if (fileNameLowerCase.endsWith(".zip")) {
-					final ZipOutputStream out = new ZipOutputStream(outs);
-					ZipEntry e = new ZipEntry(replaceFileSuffix(fileName, ""));
+					var out = new ZipOutputStream(outs);
+					var e = new ZipEntry(replaceFileSuffix(fileName, ""));
 					out.putNextEntry(e);
 				}
 				return outs;
